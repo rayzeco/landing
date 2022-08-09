@@ -1,0 +1,94 @@
+:root {
+  --theme-color: #08FFB5;
+}
+
+* {
+  transition: all 0.25s ease-in-out;
+  box-sizing: border-box;
+
+  font-family: 'Outfit', sans-serif;
+
+  animation-name: appearence;
+  animation-duration: 0.5s;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+}
+
+button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.container {
+  width: calc(100% - 36px);
+  margin: 0 auto;
+
+  max-width: 1320px;
+
+  @media screen and (max-width: 1660px) {
+    max-width: 1320px;
+  }
+  @media screen and (max-width: 1400px) {
+    max-width: 1140px;
+  }
+  @media screen and (max-width: 1200px) {
+    max-width: 960px;
+  }
+  @media screen and (max-width: 992px) {
+    max-width: 720px;
+  }
+  @media screen and (max-width: 768px) {
+    max-width: 540px;
+  }
+  @media screen and (max-width: 576px) {
+    width: calc(100% - 48px);
+  }
+}
+
+// ------------------- Scroll Bar ------------------- //
+/* width */
+::-webkit-scrollbar {
+  width: 6px;
+  background-color: transparent;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background-color: #dfebe8;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #707977; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #565e5c; 
+}
+
+
+
+@keyframes appearence {
+  from {
+  	transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+  	transform: translateY(0);
+    opacity: 1;
+  }
+}

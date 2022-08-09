@@ -1,0 +1,30 @@
+.scroll-to-top-button {
+  position: fixed;
+  z-index: 10;
+  right: 40px;
+  bottom: 40px;
+
+  border: none;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+
+  border-radius: 16px;
+  opacity: 0.8;
+  display: none;
+  overflow: hidden;
+
+  img {
+    width: 44px;
+    display: block;
+  }
+
+  &:hover {
+    opacity: 1;
+    box-shadow: 0 3px 4px 1px #0e0f0f7c;
+  }
+
+  &.show {
+    display: block;
+  }
+}

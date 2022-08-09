@@ -1,0 +1,174 @@
+header {
+  background-color: black;
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .logo {
+    text-decoration: none;
+    display: block;
+
+    img {
+      height: 56px;
+      margin: 30px 0 30px 90px;
+
+      @media screen and (max-width: 1400px) {
+        margin: 30px 0 30px 60px;
+      }
+      @media screen and (max-width: 1200px) {
+        height: 42px;
+        margin: 24px 36px;
+      }
+      @media screen and (max-width: 768px) {
+        height: 36px;
+        margin: 16px 24px;
+      }
+    }
+  }
+
+  .top-menu {
+    .menu-bg {
+      display: none;
+    }
+    .menu-button {
+      display: none;
+      position: relative;
+      cursor: pointer;
+
+      width: 25px;
+      height: 25px;
+      align-items: center;
+
+      .line {
+        width: 25px;
+        height: 3px;
+        background-color: white;
+        border-radius: 6px;
+      }
+
+      &::after,
+      &::before {
+        content: "";
+        width: 25px;
+        height: 3px;
+        position: absolute;
+        background-color: white;
+        border-radius: 6px;
+      }
+
+      &::after {
+        bottom: 0;
+      }
+      &::before {
+        top: 0;
+      }
+
+      &.close {
+        &::after {
+          width: 35px;
+          transform: rotateZ(45deg);
+          bottom: 11px;
+          left: -4px;
+        }
+        &::before {
+          width: 35px;
+          transform: rotateZ(-45deg);
+          top: 11px;
+          left: -4px;
+        }
+        .line {
+          opacity: 0;
+        }
+      }
+    }
+
+    .menu-list {
+      display: flex;
+      align-items: center;
+      gap: 72px;
+
+      @media screen and (max-width: 1660px) {
+        gap: 56px;
+      }
+      @media screen and (max-width: 1400px) {
+        gap: 32px;
+      }
+
+      a {
+        display: block;
+        color: white;
+        text-decoration: none;
+      }
+
+      .launch-button {
+        background-color: var(--theme-color);
+        padding: 17px 48px;
+        border-radius: 100px;
+        color: black;
+        font-weight: bold;
+        margin-left: 18px;
+
+        margin: 0 56px 0 0;
+
+        margin: 0 90px 0 0;
+
+        @media screen and (max-width: 1400px) {
+          margin: 0 60px 0 0;
+        }
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+
+    @media screen and (max-width: 1200px) {
+      .menu-button {
+        display: flex;
+        position: relative;
+        z-index: 22;
+      }
+      .menu-list {
+        display: none;
+        flex-direction: column;
+        justify-content: space-between;
+
+        &.show {
+          display: flex;
+          position: fixed;
+          z-index: 23;
+
+          width: 300px;
+          height: 400px;
+          left: calc(50vw - 150px);
+          top: calc(50vh - 200px);
+        }
+
+        .launch-button {
+          margin: 0;
+        }
+      }
+      .menu-bg.show {
+        display: block;
+        position: fixed;
+        z-index: 21;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #3c3828b3;
+        backdrop-filter: blur(7px);
+      }
+      .menu-button {
+        margin: 0 36px 0 0;
+
+        @media screen and (max-width: 768px) {
+          margin: 0 24px 0 0;
+        }
+      }
+    }
+  }
+}

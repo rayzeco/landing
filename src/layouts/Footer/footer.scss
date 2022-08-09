@@ -1,0 +1,96 @@
+footer {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  gap: 1px;
+
+  position: relative;
+  z-index: 1;
+
+  .top {
+    background-color: black;
+    padding: 70px 0;
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+
+      @media screen and (max-width: 768px) {
+        flex-direction: column;
+      }
+
+      a { color: white;}
+
+      .left {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+
+        .logo img {
+          height: 44px;
+        }
+
+        .social-buttons {
+          display: flex;
+          gap: 72px;
+
+          @media screen and (max-width: 992px) {
+            gap: 36px;
+          }
+
+          @media screen and (max-width: 768px) {
+            gap: 72px;
+            margin: 56px 0;
+          }
+        }
+      }
+
+      .right {
+        display: flex;
+        gap: 92px;
+        
+        @media screen and (max-width: 992px) {
+          gap: 54px;
+        }
+
+        @media screen and (max-width: 768px) {
+          justify-content: space-between;
+        }
+
+        @media screen and (max-width: 576px) {
+          flex-direction: column;
+        }
+
+        .link-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+
+          h6 {
+            color: white;
+            font-weight: bold;
+            color: var(--theme-color);
+            font-size: 18px;
+            margin: 0 0 18px 0;
+          }
+        }
+      }
+    }
+  }
+
+  .bottom {
+    background-color: black;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    gap: 5px;
+
+    a {
+      text-decoration: none;
+      color: white;
+      text-decoration: underline;
+    }
+  }
+}

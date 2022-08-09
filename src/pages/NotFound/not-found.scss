@@ -1,0 +1,21 @@
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: auto;
+  flex-grow: 1;
+  width: 100%;
+  background: #f7f6f6;
+
+  .up {
+    font-size: 72px;
+    font-weight: bold;
+  }
+
+  .down {
+    font-size: 24px;
+    font-weight: bold;
+  }
+}

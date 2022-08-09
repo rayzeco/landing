@@ -1,0 +1,62 @@
+.document {
+  display: flex;
+  flex-grow: 1;
+
+  background-color: lightgray;
+  padding: 36px 0;
+
+  @media screen and (max-width: 576px) {
+    background-color: white;
+  }
+
+  .container {
+    display: flex;
+  }
+
+  .content {
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 0 3px 0 gray;
+
+    padding: 72px;
+    max-width: 860px;
+    margin: auto;
+
+    @media screen and (max-width: 768px) {
+      padding: 54px;
+    }
+    
+    @media screen and (max-width: 576px) {
+      padding: 0;
+      box-shadow: none;
+    }
+
+    h1 {
+      margin: 12px 0 36px 0;
+    }
+
+    h4 {
+      margin: 38px 0 18px 0;
+    }
+
+    p {
+      line-height: 24px;
+    }
+
+    ul {
+      margin: 26px 0;
+
+      li {
+        line-height: 28px;
+      }
+    }
+
+    ul.order-number {
+      list-style: decimal;
+    }
+
+    span.link {
+      color: #1a73e8;
+    }
+  }
+}
