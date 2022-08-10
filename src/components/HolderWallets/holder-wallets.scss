@@ -1,0 +1,53 @@
+.holder-wallets {
+
+  .table-wrapper {
+    padding-bottom: 16px;
+
+    @media screen and (max-width: 768px) {
+      overflow-x: scroll;
+    }
+  }
+
+  table {
+    min-width: 100%;
+    width: 720px;
+    border-collapse: collapse;
+    border: 1px solid #828282;
+
+    th {
+      border: 1px solid #828282;
+      background-color: var(--theme-color);
+      padding: 24px 12px;
+    }
+
+    td {
+      text-align: center;
+
+      border: 1px solid #828282;
+      padding: 16px 12px;
+
+      &.bold {
+        font-weight: bold;
+      }
+    }
+  }
+
+  .button-wrapper {
+    display: flex;
+    justify-content: center;
+
+    button {
+      padding: 16px 42px;
+      background-color: var(--theme-color);
+      color: black;
+      border-radius: 100px;
+      font-weight: bold;
+
+      margin: 56px auto;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+}

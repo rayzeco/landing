@@ -1,3 +1,157 @@
 .dashboard {
-  
+  display: flex;
+  flex-direction: column;
+
+  .banner {
+    background-color: var(--theme-color);
+
+    .container {
+      padding: 120px 0;
+
+      .title {
+        font-size: 72px;
+        font-weight: bold;
+      }
+
+      @media screen and (max-width: 1200px) {
+        padding: 110px 0;
+        .title {
+          font-size: 66px;
+        }
+      }
+      @media screen and (max-width: 992px) {
+        padding: 100px 0;
+        .title {
+          font-size: 60px;
+        }
+      }
+      @media screen and (max-width: 768px) {
+        padding: 90px 0;
+        .title {
+          font-size: 54px;
+        }
+      }
+      @media screen and (max-width: 576px) {
+        padding: 80px 0;
+        .title {
+          font-size: 48px;
+        }
+      }
+
+      .breadcrumbs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        margin-bottom: 70px;
+
+        @media screen and (max-width: 1200px) {
+          margin-bottom: 60px;
+        }
+        @media screen and (max-width: 768px) {
+          margin-bottom: 50px;
+        }
+      }
+    }
+  }
+
+  .dashboard-info {
+    background-color: black;
+    position: relative;
+
+    .circld1 {
+      position: absolute;
+      height: 180px;
+      right: 0;
+      top: -120px;
+
+      @media screen and (max-width: 768px) {
+        height: 150px;
+        top: -100px;
+      }
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+
+      padding: 64px 0;
+      color: white;
+
+      .line {
+        width: 1px;
+        height: auto;
+        background-color: white;
+      }
+
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 72px;
+        gap: 12px;
+
+        p {
+          font-size: 20px;
+          text-align: center;
+          margin: 0;
+          
+          &.width1 {
+            width: 110px;
+          }
+          &.width2 {
+            width: 50px;
+          }
+        }
+      }
+
+      @media screen and (max-width: 768px) {
+        flex-direction: column;
+        align-items: center;
+        gap: 36px;
+
+        .line {
+          height: 1px;
+          width: 200px;
+        }
+        p {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  section {
+    padding: 96px 0;
+
+    .title {
+      font-size: 36px;
+      font-weight: bold;
+      padding: 54px 0;
+    }
+
+    @media screen and (max-width: 1200px) {
+      padding: 84px 0;
+    }
+    @media screen and (max-width: 992px) {
+      padding: 78px 0;
+    }
+    @media screen and (max-width: 768px) {
+      padding: 72px 0;
+      .title { padding: 48px 0; }
+    }
+    @media screen and (max-width: 576px) {
+      padding: 66px 0;
+    }
+  }
+
+  .your-collections {
+    .table {
+      padding-bottom: 24px;
+      
+      @media screen and (max-width: 992px) {
+        overflow-x: scroll;
+      }
+    }
+  }
 }

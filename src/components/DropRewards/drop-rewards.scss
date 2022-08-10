@@ -1,0 +1,128 @@
+.drop-rewards {
+  padding: 36px 0 !important;
+  h3 {
+    margin: 12px 0;
+  }
+  p {
+    margin: 8px 0;
+    
+    a {
+      color: var(--theme-color);
+      text-decoration: underline;
+    }
+  }
+
+  .drop-reward-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 72px;
+    padding: 42px 0 56px 0;
+
+    @media screen and (max-width: 992px) {
+      gap: 48px;
+    }
+    @media screen and (max-width: 768px) {
+      flex-direction: column;
+      gap: 24px;
+      padding: 36px 0;
+    }
+
+    > div {
+      width: 40%;
+      flex-grow: 1;
+      max-width: 460px;
+
+      @media screen and (max-width: 1400px) {
+        max-width: 440px;
+      }
+      @media screen and (max-width: 1200px) {
+        max-width: 360px;
+      }
+      @media screen and (max-width: 992px) {
+        max-width: 336px;
+      }
+      @media screen and (max-width: 768px) {
+        width: 100%;
+        max-width: 360px;
+      }
+    }
+
+    .address-list {
+      border: 2px solid #828282;
+      height: 150px;
+
+      padding: 8px 6px 8px 8px;
+      display: flex;
+      flex-direction: column;
+
+      .content {
+        flex-grow: 1;
+        padding-right: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+
+        overflow-y: scroll;
+
+        > div {
+          background-color: #82828233;
+          color: #828282;
+          padding: 4px 6px;
+        }
+      }
+    }
+
+    .reward-option {
+      h3 {
+        margin: 0 0 18px 0;
+      }
+      .input-group {
+        display: flex;
+        gap: 16px;
+
+        @media screen and (max-width: 768px) {
+          flex-direction: column;
+        }
+
+        .input-wrapper {
+          font-size: 16px;
+          color: #828282;
+          border-bottom: 1px solid #828282;
+          flex-grow: 1;
+
+          position: relative;
+
+          &::after {
+            content: "$BULLC";
+            position: absolute;
+            right: 0;
+            z-index: 5;
+            bottom: 12px;
+            background-color: white;
+          }
+
+          input {
+            padding: 12px 0;
+            border: none;
+            outline: none;
+            width: 100%;
+
+            font-size: 16px;
+            color: #828282;
+          }
+        }
+
+        button {
+          padding: 0 48px;
+          background-color: var(--theme-color);
+          font-size: 16px;
+          border-radius: 100px;
+          height: 45px;
+
+          &:hover {opacity: 0.9;}
+        }
+      }
+    }
+  }
+}
