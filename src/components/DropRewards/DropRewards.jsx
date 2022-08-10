@@ -1,18 +1,18 @@
 import "./drop-rewards.scss";
 
 import React, { useRef, useState } from "react";
-import wallets from "./wallets.json";
+import Papa from 'papaparse'
 
 export default function DropRewards() {
   const svgFileRef = useRef();
   const [dragActive, setDragActive] = useState(false);
+  const [wallets, setWalelts] = useState([])
 
   const shortenWalletAddress = (wallet) => {
     return wallet.slice(0, 5) + "..." + wallet.slice(40, 42);
   };
 
   const handleUploadButtonClick = () => {
-    console.log(svgFileRef);
     svgFileRef.current.click();
   };
 
@@ -45,7 +45,21 @@ export default function DropRewards() {
   };
 
   const handleFile = (files) => {
-    alert("Number of files: " + files.length);
+    Papa.parse(files[0],{
+      header: true,
+      skipEmptyLines: true,
+      complete: res => {
+        let data = []
+        for(let i = 0; i < res.data.length; i ++) {
+          if(res.data[i]['Wallets'] === undefined) {
+            alert('Invalid File')
+            return
+          }
+          data.push(res.data[i]['Wallets'])
+        }
+        setWalelts(data)
+      }
+    })
   };
 
   return (
@@ -89,13 +103,14 @@ export default function DropRewards() {
               id="upload-file"
               ref={svgFileRef}
               onChange={handleChange}
+              accept='.csv'
             />
 
             <div className="left">
               <img src="/images/upload.svg" alt="upload" />
               <div>
                 <p>Drag or drop file here</p>
-                SVG
+                CSV
               </div>
             </div>
             <button onClick={handleUploadButtonClick}>Select File</button>

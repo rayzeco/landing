@@ -1,0 +1,32 @@
+[
+  {
+    "User Wallet Address": "wallet_10",
+    "#Collection Name": "aa",
+    "# of NFTs Minted": 1,
+    "Total Rewards": 5
+  },
+  {
+    "User Wallet Address": "wallet_7",
+    "#Collection Name": "bb",
+    "# of NFTs Minted": 3,
+    "Total Rewards": 15
+  },
+  {
+    "User Wallet Address": "wallet_11",
+    "#Collection Name": "cc",
+    "# of NFTs Minted": 2,
+    "Total Rewards": 20
+  },
+  {
+    "User Wallet Address": "wallet_16",
+    "#Collection Name": "dd",
+    "# of NFTs Minted": 5,
+    "Total Rewards": 15
+  },
+  {
+    "User Wallet Address": "wallet_15",
+    "#Collection Name": "ee",
+    "# of NFTs Minted": 3,
+    "Total Rewards": 5
+  }
+]
