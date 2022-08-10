@@ -125,4 +125,74 @@
       }
     }
   }
+
+  .upload-option {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+
+    .upload-form {
+      display: flex;
+      justify-content: space-between;
+
+      border: 1px dashed #828282;
+      padding: 25px 35px;
+
+      margin-top: 50px;
+      position: relative;
+
+      input {
+        display: none;
+      }
+
+      .left {
+        display: flex;
+        gap: 12px;
+
+        div {
+          color: #828282;
+          line-height: 24px;
+          p {
+            font-weight: 500;
+            font-size: larger;
+            margin: 0 0 2px 0;
+            width: 190px;
+            font-size: 16px;
+          }
+        }
+      }
+
+      button {
+        padding: 16px 28px;
+        border: 1px solid black;
+        border-radius: 100px;
+        background-color: transparent;
+        font-weight: 500;
+
+        &:hover {
+          background-color: #eee;
+        }
+      }
+
+      .drop-file-element {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background-color: #eee;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+        color: #828282;
+        font-size: 16px;
+        font-weight: bold;
+      }
+    }
+  }
 }
