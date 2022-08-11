@@ -1,0 +1,30 @@
+.wallet-modal {
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+
+  padding-bottom: 24px;
+
+  .wallet-buttons {
+    display: flex;
+    gap: 42px;
+
+    button {
+      background-color: transparent;
+      border: none;
+      outline: none;
+      width: 125px;
+
+      img {
+        height: 64px;
+      }
+      p {
+        font-size: 16px;
+        margin: 0 0 8px 0;
+        color: white;
+      }
+    }
+  }
+}

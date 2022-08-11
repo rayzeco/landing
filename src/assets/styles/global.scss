@@ -93,3 +93,7 @@ button {
     opacity: 1;
   }
 }
+
+.ReactModal__Overlay {
+  z-index: 10000;
+}
