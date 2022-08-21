@@ -103,6 +103,11 @@
             width: 50px;
           }
         }
+
+        > div {
+          font-size: 72px;
+          font-family: 'DM Mono', monospace;
+        }
       }
 
       @media screen and (max-width: 768px) {

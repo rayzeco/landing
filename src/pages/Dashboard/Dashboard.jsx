@@ -7,21 +7,19 @@ import DropRewards from "../../components/DropRewards/DropRewards";
 import HolderWallets from "../../components/HolderWallets/HolderWallets";
 
 export default function Dashboard() {
-
-  const [collectionCnt, setCollectionCnt] = useState(0)
-  const [listedNFTCnt, setListedNFTCnt] = useState(0)
-  const [soldNFTCnt, setSoldNFTCnt] = useState(0)
-  const [uniqueUsersCnt, setUniqueUsersCnt] = useState(0)
+  const [collectionCnt, setCollectionCnt] = useState(0);
+  const [listedNFTCnt, setListedNFTCnt] = useState(0);
+  const [soldNFTCnt, setSoldNFTCnt] = useState(0);
+  const [uniqueUsersCnt, setUniqueUsersCnt] = useState(0);
 
   useEffect(() => {
     setTimeout(() => {
-      setCollectionCnt(3)
-      setListedNFTCnt(400)
-      setSoldNFTCnt(36)
-      setUniqueUsersCnt(19)
-    }, 1000)
-    
-  }, [])
+      setCollectionCnt(3);
+      setListedNFTCnt(400);
+      setSoldNFTCnt(36);
+      setUniqueUsersCnt(19);
+    }, 1000);
+  }, []);
 
   return (
     <div className="dashboard">
@@ -46,41 +44,33 @@ export default function Dashboard() {
         <div className="container">
           <div className="info-item">
             <p className="width1">Number Of Collections</p>
-            <NumberEasing
-              value={collectionCnt}
-              decimals={0}
-              ease="quintInOut"
-            />
+            <div>
+              <NumberEasing value={collectionCnt} decimals={0} ease="quintInOut" />
+            </div>
           </div>
 
           <div className="line"></div>
           <div className="info-item">
             <p className="width2">NFTs Listed</p>
-            <NumberEasing
-              value={listedNFTCnt}
-              decimals={0}
-              ease="quintInOut"
-            />
+            <div className="info-item-number">
+              <NumberEasing value={listedNFTCnt} decimals={0} ease="quintInOut" />
+            </div>
           </div>
 
           <div className="line"></div>
           <div className="info-item">
             <p className="width2">NFTs Sold</p>
-            <NumberEasing
-              value={soldNFTCnt}
-              decimals={0}
-              ease="quintInOut"
-            />
+            <div>
+              <NumberEasing value={soldNFTCnt} decimals={0} ease="quintInOut" />
+            </div>
           </div>
 
           <div className="line"></div>
           <div className="info-item">
             <p className="width1">Unique Users</p>
-            <NumberEasing
-              value={uniqueUsersCnt}
-              decimals={0}
-              ease="quintInOut"
-            />
+            <div>
+              <NumberEasing value={uniqueUsersCnt} decimals={0} ease="quintInOut" />
+            </div>
           </div>
         </div>
       </div>

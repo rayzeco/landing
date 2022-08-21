@@ -1,7 +1,7 @@
 import "./header.scss";
 
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useEthers, shortenAddress } from "@usedapp/core";
 import WalletModal from "../../components/WalletModal/WalletModal";
 import Web3 from 'web3'
@@ -13,17 +13,9 @@ import config from '../../config/config.json'
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
-  const [showWalletButton, setShowWalletButton] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
 
-  const location = useLocation();
   const { account, chainId, library, deactivate } = useEthers();
-
-  useEffect(() => {
-    if (location.pathname === "/dashboard") {
-      setShowWalletButton(true);
-    }
-  }, [location]);
 
   useEffect(() => {
     if(chainId !== undefined && chainId !== config.chainId) {
@@ -84,19 +76,13 @@ export default function Header() {
           <Link to={"/"}>Share Ownership</Link>
           <Link to={"/"}>Utility Tokens</Link>
           <Link to={"/dashboard"}>Dashboard</Link>
-          {showWalletButton === false ? (
-            <a href="#app" className="launch-button">
-              Launch Collection
-            </a>
-          ) : (
-            <button
-              className={"wallet-button " + (account ? 'connected' : '')}
-              onClick={handleConnectWallet}
-            >
-              <img src="/images/wallet-account.svg" alt="wallet-account" />
-              {account ? shortenAddress(account) : "Connect Wallet"}
-            </button>
-          )}
+          <button
+            className={"wallet-button " + (account ? 'connected' : '')}
+            onClick={handleConnectWallet}
+          >
+            <img src="/images/wallet-account.svg" alt="wallet-account" />
+            {account ? shortenAddress(account) : "Connect Wallet"}
+          </button>
         </div>
       </div>
       <WalletModal
