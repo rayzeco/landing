@@ -19,7 +19,7 @@ export default function LandingPage() {
             <img src="/images/logo-text-black.svg" alt="logo" />
           </div>
           <div className="right">
-            <div className="title">Supercharge Your NFTs with Rayze</div>
+            <div className="title">Strategy. Design. DevOps. Engineering</div>
             <div className="description">
               <strong>Create Incentive NFTs in a Few Simple Steps.</strong>{" "}
               <br />
