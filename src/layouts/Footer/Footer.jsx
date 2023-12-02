@@ -39,7 +39,9 @@ export default function Footer() {
         </div>
       </div>
 
+
       <div className="bottom">
+        <p>Rayze is fully owned by O3 Ventures | </p>
         <Link to='/guidelines'>Membership Guidelines</Link>
         &
         <Link to='/policy'>Privacy Policy</Link>
