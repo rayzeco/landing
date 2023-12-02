@@ -19,15 +19,16 @@ export default function LandingPage() {
             <img src="/images/logo-text-black.svg" alt="logo" />
           </div>
           <div className="right">
-            <div className="title">Strategy. Design. DevOps. Engineering</div>
+            <div className="title">Strategy. Engineering.  Data & AI. </div>
             <div className="description">
-              <strong>Create Incentive NFTs in a Few Simple Steps.</strong>{" "}
-              <br />
-              Rayze provides robust tooling & infrastructure so you can focus on
-              what matters the most.
+              By integrating these disciplines, you acquire a competitive advantage that <strong>propels your
+              business to new heights..</strong>{" "}
+              <br /><br/>
+              <strong> Our mission </strong> is to accelerate your digital journey,
+              helping <strong> you to create a remarkable impact today, tomorrow, and in the future.</strong>
             </div>
-            <pre>Your Creativity | Your Brand | Your Community.</pre>
-            <a href="/">Launch Collection</a>
+            <pre></pre>
+            <a href="/">Get In Touch</a>
           </div>
         </div>
       </section>
@@ -41,150 +42,68 @@ export default function LandingPage() {
             </div>
             <div className="right">
               <p>
-                We believe that NFTs & tokens will revolutionize how enterprises
-                interact & incentivize their communities.
+                We help our clients to leverage the potential of Data, Artificial intelligence,
+                and engineering to seize new opportunities, and drive digital growth.
               </p>
-              <div className="title">Rayze makes this simple and easy</div>
+              <div className="title">Supercharge your digital growth</div>
             </div>
           </div>
           <div className="bottom">
             <div>
-              <h4>Creators</h4>
-              <p>can keep a higher share of what they create.</p>
+              <h4>Strategy</h4>
+              <p>Evolve your organization with pragmatic strategies & technology levers that increase your agility, resilience and ability to compete.</p>
             </div>
             <div>
-              <h4>Communities</h4>
-              <p>can engage, contribute, grow & earn.</p>
+              <h4>Engineering</h4>
+              <p>Modernize your technology platforms, development and delivery practices to deliver business value faster.</p>
             </div>
             <div>
-              <h4>Enterprises</h4>
-              <p>can extend their reach beyond their existing customers.</p>
+              <h4>Data & AI</h4>
+              <p>Drive business growth and enable better decision making with pragmatic data foundations and unrivalled skill sets in AI and ML.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="launch-steps-section">
-        <img src="/images/arc.svg" alt="arc" className="arc" />
-        <div className="container">
-          <div className="title">
-            Launch a new NFT collection with 4 simple steps
-          </div>
-          <div className="steps">
-            <div className="step">
-              <h4>1.</h4>
-              <p>Select an NFT Template</p>
-              <img
-                src="/images/window.svg"
-                alt="window"
-                style={{ width: 60 }}
-              />
-            </div>
-
-            <div className="line"></div>
-
-            <div className="step">
-              <h4>2.</h4>
-              <p>Add Incentive features you need.</p>
-              <img src="/images/star.svg" alt="star" />
-            </div>
-
-            <div className="line"></div>
-
-            <div className="step">
-              <h4>3.</h4>
-              <p>Customize the template.</p>
-              <img src="/images/gear.svg" alt="gear" />
-            </div>
-
-            <div className="line"></div>
-
-            <div className="step">
-              <h4>4.</h4>
-              <p>Test & Launch.</p>
-              <img src="/images/note.svg" alt="note" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="insentive-section">
-        <div className="container">
-          <div className="title">
-            Rayze Incentive NFTs are feature rich & easy to use
-          </div>
-
-          <div className="steps">
-            <div className="step">
-              <h4>Drop Rewards</h4>
-              <p>to your community based on their engagement & contribution.</p>
-            </div>
-            <div className="line"></div>
-
-            <div className="step">
-              <h4>Staking</h4>
-              <p>Customize staking for your community.</p>
-            </div>
-            <div className="line"></div>
-
-            <div className="step">
-              <h4>USDC Balances</h4>
-              <p>
-                Customize additional rewards for USDC balances held by your
-                community.
-              </p>
-            </div>
-            <div className="line"></div>
-
-            <div className="step">
-              <h4>Collabs</h4>
-              <p>Setup collaborations with partner projects.</p>
-            </div>
-          </div>
-
-          <a href="/">Launch Collection</a>
-        </div>
-      </section>
 
       <section className="features-section">
         <div className="container">
           <div className="title">
-            The Rayze Platform <br />
-            is built with features & <br />
-            scale for the Enterprise
+            How Rayze will <br />
+            accelerate your <br/>
+            digital growth <br />
           </div>
 
           <div className="steps">
             <div className="step">
-              <h4>Management Dashboard</h4>
+              <h4>Technology Strategy</h4>
               <p>
-                Manage & take action across all your NFT collections & NFT
-                wallets.
+                Provide C-level expertise with practical operating experience in accelerating business growth with technology
               </p>
             </div>
             <div className="line"></div>
 
             <div className="step">
-              <h4>Analyze Incentives</h4>
-              <p>
-                Analyze & Manage rewards & balances earned by your community.
+              <h4>Engineering Expertise</h4>
+              <p>Provide practical technology architectures, solve complex technology problems, advise on technology selection
               </p>
             </div>
             <div className="line"></div>
 
             <div className="step">
-              <h4>Multi Chain</h4>
-              <p>Deploy & Manage across multiple chains.</p>
+              <h4>Accelerators</h4>
+              <p>Leverage our pre-built Rayze modules that accelerate boostrapping of projects.
+              </p>
             </div>
             <div className="line"></div>
 
             <div className="step">
-              <h4>API/SDK</h4>
-              <p>Simple integration with enterprise systems.</p>
+              <h4>Global Talent</h4>
+              <p>Leverage our global talent pool. We have built out a high end talent pool in India.</p>
             </div>
           </div>
 
-          <a href="/">Dashboard</a>
+          <a href="/">Get in Touch</a>
         </div>
       </section>
 
