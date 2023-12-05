@@ -22,7 +22,7 @@ export default function LandingPage() {
             <div className="title">Strategy. Engineering.  Data & AI. </div>
             <div className="description">
               By integrating these disciplines, you acquire a competitive advantage that <strong>propels your
-              business to new heights..</strong>{" "}
+              business to new heights...</strong>{" "}
               <br /><br/>
               <strong> Our mission </strong> is to accelerate your digital journey,
               helping <strong> you to create a remarkable impact today, tomorrow, and in the future.</strong>
