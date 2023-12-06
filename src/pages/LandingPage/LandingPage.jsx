@@ -45,7 +45,7 @@ export default function LandingPage() {
                 We help our clients to leverage the potential of Data, Artificial intelligence,
                 and engineering to seize new opportunities, and drive digital growth.
               </p>
-              <div className="title">Supercharge your digital growth</div>
+              <div className="title">Supercharge your digital growth.</div>
             </div>
           </div>
           <div className="bottom">
