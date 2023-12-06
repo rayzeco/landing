@@ -71,17 +71,17 @@ export default function Header() {
           <div className="line"></div>
         </div>
         <div className={"menu-list" + (showMenu === true ? " show" : "")}>
-          <Link to={"/"}>Who we are</Link>
-          <Link to={"/"}>How we help clients</Link>
-          <Link to={"/"}>Accelerators</Link>
-          <Link to={"/"}>Global Talent</Link>
-          <Link to={"/dashboard"}>Use Cases</Link>
+          <Link to={"/"}>Engagement</Link>
+          <Link to={"/"}>Crowd Funding</Link>
+          <Link to={"/"}>Share Ownership</Link>
+          <Link to={"/"}>Utility Tokens</Link>
+          <Link to={"/dashboard"}>Dashboard</Link>
           <button
             className={"wallet-button " + (account ? 'connected' : '')}
             onClick={handleConnectWallet}
           >
             <img src="/images/wallet-account.svg" alt="wallet-account" />
-            {account ? shortenAddress(account) : "Get In Touch"}
+            {account ? shortenAddress(account) : "Connect Wallet"}
           </button>
         </div>
       </div>
