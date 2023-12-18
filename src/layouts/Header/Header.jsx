@@ -71,11 +71,9 @@ export default function Header() {
           <div className="line"></div>
         </div>
         <div className={"menu-list" + (showMenu === true ? " show" : "")}>
-          <Link to={"/"}>Who we are</Link>
-          <Link to={"/"}>How we help clients</Link>
-          <Link to={"/"}>Accelerators</Link>
-          <Link to={"/"}>Global Talent</Link>
-          <Link to={"/dashboard"}>Use Cases</Link>
+          <Link to={"/team"}>Who we are</Link>
+          <Link to={"/clients"}>How we help clients</Link>
+          <Link to={"/accel"}>Accelerators</Link>
           <button
             className={"wallet-button " + (account ? 'connected' : '')}
             onClick={handleConnectWallet}

@@ -5,6 +5,11 @@ import Guidelines from './pages/Guidelines/Guidelines'
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy'
 import NotFound from "./pages/NotFound/NotFound";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import Team from "./pages/Team/Team";
+import Accel from "./pages/Accel/Accel";
+import Clients from "./pages/Clients/Clients";
+
+
 
 function App() {
   return (
@@ -13,6 +18,9 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/accel" element={<Accel />} />
+          <Route path="/clients" element={<Clients />} />
           <Route path='/guidelines' element={<Guidelines />} />
           <Route path='/policy' element={<PrivacyPolicy />} />
           <Route path="*" element={<NotFound />} />
