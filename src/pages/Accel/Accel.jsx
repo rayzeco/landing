@@ -16,23 +16,30 @@ export default function AccelPage() {
         <div className="container">
         <pre className="title">Accelerators</pre>
           <div className="top">
-            <div className="left">
-              <h1>We have built a repository of developer productivity tools & integration modules which fast tracks your IT deliveries.
-              </h1>
-            </div>
+          <h1><span style={{ color: '#00FFB3' }}>Fast Track your engineering.</span></h1>
+          We have a pre-built repository of developer productivity tools, cloud engineering accelerators & integration templates which fast tracks your IT deliveries.
+              <h1></h1><h2><span style={{ color: '#00FFB3' }}>Our Accelerators:</span></h2>
+
+
           </div>
           <div className="bottom">
             <div>
-              <h4>Strategy</h4>
+              <h4>Platform Modernization</h4>
               <p>Evolve your organization with pragmatic strategies & technology levers that increase your agility, resilience and ability to compete.</p>
+              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+
             </div>
             <div>
-              <h4>Engineering</h4>
+              <h4>Cashflow Management</h4>
               <p>Modernize your technology platforms, development and delivery practices to deliver business value faster.</p>
+              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+
             </div>
             <div>
-              <h4>Data & AI</h4>
+              <h4>Real time decision making</h4>
               <p>Drive business growth and enable better decision making with pragmatic data foundations and unrivalled skill sets in AI and ML.</p>
+              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+
             </div>
           </div>
         </div>

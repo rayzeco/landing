@@ -1,33 +1,34 @@
-.clients-page {
+.oglanding-page {
   section {
-    padding: 60px 0;
+    padding: 144px 0;
     position: relative;
     z-index: 1;
 
     .title {
       font-size: 72px;
+      font-weight: bold;
     }
 
     @media screen and (max-width: 1200px) {
-      padding: 60px 0;
+      padding: 132px 0;
       .title {
         font-size: 66px;
       }
     }
     @media screen and (max-width: 992px) {
-      padding: 60px 0;
+      padding: 120px 0;
       .title {
         font-size: 60px;
       }
     }
     @media screen and (max-width: 768px) {
-      padding: 60px 0;
+      padding: 108px 0;
       .title {
         font-size: 54px;
       }
     }
     @media screen and (max-width: 576px) {
-      padding: 60px 0;
+      padding: 96px 0;
       .title {
         font-size: 48px;
       }
@@ -41,7 +42,6 @@
 
   .launch-section {
     background-color: var(--theme-color);
-
 
     img.infinite {
       position: absolute;
@@ -116,7 +116,7 @@
           font-size: 24px;
           font-weight: bold;
           background-color: #85ffda;
-
+          
           overflow-x: auto;
           white-space: pre-wrap;
           word-wrap: break-word;
@@ -133,7 +133,7 @@
           color: white;
           font-weight: bold;
           font-size: 22px;
-
+          
           border-radius: 70px;
 
           @media screen and (max-width: 576px) {
@@ -153,21 +153,17 @@
     background-color: black;
     color: white;
 
-
     .container {
       .top {
         display: flex;
         justify-content: space-between;
         gap: 40px;
-        font-size: 25px;
-        flex-direction: column;
-        align-items: left;
 
         .left {
+          padding-top: 90px;
           display: flex;
           flex-direction: column;
           align-items: center;
-  
 
           img {
             width: 200px;
@@ -305,7 +301,7 @@
           p {
             font-size: 24px;
             margin: 0 0 auto 0;
-
+            
             @media screen and (max-width: 992px) {
               font-size: 20px;
             }
@@ -355,7 +351,7 @@
   //////////////////////////////////////////////////////////////////
   /////////////////////// INSENTIVE SECTION ////////////////////////
   //////////////////////////////////////////////////////////////////
-
+  
   .insentive-section {
     background-color: black;
     color: white;
@@ -364,7 +360,7 @@
       display: flex;
       gap: 66px;
       flex-direction: column;
-
+      
       .title {
         width: 100%;
         max-width: 700px;
@@ -394,7 +390,7 @@
           p {
             font-size: 22px;
             margin: 0 0 auto 0;
-
+            
             @media screen and (max-width: 992px) {
               font-size: 18px;
             }
@@ -444,14 +440,14 @@
   //////////////////////////////////////////////////////////////////
   //////////////////////// FEATURES SECTION ////////////////////////
   //////////////////////////////////////////////////////////////////
-
+  
   .features-section {
     background-color: #D0FF00;
     .container {
       display: flex;
       gap: 66px;
       flex-direction: column;
-
+      
       .title {
         width: 100%;
         text-align: right;
@@ -486,7 +482,7 @@
           p {
             font-size: 20px;
             margin: 0 0 auto 0;
-
+            
             @media screen and (max-width: 992px) {
               font-size: 18px;
             }
@@ -535,7 +531,7 @@
   //////////////////////////////////////////////////////////////////
   //////////////////////// COMMUNITY SECTION ///////////////////////
   //////////////////////////////////////////////////////////////////
-
+  
   .community-section {
     background-color: white;
 

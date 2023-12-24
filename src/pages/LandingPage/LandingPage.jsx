@@ -28,7 +28,7 @@ export default function LandingPage() {
               helping <strong> you to create a remarkable impact today, tomorrow, and in the future.</strong>
             </div>
             <pre></pre>
-            <a href="/">Get In Touch</a>
+            <a href="mailto:your.email@example.com">Get In Touch</a>
           </div>
         </div>
       </section>
@@ -103,7 +103,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <a href="/">Get in Touch</a>
+          <a href="mailto:your.email@example.com">Get In Touch</a>
+
         </div>
       </section>
 

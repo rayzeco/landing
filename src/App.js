@@ -1,5 +1,6 @@
 import Layout from "./layouts/Layout/Layout";
 import LandingPage from "./pages/LandingPage/LandingPage";
+import OGLandingPage from "./pages/OGLanding/OGLandingPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Guidelines from './pages/Guidelines/Guidelines'
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy'
@@ -8,6 +9,9 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Team from "./pages/Team/Team";
 import Accel from "./pages/Accel/Accel";
 import Clients from "./pages/Clients/Clients";
+import Story1 from "./pages/Clients/Story1";
+import Story2 from "./pages/Clients/Story2";
+import Story3 from "./pages/Clients/Story3";
 
 
 
@@ -18,11 +22,16 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/rayze_og" element={<OGLandingPage />} />
           <Route path="/team" element={<Team />} />
           <Route path="/accel" element={<Accel />} />
           <Route path="/clients" element={<Clients />} />
           <Route path='/guidelines' element={<Guidelines />} />
           <Route path='/policy' element={<PrivacyPolicy />} />
+          <Route path='/story1' element={<Story1 />} />
+          <Route path='/story2' element={<Story2 />} />
+          <Route path='/story3' element={<Story3 />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>

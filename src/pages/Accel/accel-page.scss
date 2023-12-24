@@ -1,34 +1,33 @@
 .accel-page {
   section {
-    padding: 144px 0;
+    padding: 60px 0;
     position: relative;
     z-index: 1;
 
     .title {
       font-size: 72px;
-      font-weight: bold;
     }
 
     @media screen and (max-width: 1200px) {
-      padding: 132px 0;
+      padding: 60px 0;
       .title {
         font-size: 66px;
       }
     }
     @media screen and (max-width: 992px) {
-      padding: 120px 0;
+      padding: 60px 0;
       .title {
         font-size: 60px;
       }
     }
     @media screen and (max-width: 768px) {
-      padding: 108px 0;
+      padding: 60px 0;
       .title {
         font-size: 54px;
       }
     }
     @media screen and (max-width: 576px) {
-      padding: 96px 0;
+      padding: 60px 0;
       .title {
         font-size: 48px;
       }
@@ -160,12 +159,15 @@
         display: flex;
         justify-content: space-between;
         gap: 40px;
+        font-size: 25px;
+        flex-direction: column;
+        align-items: left;
 
         .left {
-          padding-top: 90px;
           display: flex;
           flex-direction: column;
           align-items: center;
+  
 
           img {
             width: 200px;
