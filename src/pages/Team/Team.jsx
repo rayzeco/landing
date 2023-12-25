@@ -16,29 +16,26 @@ export default function TeamPage() {
         <div className="container">
         <pre className="title">Who we are </pre>
           <div className="top">
-          <h1><span style={{ color: '#00FFB3' }}>We are all about our people.</span></h1>
-          We empower our team, practice continous learning, and create positive impacts wherever we operate. This ensures our clients succeed in their goals.
-              <h1></h1><h2><span style={{ color: '#00FFB3' }}>Our Leadership Team:</span></h2>
+          <h1><span style={{ color: '#00FFB3' }}>We are a team of software engineers enabling enterprises to thrive.</span></h1>
+          We empower our engineering teams, practice continous learning, and create positive impacts wherever we operate. This ensures our clients succeed in their goals.
+              <h1></h1><h2><span style={{ color: '#00FFB3' }}>Engineering Culture: </span></h2>
 
 
           </div>
           <div className="bottom">
             <div>
-              <h4>Platform Modernization</h4>
-              <p>Evolve your organization with pragmatic strategies & technology levers that increase your agility, resilience and ability to compete.</p>
-              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+              <h4>Community</h4>
+              <p>We nurture our diverse community that have one shared goal in common - a passion for engineering and solving real world problems.</p>
 
             </div>
             <div>
-              <h4>Cashflow Management</h4>
-              <p>Modernize your technology platforms, development and delivery practices to deliver business value faster.</p>
-              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+              <h4>Upskilling</h4>
+              <p>Technology evolves at a rapid rate and as an engineer we nurture our team on upskilling & self-improvement. We gamify this to make it fun.</p>
 
             </div>
             <div>
-              <h4>Real time decision making</h4>
-              <p>Drive business growth and enable better decision making with pragmatic data foundations and unrivalled skill sets in AI and ML.</p>
-              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+              <h4>Support</h4>
+              <p>Every engineer needs support. Solving business problems requires various technical expertise which we provide with our Discord Teams Communication platform. </p>
 
             </div>
           </div>

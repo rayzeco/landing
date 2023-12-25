@@ -12,11 +12,28 @@ export default function Footer() {
             <Link to='/' className="logo">
               <img src="/images/logo-text-white.svg" alt="logo" />
             </Link>
-            <h1></h1>
             <div className="social-buttons">
               <a href="/"><img src="/images/instagram.svg" alt="instagram" /></a>
               <a href="/"><img src="/images/twitter.svg" alt="twitter" /></a>
               <a href="/"><img src="/images/discord.svg" alt="discord" /></a>
+            </div>
+          </div>
+          <div className="right">
+            <div className="link-list">
+              <h6>Product</h6>
+              <a href="/">Features</a>
+              <a href="/">Pricing</a>
+              <a href="/">Dashboard</a>
+            </div>
+            <div className="link-list">
+              <h6>Company</h6>
+              <a href="/">Docs</a>
+              <a href="/">Blog</a>
+            </div>
+            <div className="link-list">
+              <h6>Legal</h6>
+              <Link to='/policy'>Privacy Policy</Link>
+              <Link to='/guidelines'>Membership Guidelines</Link>
             </div>
           </div>
         </div>
@@ -24,8 +41,8 @@ export default function Footer() {
 
 
       <div className="bottom">
-        <p>Rayze is an O3 Ventures company {'\u00A0'}{'\u00A0'}|{'\u00A0'} {'\u00A0'}</p>
-        <Link to='/guidelines'>Terms of Use</Link>
+        <p>Rayze is an O3 Ventures company | </p>
+        <Link to='/guidelines'>Membership Guidelines</Link>
         &
         <Link to='/policy'>Privacy Policy</Link>
       </div>

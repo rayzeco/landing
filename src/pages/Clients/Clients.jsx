@@ -29,9 +29,10 @@ export default function ClientsPage() {
             <div>
               <h4>Technology Modernization</h4>
               <p>Modernize your technology platforms, development and delivery practices to deliver business value faster.</p>
+              <h1></h1>
               <p>
                 <Link to='/story1'>
-                <span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story
+                <span style={{ color: '#00FFB3' }}>{'>>>'} {'\u00A0'} Read this client story </span>
                 </Link>
               </p>
 
@@ -39,9 +40,10 @@ export default function ClientsPage() {
             <div>
               <h4>Win with Data & AI</h4>
               <p>Harness the power of data and artificial intelligence (AI) to solve your toughest business challenges in innovative ways.</p>
+              <h1></h1>
               <p>
                 <Link to='/story2'>
-                <span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story
+                <span style={{ color: '#00FFB3' }}>{'>>>'} {'\u00A0'} Read this client story </span>
                 </Link>
               </p>
 
@@ -49,9 +51,10 @@ export default function ClientsPage() {
             <div>
               <h4>Democrataize Data Science</h4>
               <p>Make Data Science accessible & easy for your organization by automated ML Operations </p>
+              <h1></h1>
               <p>
                 <Link to='/story3'>
-                <span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story
+                <span style={{ color: '#00FFB3' }}>{'>>>'} {'\u00A0'} Read this client story </span>
                 </Link>
               </p>
             </div>

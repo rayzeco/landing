@@ -24,21 +24,18 @@ export default function AccelPage() {
           </div>
           <div className="bottom">
             <div>
-              <h4>Platform Modernization</h4>
-              <p>Evolve your organization with pragmatic strategies & technology levers that increase your agility, resilience and ability to compete.</p>
-              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+              <h4>Fast Data Pipelines</h4>
+              <p>To bootstrap a new data project, we have template based data pipelines with orchestration. This saves 3 months of time in starting a new data project.</p>
 
             </div>
             <div>
-              <h4>Cashflow Management</h4>
-              <p>Modernize your technology platforms, development and delivery practices to deliver business value faster.</p>
-              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+              <h4>Technology Modernization</h4>
+              <p>To bootstrap a technology modernization project, we have Iaas (infrastructure as code) templates that rapidly stand up boiler plate code for container services.</p>
 
             </div>
             <div>
-              <h4>Real time decision making</h4>
-              <p>Drive business growth and enable better decision making with pragmatic data foundations and unrivalled skill sets in AI and ML.</p>
-              <p><span style={{ color: '#00FFB3' }}>{'>>>  '}</span>Read this client story</p>
+              <h4>Integration adaptors</h4>
+              <p>Pre-Built integration adaptors allow us to rapidly integrate with the common ERP, HR and Banking systems saving time & cost</p>
 
             </div>
           </div>
