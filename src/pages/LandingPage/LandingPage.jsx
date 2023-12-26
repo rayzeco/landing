@@ -28,7 +28,7 @@ export default function LandingPage() {
               helping <strong> you to create a remarkable impact today, tomorrow, and in the future.</strong>
             </div>
             <pre></pre>
-            <a href="mailto:your.email@example.com">Get In Touch</a>
+            <a href="mailto:jc@rayze.xyz">Get In Touch</a>
           </div>
         </div>
       </section>
@@ -103,7 +103,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <a href="mailto:your.email@example.com">Get In Touch</a>
+          <a href="mailto:jc@rayze.xyz">Get In Touch</a>
 
         </div>
       </section>
@@ -115,7 +115,7 @@ export default function LandingPage() {
             Join our community <br />
             on Discord
           </div>
-          <a href="/">Join Discord Channel</a>
+          <a href="https://discord.gg/KqC4sun2" target="_blank">Join Discord Channel</a>
         </div>
       </section>
     </div>

@@ -51,6 +51,22 @@ export default function Header() {
       setWalletModalOpen(true)
     }
   };
+  const openMailToLink = () => {
+    // Replace 'aa@xx.io' with the desired email address
+    const emailAddress = 'jc@rayze.xyz';
+
+    // Construct the mailto link
+    const mailtoLink = `mailto:${emailAddress}`;
+
+    // Create an anchor element
+    const linkElement = document.createElement('a');
+
+    // Set the href attribute to the mailto link
+    linkElement.setAttribute('href', mailtoLink);
+
+    // Simulate a click to open the default mail client
+    linkElement.click();
+  };
 
   return (
     <header id="header">
@@ -76,10 +92,10 @@ export default function Header() {
           <Link to={"/accel"}>Accelerators</Link>
           <button
             className={"wallet-button " + (account ? 'connected' : '')}
-            onClick={handleConnectWallet}
+            onClick={openMailToLink}
           >
             <img src="/images/wallet-account.svg" alt="wallet-account" />
-            {account ? shortenAddress(account) : "Get In Touch"}
+            {account ? shortenAddress(account) : "Get in Touch"}
           </button>
         </div>
       </div>

@@ -14,9 +14,9 @@ export default function Footer() {
             </Link>
             <h1></h1>
             <div className="social-buttons">
-              <a href="/"><img src="/images/instagram.svg" alt="instagram" /></a>
-              <a href="/"><img src="/images/twitter.svg" alt="twitter" /></a>
-              <a href="/"><img src="/images/discord.svg" alt="discord" /></a>
+              <a href="https://github.com/rayzeco" target="_blank"><img src="/images/github3.png" alt="github" /></a>
+              <a href="https://t.me/Get_HiredBot" target="_blank"><img src="/images/telegram2.png" alt="telegram" /></a>
+              <a href="https://discord.gg/KqC4sun2" target="_blank"><img src="/images/discord.svg" alt="discord" /></a>
             </div>
           </div>
         </div>
