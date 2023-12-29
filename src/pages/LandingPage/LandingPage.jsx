@@ -115,7 +115,7 @@ export default function LandingPage() {
             Join our community <br />
             on Discord
           </div>
-          <a href="https://discord.gg/KqC4sun2" target="_blank">Join Discord Channel</a>
+          <a href="https://discord.gg/aKR7Vg8qyS" target="_blank">Join Discord Channel</a>
         </div>
       </section>
     </div>
