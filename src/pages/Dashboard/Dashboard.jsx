@@ -1,7 +1,7 @@
 import "./dashboard.scss";
 
 import React, { useEffect, useState } from "react";
-import NumberEasing from "react-number-easing";
+/* import NumberEasing from "react-number-easing"; */
 import CollectionTable from "../../components/CollectionTable/CollectionTable";
 import DropRewards from "../../components/DropRewards/DropRewards";
 import HolderWallets from "../../components/HolderWallets/HolderWallets";
@@ -45,7 +45,9 @@ export default function Dashboard() {
           <div className="info-item">
             <p className="width1">Number Of Collections</p>
             <div>
+              {/*}
               <NumberEasing value={collectionCnt} decimals={0} ease="quintInOut" />
+              */}
             </div>
           </div>
 
@@ -53,7 +55,9 @@ export default function Dashboard() {
           <div className="info-item">
             <p className="width2">NFTs Listed</p>
             <div className="info-item-number">
+              {/*}
               <NumberEasing value={listedNFTCnt} decimals={0} ease="quintInOut" />
+            */}
             </div>
           </div>
 
@@ -61,7 +65,9 @@ export default function Dashboard() {
           <div className="info-item">
             <p className="width2">NFTs Sold</p>
             <div>
+              {/*}
               <NumberEasing value={soldNFTCnt} decimals={0} ease="quintInOut" />
+              */}
             </div>
           </div>
 
@@ -69,7 +75,9 @@ export default function Dashboard() {
           <div className="info-item">
             <p className="width1">Unique Users</p>
             <div>
+              {/*}
               <NumberEasing value={uniqueUsersCnt} decimals={0} ease="quintInOut" />
+              */}
             </div>
           </div>
         </div>
