@@ -31,7 +31,7 @@ export default function Story1Page() {
             </p>
             <p>
             <span style={{ color: '#00FFB3' }}>The Solution: {'\u00A0'} </span>
-            Through meticulous planning and execution, we orchestrated the migration of the client's core platform to the cloud. The impact was transformative, with the platform's transaction processing capabilities skyrocketing from 10 transactions per second (tps) to an impressive 700 tps. This strategic move not only alleviated outages but also resulted in a remarkable 93% reduction in support requests and a substantial 53% reduction in user response times.
+            Through meticulous planning and execution, we re-engineered the client's monolithic platform into scalable services on the cloud. The impact was transformative, with the platform's transaction processing capabilities skyrocketing from 10 transactions per second (tps) to an impressive 700 tps. This strategic move not only alleviated outages but also resulted in a remarkable 93% reduction in support requests and a substantial 53% reduction in user response times.
             </p>
             <p>
             <span style={{ color: '#00FFB3' }}>The Outcome: {'\u00A0'} </span>
@@ -39,7 +39,7 @@ export default function Story1Page() {
             </p>
             <p>
             <span style={{ color: '#00FFB3' }}>How Rayze made a difference: {'\u00A0'} </span>
-            We played a crucial role in this transformation. By leveraging our engineering capabilities on the public cloud, we not only provided enhanced scale, security, and reliability but also empowered the client's engineering teams to prioritize application improvements.</p>
+            We leveraged our cloud migration playbook and technical architecture experience to play a crucial role in this transformation. We setup hybrid teams, leveraging our engineering talent as well as the client's product & engineering staff to produce these transformative results.</p>
             <p>
             <span style={{ color: '#00FFB3' }}>Key Achievements: {'\u00A0'} </span>
                 <p><strong>Unmatched Scaling:</strong> We increased the platform's transaction processing from 10 tps to an impressive 700 tps, meeting the surge in client activity head-on.</p>
