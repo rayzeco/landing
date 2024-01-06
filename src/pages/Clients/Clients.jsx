@@ -50,7 +50,7 @@ export default function ClientsPage() {
             </div>
             <div>
               <h4>Democrataize Data Science</h4>
-              <p>Make Data Science accessible & easy for your organization by automated ML Operations </p>
+              <p>Slash your ML Costs by streamlining your ML Operations and enhance your predictions. </p>
               <h1></h1>
               <p>
                 <Link to='/story3'>
@@ -59,7 +59,21 @@ export default function ClientsPage() {
               </p>
             </div>
           </div>
+          <div className="bottom">
+            <div>
+              <h4>Strategic offshore talent</h4>
+              <p>Increase productivity by strategically offshoring applications & enriching your teams with top offshore engineering talent.</p>
+              <h1></h1>
+              <p>
+                <Link to='/story4'>
+                <span style={{ color: '#00FFB3' }}>{'>>>'} {'\u00A0'} Read this client story </span>
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
+
+        
       </section>
 
 

@@ -12,7 +12,7 @@ import Clients from "./pages/Clients/Clients";
 import Story1 from "./pages/Clients/Story1";
 import Story2 from "./pages/Clients/Story2";
 import Story3 from "./pages/Clients/Story3";
-
+import Story4 from "./pages/Clients/Story4";
 
 
 function App() {
@@ -31,6 +31,8 @@ function App() {
           <Route path='/story1' element={<Story1 />} />
           <Route path='/story2' element={<Story2 />} />
           <Route path='/story3' element={<Story3 />} />
+          <Route path='/story4' element={<Story4 />} />
+
 
           <Route path="*" element={<NotFound />} />
         </Routes>

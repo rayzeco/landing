@@ -19,21 +19,32 @@ export default function Story1Page() {
           <h1><span style={{ color: '#00FFB3' }}>Modernize core technology on cloud to scale-up a growing business</span></h1>
             <p>
             <span style={{ color: '#00FFB3' }}>The Client: {'\u00A0'} </span>
-            A Fortune 500 technology company in the US providing payroll services software to corporate clients
+            A Fortune 500 technology company in the US, specializing in payroll services software
             </p>
-
             <p>
-            <span style={{ color: '#00FFB3' }}>The Ask: {'\u00A0'} </span>
-            The client had recently rolled out a successful online subscription based service which caused a surge in the volume of transactions & client activity. Their platform was aging and could not scale up to handle the volume. This led to unhappy customers with outages as well as slow response times.
+            <span style={{ color: '#00FFB3' }}>The Situation: {'\u00A0'} </span>
+            The client was facing a surge in activity following the successful launch of an online subscription-based service. However, their existing platform, aged and unable to scale efficiently, resulted in customer dissatisfaction due to outages and sluggish response times.
+            </p>
+            <p>
+            <span style={{ color: '#00FFB3' }}>The Challenge: {'\u00A0'} </span>
+            The challenge was to address scalability and also ensure seamless, reliable, and secure operations on the core platform.
+            </p>
+            <p>
+            <span style={{ color: '#00FFB3' }}>The Solution: {'\u00A0'} </span>
+            Through meticulous planning and execution, we orchestrated the migration of the client's core platform to the cloud. The impact was transformative, with the platform's transaction processing capabilities skyrocketing from 10 transactions per second (tps) to an impressive 700 tps. This strategic move not only alleviated outages but also resulted in a remarkable 93% reduction in support requests and a substantial 53% reduction in user response times.
             </p>
             <p>
             <span style={{ color: '#00FFB3' }}>The Outcome: {'\u00A0'} </span>
-            By modernizing their core platform & migrating their core platform on the cloud we were able to scale up their platform 70x from 10 tps (transactions per second) to 700 tps. In addition we saw a 93% reduction in support requests due to outages which resulted in direct cost savings, and a 53% reduction in response times for their users. Rayze enabled the client to achieve their growth ambitions
+            The successful modernization not only addressed immediate challenges but positioned our client for sustainable growth and success in the highly competitive environment.
             </p>
             <p>
-            <span style={{ color: '#00FFB3' }}>How Rayze helped: {'\u00A0'} </span>
-            Transforming the client's platform to the public cloud brought enhanced scale, security, and reliability. This strategic move empowers the client’s engineering teams to prioritize application improvements, ensuring an elevated customer experience.
-            Rayze, collaborating seamlessly with the client's team, swiftly implemented intricate changes across cloud platforms, infrastructure, and product codebases.
+            <span style={{ color: '#00FFB3' }}>How Rayze made a difference: {'\u00A0'} </span>
+            We played a crucial role in this transformation. By leveraging our engineering capabilities on the public cloud, we not only provided enhanced scale, security, and reliability but also empowered the client's engineering teams to prioritize application improvements.</p>
+            <p>
+            <span style={{ color: '#00FFB3' }}>Key Achievements: {'\u00A0'} </span>
+                <p><strong>Unmatched Scaling:</strong> We increased the platform's transaction processing from 10 tps to an impressive 700 tps, meeting the surge in client activity head-on.</p>
+                <p><strong>Cost-Effective Support:</strong> We engineered a sustainable solution with the shift to the cloud which led to a 93% reduction in support requests related to outages, directly translating into significant cost savings.</p>
+                <p><strong>Optimized User Experience:</strong> Users experienced a substantial 53% reduction in response times, ensuring a seamless and enhanced service.</p>
             </p>
           </div>
           
