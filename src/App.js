@@ -13,6 +13,8 @@ import Story1 from "./pages/Clients/Story1";
 import Story2 from "./pages/Clients/Story2";
 import Story3 from "./pages/Clients/Story3";
 import Story4 from "./pages/Clients/Story4";
+import Story5 from "./pages/Clients/Story5";
+import Story6 from "./pages/Clients/Story6";
 
 
 function App() {
@@ -32,6 +34,8 @@ function App() {
           <Route path='/story2' element={<Story2 />} />
           <Route path='/story3' element={<Story3 />} />
           <Route path='/story4' element={<Story4 />} />
+          <Route path='/story5' element={<Story5 />} />
+          <Route path='/story6' element={<Story6 />} />
 
 
           <Route path="*" element={<NotFound />} />

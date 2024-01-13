@@ -52,7 +52,7 @@ export default function Story3Page() {
             Rayze empowered the high-tech startup to navigate its growth stage with confidence. By addressing the challenges in ML operations, we not only optimized costs but also paved the way for enhanced productivity and revenue generation. This success story stands as a testament to the transformative impact of strategic collaboration and cutting-edge solutions in the realm of restaurant technology.
             </p>
           </div>
-          
+
         </div>
       </section>
 

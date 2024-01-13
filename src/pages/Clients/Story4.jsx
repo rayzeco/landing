@@ -2,7 +2,7 @@ import "./story-page.scss";
 
 import React, { useEffect } from "react";
 
-export default function Story3Page() {
+export default function Story4Page() {
 
   useEffect(() => {
     document.body.scrollTop = 0;
@@ -46,7 +46,7 @@ export default function Story3Page() {
               <p><strong>High Quality Engineers:</strong> An influx of top engineering talent offshore which could be further leveraged on new technology demand.</p>
             </p>
           </div>
-          
+
         </div>
       </section>
 

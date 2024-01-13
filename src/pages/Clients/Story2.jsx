@@ -42,7 +42,7 @@ export default function Story2Page() {
               <p><strong>Collaborative Synergy:</strong> We worked in close collaboration with the client's engineering, product, and data science teams, fostering a partnership built on shared expertise and mutual success.</p>
             </p>
           </div>
-          
+
         </div>
       </section>
 

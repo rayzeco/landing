@@ -47,7 +47,7 @@ export default function Story1Page() {
                 <p><strong>Optimized User Experience:</strong> Users experienced a substantial 53% reduction in response times, ensuring a seamless and enhanced service.</p>
             </p>
           </div>
-          
+
         </div>
       </section>
 
