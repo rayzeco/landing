@@ -72,18 +72,18 @@ export default function ClientsPage() {
               </p>
             </div>
             <div>
-                <h4>Solve your ERP challenges</h4>
+                <h4>Power up your ERP solution</h4>
                 <p>Upgrading your ERP solution to enable business expansion. </p>
                 <h1></h1>
                 <p>
-                  <Link to='/story3'>
+                  <Link to='/story6'>
                   <span style={{ color: '#00FFB3' }}>{'>>>'} {'\u00A0'} Read this client story </span>
                   </Link>
                 </p>
               </div>
             <div>
-                <h4>Scale your D365 ERP solution</h4>
-                <p>Optimize the performance of your ERP & Insight Analytics engines. </p>
+                <h4>Scale up your Analytics</h4>
+                <p>Optimize the performance of your Insight Analytics engines. </p>
                 <h1></h1>
                 <p>
                   <Link to='/story5'>

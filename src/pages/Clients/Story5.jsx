@@ -14,13 +14,13 @@ export default function Story5Page() {
 
       <section className="with-rayze-section">
         <div className="container">
-        <pre className="title">Scaling your D365 ERP solution</pre>
+        <pre className="title">Scaling your Analytics & ERP Platforms</pre>
           <div className="top">
-          <h1><span style={{ color: '#00FFB3' }}>Optimizing data access performance for Microsoft Dynamics 365</span></h1>
+          <h1><span style={{ color: '#00FFB3' }}>Optimizing data access for PowerBI analytics on Microsoft Dynamics 365</span></h1>
             <p>
             <span style={{ color: '#00FFB3' }}>The Client: {'\u00A0'} </span>
-            A prominent software publishing company specializing in mapping software for
-        consumer electronics, commercial transportation, and education markets.
+            An American water company offering bottled water, water dispensers, self-service refill water machines, 
+            and water filtration appliances. The client services residential and commercial customers across the United States.
             </p>
             <p>
             <span style={{ color: '#00FFB3' }}>The Situation: {'\u00A0'} </span>
