@@ -33,11 +33,11 @@ export default function Story4Page() {
 
             <p>
             <span style={{ color: '#00FFB3' }}>The Outcome: {'\u00A0'} </span>
-            Through strategic collaboration, we enabled the client to bootstrap a dedicated space in our offshore facilities in Ahmedabad. Operational within a swift three months, the majority of application teams were seamlessly set up within six months. The result was a substantial cost savings of approximately 4M, coupled with a highly skilled engineering team poised for sustained growth. Furthermore, this initiative freed up invaluable resources in the US and UK for strategic integration efforts.
+            Through strategic collaboration, we enabled the client to bootstrap a dedicated space in our offshore facilities in India. Operational within a swift three months, the majority of application teams were seamlessly set up within six months. The result was a substantial cost savings of approximately 4M, coupled with a highly skilled engineering team poised for sustained growth. Furthermore, this initiative freed up invaluable resources in the US and UK for strategic integration efforts.
             </p>
             <p>
             <span style={{ color: '#00FFB3' }}>How Rayze made a difference: {'\u00A0'} </span>
-            Leveraging our state-of-the-art offshore facilities in Ahmedabad, we created a protective perimeter around the client's engineering staff. A meticulously designed operating and organizational model, complemented by defined KPIs and quarterly review sessions, ensured a seamless transition. Our emphasis on comprehensive training for the new Ahmedabad engineering team and retention strategies for top talent in the US and UK were pivotal. This success story was made possible through unwavering senior support and collaborative efforts within the client organization.
+            Leveraging our state-of-the-art offshore facilities in India, we created a protective perimeter around the client's engineering staff. A meticulously designed operating and organizational model, complemented by defined KPIs and quarterly review sessions, ensured a seamless transition. Our emphasis on comprehensive training for the new India engineering team and retention strategies for top talent in the US and UK were pivotal. This success story was made possible through unwavering senior support and collaborative efforts within the client organization.
             </p>
             <p>
             <span style={{ color: '#00FFB3' }}>Key Achievements: {'\u00A0'} </span>
