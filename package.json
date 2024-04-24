@@ -19,6 +19,8 @@
     "react-router-dom": "6",
     "react-scripts": "4.0.3",
     "sass": "^1.54.3",
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
     "web-vitals": "^2.1.4",
     "web3": "^1.7.5"
   },

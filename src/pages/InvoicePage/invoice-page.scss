@@ -1,0 +1,57 @@
+.invoice-container {
+  background-color: black;
+  color: white;
+}
+
+.invoice-container .panel {
+  padding: 20px;
+  border: 1px solid var(--theme-color);
+  margin-bottom: 20px;
+}
+
+.invoice-container .panel h2 {
+  margin-top: 0;
+  color: #fff;
+}
+
+.invoice-container label {
+  display: block;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.invoice-container input[type='date'],
+.invoice-container select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #fff;
+  background-color: transparent;
+  color: white;
+}
+
+.invoice-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoice-container th,
+.invoice-container td {
+  border: 1px solid #fff;
+  padding: 10px;
+  color: white;
+}
+
+.invoice-container button {
+  padding: 10px 20px;
+  margin-right: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.invoice-container button:hover {
+  background-color: #0056b3;
+}
+
