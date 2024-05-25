@@ -10,7 +10,8 @@ const InvoicePage = ({ clientName }) => {
   const [endPeriod, setEndPeriod] = useState(getLastBusinessDayOfMonth());
   const [invoiceTableData, setInvoiceTableData] = useState([]);
   const [saveClicked, setSaveClicked] = useState(false);
-
+  const [submitDisabled, setSubmitDisabled] = useState(true); // State to control Submit button disablement
+  let recTotal = 0;
   // Function to get the first business day of the month
   function getFirstBusinessDayOfMonth() {
     const today = new Date();
@@ -40,10 +41,20 @@ const InvoicePage = ({ clientName }) => {
         const response = await axios.get('http://localhost:8000/get_client_transactions/2');
         const data = response.data;
         const formattedData = data.map(item => ({
+          inv_date: invoiceDate,
+          candidate_id: item[1],
+          period_start: startPeriod,
+          period_end: endPeriod,
+          txn_id: item[0],
+          hours_worked: 160,
+          inv_value: 0,
+          inv_status: 'NEW',
           client: item[2],
           candidate: item[3],
-          hours: 160, // Default hours to 160
-          status: 'Open', // Default status to 'Open'
+          recruiter_price: item[4],
+          client_price: item[5],
+          recruiter_total: item[4]*160,
+          client_total: item[5]*160
         }));
         setInvoiceTableData(formattedData);
       } catch (error) {
@@ -77,7 +88,7 @@ const InvoicePage = ({ clientName }) => {
   // Function to handle changes in the hours in the invoice table
   const handleHoursChange = (index, e) => {
     const newData = [...invoiceTableData];
-    newData[index].hours = parseFloat(e.target.value);
+    newData[index].hours_worked = parseFloat(e.target.value);
     setInvoiceTableData(newData);
   };
 
@@ -87,10 +98,39 @@ const InvoicePage = ({ clientName }) => {
     console.log('Invoice submitted:', invoiceTableData);
   };
 
-  // Function to save changes
-  const handleSaveChanges = () => {
-    setSaveClicked(true);
+  // Function to save invoice changes
+  // Implement the saveInvoice function
+  const saveInvoice = async () => {
+    try {
+      //console.log(invoiceTableData);
+
+      let recruiterTotal = 0;
+      let clientTotal = 0;
+
+      for (const invoice of invoiceTableData) {
+        invoice.recruiterTotal = invoice.recruiter_price * invoice.hours_worked;
+        invoice.clientTotal = invoice.client_price * invoice.hours_worked;
+        recruiterTotal += invoice.recruiterTotal;
+        clientTotal += invoice.clientTotal;
+        if (clientTotal < recruiterTotal) {
+          throw new Error('Client total is less than recruiter total');
+        }
+        invoice.recruiterTotal = recruiterTotal;
+        invoice.clientTotal = clientTotal;
+        invoice.inv_status = "SAVED";
+        await axios.post('http://localhost:8000/new_invoice', invoice);
+      }
+      recTotal = recruiterTotal;
+      console.log('Invoices saved successfully! ', recTotal);
+      // Now that the invoices are saved, enable the Submit button
+      setSubmitDisabled(false);
+      //recTotal = recruiterTotal;
+      return [recruiterTotal, clientTotal];
+    } catch (error) {
+      console.error('Error saving invoices:', error);
+    }
   };
+
 
   // Function to filter invoice table data based on selected client
   const filteredInvoiceTableData = selectedClient === 'All' ? invoiceTableData :
@@ -138,6 +178,7 @@ const InvoicePage = ({ clientName }) => {
       </div>
       <div className="panel panel-2">
         <h2>Enter Candidate Hours</h2>
+        <h3>Total: {recTotal} USD</h3>
         <table>
           <thead>
             <tr>
@@ -155,11 +196,11 @@ const InvoicePage = ({ clientName }) => {
                 <td>
                   <input
                     type="number"
-                    value={invoice.hours}
+                    value={invoice.hours_worked}
                     onChange={(e) => handleHoursChange(index, e)}
                   />
                 </td>
-                <td>{invoice.status}</td>
+                <td>{invoice.inv_status}</td>
               </tr>
             ))}
           </tbody>
@@ -167,8 +208,8 @@ const InvoicePage = ({ clientName }) => {
       </div>
       <div className="panel panel-3">
         <div>
-          <button onClick={handleSubmitInvoice} style={{ backgroundColor: saveClicked ? 'green' : 'grey' }} disabled={!saveClicked}>Submit</button>
-          <button onClick={handleSaveChanges}>Save</button>
+          <button onClick={saveInvoice}>Save</button>
+          <button onClick={handleSubmitInvoice} disabled={submitDisabled} className={submitDisabled ? "submit-button-disabled" : "submit-button-enabled"}>Submit</button>
           <button>Cancel</button>
         </div>
       </div>
