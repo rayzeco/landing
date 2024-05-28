@@ -3,6 +3,12 @@ import './invoice-page.scss'; // Import CSS file for styling
 import axios from 'axios';
 
 const InvoicePage = ({ clientName }) => {
+
+  // Define your Square API access token
+const accessToken = 'YOUR_SQUARE_ACCESS_TOKEN';
+const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
+
+
   // State for invoice date, client, start period, end period, and invoice table data
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().substr(0, 10));
   const [selectedClient, setSelectedClient] = useState('All');
@@ -54,7 +60,12 @@ const InvoicePage = ({ clientName }) => {
           recruiter_price: item[4],
           client_price: item[5],
           recruiter_total: item[4]*160,
-          client_total: item[5]*160
+          client_total: item[5]*160,
+          client_contact: item[6],
+          client_email: item[7],
+          client_addr: item[8],
+          client_phone: item[9],
+          client_id: item[10]
         }));
         setInvoiceTableData(formattedData);
       } catch (error) {
@@ -92,11 +103,62 @@ const InvoicePage = ({ clientName }) => {
     setInvoiceTableData(newData);
   };
 
-  // Function to submit the invoice
-  const handleSubmitInvoice = () => {
-    // Call the submitInvoice REST API with invoice data
-    console.log('Invoice submitted:', invoiceTableData);
+  const submitInvoice = async () => {
+    try {
+      // Step 1: Group the invoice table data by client
+      const clientGroups = {};
+      invoiceTableData.forEach(invoice => {
+        if (!clientGroups[invoice.client]) {
+          clientGroups[invoice.client] = [];
+        }
+        clientGroups[invoice.client].push(invoice);
+      });
+  
+      // Step 2: Iterate through each client group and submit the invoice
+      for (const client in clientGroups) {
+        const clientInvoices = clientGroups[client];
+        console.log("client invocies ",clientInvoices);
+
+        const due_date = new Date(new Date(clientInvoices[0].period_end).setMonth(new Date(clientInvoices[0].period_end).getMonth() + 1)).toISOString().split('T')[0];
+        let totalClientPrice = 0;
+        let explainStr = "";
+        for (let i = 0; i < clientInvoices.length; i++) {
+          totalClientPrice += clientInvoices[i].client_price * clientInvoices[i].hours_worked;
+          //explainStr += clientInvoices[i].candidate + " ($" + clientInvoices[i].client_price + "/hr x " + clientInvoices[i].hours_worked + " =  $" + clientInvoices[i].client_price * clientInvoices[i].hours_worked + " <br>";
+          explainStr += `${clientInvoices[i].candidate} ($${clientInvoices[i].client_price}/hr x ${clientInvoices[i].hours_worked} = $${clientInvoices[i].client_price * clientInvoices[i].hours_worked}) <br>`;
+        }
+        const invoicesData = {
+          inv_date: clientInvoices[0].inv_date,
+          due_date: due_date,
+          period_start: clientInvoices[0].period_start,
+          period_end: clientInvoices[0].period_end,
+          client_id: clientInvoices[0].client_id,
+          client_name: clientInvoices[0].client,
+          client_contact: clientInvoices[0].client_contact,
+          client_email: clientInvoices[0].client_email,
+          client_addr: clientInvoices[0].client_addr,
+          client_phone: clientInvoices[0].client_phone,
+          explain_str: explainStr,
+          inv_value: totalClientPrice,
+          inv_status: "SUBMITTED"
+        }
+        console.log("invoice data ", invoicesData);
+        // Call the REST API function to submit the invoice for this client
+        const response = await axios.post('http://localhost:8000/submit_client_invoice', invoicesData);
+
+        if (response.status === 200) {
+          console.log(`Invoice(s) submitted successfully for client: ${client}`);
+          // Optionally, you can add further actions here, such as showing a success message to the user
+        } else {
+          console.error(`Failed to submit invoice(s) for client: ${client}`);
+          // Optionally, handle the error case
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting invoice(s):', error);
+    }
   };
+  
 
   // Function to save invoice changes
   // Implement the saveInvoice function
@@ -119,6 +181,7 @@ const InvoicePage = ({ clientName }) => {
         invoice.clientTotal = clientTotal;
         invoice.inv_status = "SAVED";
         await axios.post('http://localhost:8000/new_invoice', invoice);
+        console.log('invoice is ',invoice);
       }
       recTotal = recruiterTotal;
       console.log('Invoices saved successfully! ', recTotal);
@@ -209,12 +272,77 @@ const InvoicePage = ({ clientName }) => {
       <div className="panel panel-3">
         <div>
           <button onClick={saveInvoice}>Save</button>
-          <button onClick={handleSubmitInvoice} disabled={submitDisabled} className={submitDisabled ? "submit-button-disabled" : "submit-button-enabled"}>Submit</button>
+          <button onClick={submitInvoice} disabled={submitDisabled} className={submitDisabled ? "submit-button-disabled" : "submit-button-enabled"}>Submit</button>
           <button>Cancel</button>
         </div>
       </div>
     </div>
   );
+
+  // Define a function to create and send a new invoice for a single item
+  const createAndSendInvoice = async (invoice) => {
+    try {
+      // Prepare the request data for creating an invoice
+      const requestData = {
+        idempotency_key: Math.random().toString(36).substring(7), // Generate a unique idempotency key
+        invoice: {
+          idempotency_key: Math.random().toString(36).substring(7),
+          primary_recipient: {
+            customer_id: invoice.customer_id, // Assuming you have a customer ID associated with the invoice
+          },
+          title: 'Invoice Title', // Replace with your invoice title
+          description: 'Invoice Description', // Replace with your invoice description
+          requested_money: {
+            amount: invoice.inv_value * 100, // Square API expects amount in cents, so multiply by 100
+            currency_code: 'USD', // Replace with your currency code if different
+          },
+        },
+      };
+
+      // Make a POST request to create the invoice using the Square API
+      const response = await axios.post(`${squareBaseUrl}/invoices`, requestData, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Handle the response and retrieve the created invoice ID
+      const invoiceId = response.data.invoice.id;
+
+      // Optionally, you can send the invoice via email
+      await sendInvoiceByEmail(invoiceId);
+
+      console.log('Invoice created and sent:', invoiceId);
+    } catch (error) {
+      console.error('Error creating and sending invoice:', error.response.data);
+    }
+  };
+
+  // Define a function to send the created invoice via email
+  const sendInvoiceByEmail = async (invoiceId) => {
+    try {
+      // Prepare the request data for sending the invoice via email
+      const requestData = {
+        invoice_id: invoiceId,
+        to: 'recipient@example.com', // Replace with the recipient's email address
+        subject: 'Invoice Subject', // Replace with your email subject
+        body: 'Invoice Body', // Replace with your email body
+      };
+
+      // Make a POST request to send the invoice via email using the Square API
+      await axios.post(`${squareBaseUrl}/invoices/${invoiceId}/send`, requestData, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Invoice sent via email:', invoiceId);
+    } catch (error) {
+      console.error('Error sending invoice via email:', error.response.data);
+    }
+  };
 };
 
 export default InvoicePage;
