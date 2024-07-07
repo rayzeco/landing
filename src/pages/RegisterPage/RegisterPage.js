@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './register-page.scss'; // Import the shared CSS file for styling
 
@@ -9,6 +10,7 @@ const RegisterPage = () => {
   const [role, setRole] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +28,7 @@ const RegisterPage = () => {
       // Handle successful registration
       console.log('Registration successful!');
       console.log('Response:', response.data);
+      navigate('/login');
     } catch (error) {
       // Handle registration error
       console.error('Registration error:', error);

@@ -125,8 +125,10 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
         for (let i = 0; i < clientInvoices.length; i++) {
           totalClientPrice += clientInvoices[i].client_price * clientInvoices[i].hours_worked;
           //explainStr += clientInvoices[i].candidate + " ($" + clientInvoices[i].client_price + "/hr x " + clientInvoices[i].hours_worked + " =  $" + clientInvoices[i].client_price * clientInvoices[i].hours_worked + " <br>";
-          explainStr += `${clientInvoices[i].candidate} ($${clientInvoices[i].client_price}/hr x ${clientInvoices[i].hours_worked} = $${clientInvoices[i].client_price * clientInvoices[i].hours_worked}) <br>`;
+          explainStr += `<tr><td>${clientInvoices[i].candidate}</td><td>Technology Services</td><td>${clientInvoices[i].hours_worked}</td><td>${clientInvoices[i].client_price}</td><td>${clientInvoices[i].client_price * clientInvoices[i].hours_worked}</td></tr>`;
         }
+        console.log('final explain : ',explainStr);
+
         const invoicesData = {
           inv_date: clientInvoices[0].inv_date,
           due_date: due_date,
@@ -148,6 +150,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
 
         if (response.status === 200) {
           console.log(`Invoice(s) submitted successfully for client: ${client}`);
+          console.log(response.data);
           // Optionally, you can add further actions here, such as showing a success message to the user
         } else {
           console.error(`Failed to submit invoice(s) for client: ${client}`);

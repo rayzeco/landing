@@ -1,0 +1,75 @@
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import './RenderInvoice-page.scss';
+
+const RenderInvoicePage = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const [htmlString, setHtmlString] = useState('');
+
+      const renderStr = `
+        <div>
+        <header>
+          <img
+            src="https://drive.google.com/uc?export=view&id=1nrpVt8V7_U5gmBEJVdIEGqt-2ETyP8EX"
+            width="150"
+            height="100"
+            alt="Rayze Logo"
+          />
+          <br />
+          <br />
+          <h1>Invoice</h1>
+          <p>
+            O3 Ventures | 21 Sycamore Drive Roslyn NY 11576 | +1 (516) 800 2548
+            | 212cooperja@gmail.com
+          </p>
+        </header>
+  
+        <main>
+          <article>
+            <h4>O3 Ventures has sent you an invoice of $5920.00</h4>
+            <h6>Due on: 2024-08-31</h6>
+          </article>
+          <article>
+            <h4>Technology Services - 2024-07-03</h4>
+            <br />
+            <p>
+              Inovice#: <span style={{ color: 'gray' }}>12</span>
+            </p>
+            <p>
+              Inovice Date: <span style={{ color: 'gray' }}>2024-07-03</span>
+            </p>
+            <p>
+              Customer: <span style={{ color: 'gray' }}>InKind</span>
+            </p>
+            <p>
+              Customer Contact: <span style={{ color: 'gray' }}>Dijoy Divakar</span>
+            </p>
+            <br />
+          </article>
+          {/* More articles can be added here */}
+          <article>
+            <h4>Invoice Summary</h4>
+            <br />
+            <h7>
+              Nishant Vagasiha ($37/hr x 160 = $5920) <br />
+            </h7>
+            <br />
+            <br />
+            <h4>Total Due: $5920.00</h4>
+          </article>
+        </main>
+  
+        <footer>&copy; Rayze Engineering is an O3 Ventures company</footer>
+      </div>`;
+      setHtmlString(renderStr);
+
+      return <div dangerouslySetInnerHTML={{ __html: renderStr }} />;
+};
+
+export default RenderInvoicePage;
+

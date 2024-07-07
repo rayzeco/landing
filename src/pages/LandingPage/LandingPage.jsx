@@ -28,7 +28,7 @@ export default function LandingPage() {
               helping <strong> you to create a remarkable impact today, tomorrow, and in the future.</strong>
             </div>
             <pre></pre>
-            <a href="mailto:jc@rayze.xyz">Get In Touch</a>
+            <a href="/Login">Login</a>
           </div>
         </div>
       </section>

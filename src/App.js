@@ -1,6 +1,7 @@
 import Layout from "./layouts/Layout/Layout";
 import LandingPage from "./pages/LandingPage/LandingPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
+import RenderInvoicePage from "./pages/RenderInvoicePage/RenderInvoicePage";
 import InvoicePage from "./pages/InvoicePage/InvoicePage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import OGLandingPage from "./pages/OGLanding/OGLandingPage";
@@ -28,6 +29,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/render_invoice/:id_str" element={<RenderInvoicePage />} />
           <Route path="/invoice" element={<InvoicePage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/rayze_og" element={<OGLandingPage />} />

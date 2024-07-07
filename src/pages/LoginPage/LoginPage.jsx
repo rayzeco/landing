@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './Login-page.scss';
 
 const LoginPage = () => {
@@ -19,7 +19,7 @@ const LoginPage = () => {
       const response = await axios.post('http://localhost:8000/authenticate', formData);
       const token = response.data.access_token;
       sessionStorage.setItem('token', token);
-      navigate('/');
+      navigate('/invoice');
     } catch (error) {
       setError('Login failed. Please try again.');
       console.error('Login error:', error);
@@ -49,6 +49,11 @@ const LoginPage = () => {
         <button type="submit">Login</button>
       </form>
       {error && <p className="error-message">{error}</p>}
+      <h3>
+          <Link to='/register'>
+          <span style={{ color: '#000000' }}>{'>>>'} {'\u00A0'} Click to Register New User </span>
+          </Link>
+      </h3>
     </div>
   );
 };

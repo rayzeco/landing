@@ -1,0 +1,105 @@
+import React, { useState, useEffect } from 'react';
+import './RenderInvoice-page.scss'; // Import CSS file for styling
+import axios from 'axios';
+
+const InvoicePage = ({ invoice_id }) => {
+
+
+
+
+  // Function to fetch data from the REST API endpoint and return formatted data
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get('http://localhost:8000/get_invoice2');
+        const data = response.data;
+        const formattedData = data.map(item => ({
+          inv_status: 'NEW',
+        }));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+
+  return (
+    <div className="invoice-container">
+   
+      <div className="panel">
+        <h2>INVOICE</h2>
+        <h4> Bill To: Inkind | 600 Congress Ave, Suite 1700, Austin, TX 78701</h4>
+        <h2> </h2>
+          <table>
+            <tr>
+            <th>Invoice #</th>
+            <th>Invoice Date</th>
+            <th>Due Date</th>
+            <th>Amount Due</th>
+            </tr>
+            <tr>
+              <td>55</td>
+              <td>2024-08-10</td>
+              <td>2024-08-10</td>
+              <td> USD 34,888.44</td>
+            </tr>
+          </table>
+        <div>
+        </div>
+      </div>
+      <div className="panel panel-2">
+        <h2>Total Amount Due:</h2>
+        <h3>USD 34,444 USD</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Hours</th>
+              <th>Rate</th>
+              <th>Amount</th>
+              </tr>
+          </thead>
+          <tbody>
+              <tr>
+              <td>Nishant Vagasiha</td>
+              <td>Technology Services</td>
+              <td>160</td>
+              <td> $37.00</td>
+              <td> $5920.00</td>
+              </tr>
+              <tr>
+              <td>Kalyan Jangam</td>
+              <td>Technology Services</td>
+              <td>128</td>
+              <td> $85.00</td>
+              <td> $10,880.00</td>
+              </tr>
+              <tr>
+              <td>Mayur Mulay</td>
+              <td>Technology Services</td>
+              <td>160</td>
+              <td> $35.00</td>
+              <td> $5,600.00</td>
+              </tr>
+          </tbody>
+        </table>
+        </div>
+        <div className="panel panel-2">
+        <h2>Please pay O3 Ventures llc directly via ACH.</h2>
+        <h3> O3 Ventures llc | Acct Num: 40011438155 | Routing number: 124303243 </h3>
+        <h5>Bank Address: American Express National Bank, PO Box 3038, Salt Lake City, UT 84130</h5>
+      </div>
+      <div className='label'> O3 Ventures | 21 Sycamore Drive Roslyn NY | 516-800-2548 | 212cooperja@gmail.com</div>
+
+    </div>
+  );
+
+
+
+
+  };
+
+export default InvoicePage;
