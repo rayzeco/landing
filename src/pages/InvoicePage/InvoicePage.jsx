@@ -17,7 +17,9 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
   const [invoiceTableData, setInvoiceTableData] = useState([]);
   const [saveClicked, setSaveClicked] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(true); // State to control Submit button disablement
-  let recTotal = 0;
+  const [recTotal, setRecTotal] = useState(0);
+
+
   // Function to get the first business day of the month
   function getFirstBusinessDayOfMonth() {
     const today = new Date();
@@ -52,15 +54,15 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
           period_start: startPeriod,
           period_end: endPeriod,
           txn_id: item[0],
-          hours_worked: 160,
+          hours_worked: 0,
           inv_value: 0,
           inv_status: 'NEW',
           client: item[2],
           candidate: item[3],
           recruiter_price: item[4],
           client_price: item[5],
-          recruiter_total: item[4]*160,
-          client_total: item[5]*160,
+          recruiter_total: item[4],
+          client_total: item[5],
           client_contact: item[6],
           client_email: item[7],
           client_addr: item[8],
@@ -68,6 +70,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
           client_id: item[10]
         }));
         setInvoiceTableData(formattedData);
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -100,6 +103,12 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
   const handleHoursChange = (index, e) => {
     const newData = [...invoiceTableData];
     newData[index].hours_worked = parseFloat(e.target.value);
+    let rTotal=0;
+    for (const invoice of newData) {
+      rTotal += invoice.recruiter_price* invoice.hours_worked;
+    }
+    console.log('recTotal is ',rTotal);
+    setRecTotal(rTotal);
     setInvoiceTableData(newData);
   };
 
@@ -113,7 +122,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
         }
         clientGroups[invoice.client].push(invoice);
       });
-  
+
       // Step 2: Iterate through each client group and submit the invoice
       for (const client in clientGroups) {
         const clientInvoices = clientGroups[client];
@@ -141,6 +150,8 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
           client_addr: clientInvoices[0].client_addr,
           client_phone: clientInvoices[0].client_phone,
           explain_str: explainStr,
+          inv_html: '',
+          inv_hash: '',
           inv_value: totalClientPrice,
           inv_status: "SUBMITTED"
         }
@@ -161,7 +172,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
       console.error('Error submitting invoice(s):', error);
     }
   };
-  
+
 
   // Function to save invoice changes
   // Implement the saveInvoice function
@@ -186,7 +197,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
         await axios.post('http://localhost:8000/new_invoice', invoice);
         console.log('invoice is ',invoice);
       }
-      recTotal = recruiterTotal;
+      //recTotal = recruiterTotal;
       console.log('Invoices saved successfully! ', recTotal);
       // Now that the invoices are saved, enable the Submit button
       setSubmitDisabled(false);
@@ -219,8 +230,6 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
           <label htmlFor="client">Client:</label>
           <select id="client" value={selectedClient} onChange={handleClientChange}>
             <option value="All">All</option>
-            <option value="Sodexo">Sodexo</option>
-            <option value="InKind">InKind</option>
           </select>
         </div>
         <div>
@@ -244,6 +253,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
       </div>
       <div className="panel panel-2">
         <h2>Enter Candidate Hours</h2>
+        <label htmlFor="recTotal">Start Period: {recTotal}</label>
         <h3>Total: {recTotal} USD</h3>
         <table>
           <thead>
@@ -251,6 +261,8 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
               <th>Client</th>
               <th>Candidate</th>
               <th>Hours</th>
+              <th>Rate</th>
+              <th>Amount</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -266,6 +278,8 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
                     onChange={(e) => handleHoursChange(index, e)}
                   />
                 </td>
+                <td>{invoice.recruiter_price}</td>
+                <td>{invoice.recruiter_price*invoice.hours_worked}</td>
                 <td>{invoice.inv_status}</td>
               </tr>
             ))}

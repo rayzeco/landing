@@ -23,10 +23,10 @@ const RenderInvoicePage = () => {
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
-        console.log("AAA ",id_str);
-        const response = await axios.get('http://localhost:8000/get_invoice2', {
-          params: { id_str }
-        });
+        console.log("hash is ",id_str);
+        const response = await axios.get('http://localhost:8000/get_invoice/'+id_str);
+        //   params: { id_str }
+        // });
         setHtmlString(response.data.html);
       } catch (error) {
         console.error('Error fetching invoice:', error);

@@ -6,8 +6,6 @@ import './register-page.scss'; // Import the shared CSS file for styling
 const RegisterPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [msgId, setMsgId] = useState('');
-  const [role, setRole] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -17,13 +15,11 @@ const RegisterPage = () => {
 
     try {
       // Call the registration API
-      const response = await axios.post('https://example.com/register', {
-        name,
-        email,
-        msg_id: msgId,
-        role,
-        password
-      });
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('password', password);
+      const response = await axios.post('http://localhost:8000/register', formData);
 
       // Handle successful registration
       console.log('Registration successful!');
@@ -54,22 +50,6 @@ const RegisterPage = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Message ID:</label>
-          <input
-            type="text"
-            value={msgId}
-            onChange={(e) => setMsgId(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Role:</label>
-          <input
-            type="text"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
           />
         </div>
         <div>
