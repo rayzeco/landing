@@ -42,6 +42,10 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
     return endPeriodDate.toISOString().substr(0, 10);
   }
 
+  const formatNumber = (num) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
   // Function to fetch data from the REST API endpoint and return formatted data
   useEffect(() => {
     async function fetchData() {
@@ -107,8 +111,9 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
     for (const invoice of newData) {
       rTotal += invoice.recruiter_price* invoice.hours_worked;
     }
-    console.log('recTotal is ',rTotal);
-    setRecTotal(rTotal);
+    const rTotal_str = formatNumber(rTotal);
+    console.log('recTotal is ',rTotal_str);
+    setRecTotal(rTotal_str);
     setInvoiceTableData(newData);
   };
 
@@ -134,7 +139,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
         for (let i = 0; i < clientInvoices.length; i++) {
           totalClientPrice += clientInvoices[i].client_price * clientInvoices[i].hours_worked;
           //explainStr += clientInvoices[i].candidate + " ($" + clientInvoices[i].client_price + "/hr x " + clientInvoices[i].hours_worked + " =  $" + clientInvoices[i].client_price * clientInvoices[i].hours_worked + " <br>";
-          explainStr += `<tr><td>${clientInvoices[i].candidate}</td><td>Technology Services</td><td>${clientInvoices[i].hours_worked}</td><td>${clientInvoices[i].client_price}</td><td>${clientInvoices[i].client_price * clientInvoices[i].hours_worked}</td></tr>`;
+          explainStr += `<tr><td>${clientInvoices[i].candidate}</td><td>Technology Services</td><td>${clientInvoices[i].hours_worked}</td><td>${formatNumber(clientInvoices[i].client_price)}</td><td>${formatNumber(clientInvoices[i].client_price * clientInvoices[i].hours_worked)}</td></tr>`;
         }
         console.log('final explain : ',explainStr);
 
@@ -253,7 +258,6 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
       </div>
       <div className="panel panel-2">
         <h2>Enter Candidate Hours</h2>
-        <label htmlFor="recTotal">Start Period: {recTotal}</label>
         <h3>Total: {recTotal} USD</h3>
         <table>
           <thead>
@@ -278,8 +282,8 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
                     onChange={(e) => handleHoursChange(index, e)}
                   />
                 </td>
-                <td>{invoice.recruiter_price}</td>
-                <td>{invoice.recruiter_price*invoice.hours_worked}</td>
+                <td>{formatNumber(invoice.recruiter_price)}</td>
+                <td>{formatNumber(invoice.recruiter_price*invoice.hours_worked)}</td>
                 <td>{invoice.inv_status}</td>
               </tr>
             ))}
