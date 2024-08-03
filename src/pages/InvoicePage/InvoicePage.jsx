@@ -46,33 +46,48 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
+    // const formatNumber = (num) => {
+    // // Check if num is a valid number
+    // if (isNaN(num)) {
+    //     throw new Error('Invalid input: not a number');
+    // }
+    
+    // // Convert num to a number if it's not already
+    // num = Number(num);
+
+    // // Format the number with commas as thousand separators
+    // return num.toLocaleString();
+    // };
+
   // Function to fetch data from the REST API endpoint and return formatted data
   useEffect(() => {
     async function fetchData() {
       try {
         const response = await axios.get('http://localhost:8000/get_client_transactions/2');
+        console.log('getClientTran:\n', response.data)
         const data = response.data;
         const formattedData = data.map(item => ({
           inv_date: invoiceDate,
-          candidate_id: item[1],
+          candidate_id: item.candidate_id, // Adjust based on actual field names
           period_start: startPeriod,
           period_end: endPeriod,
-          txn_id: item[0],
-          hours_worked: 0,
-          inv_value: 0,
-          inv_status: 'NEW',
-          client: item[2],
-          candidate: item[3],
-          recruiter_price: item[4],
-          client_price: item[5],
-          recruiter_total: item[4],
-          client_total: item[5],
-          client_contact: item[6],
-          client_email: item[7],
-          client_addr: item[8],
-          client_phone: item[9],
-          client_id: item[10]
+          txn_id: parseInt(item.txn_id, 10), // Adjust based on actual field names
+          hours_worked: 160, // Default value, adjust as needed
+          inv_value: 0,    // Default value, adjust as needed
+          inv_status: 'NEW', // Default status
+          client: item.client_name, // Adjust based on actual field names
+          candidate: item.candidate_name, // Adjust based on actual field names
+          recruiter_price: item.recruiter_price, // Adjust based on actual field names
+          client_price: item.client_price, // Adjust based on actual field names
+          recruiter_total: item.recruiter_price, // Adjust based on actual field names
+          client_total: item.client_price, // Adjust based on actual field names
+          client_contact: item.client_contact, // Adjust based on actual field names
+          client_email: item.client_email, // Adjust based on actual field names
+          client_addr: item.client_addr, // Adjust based on actual field names
+          client_phone: item.client_phone, // Adjust based on actual field names
+          client_id: item.client_id // Adjust based on actual field names
         }));
+        console.log('formatClientTran:\n', formattedData)
         setInvoiceTableData(formattedData);
 
       } catch (error) {
@@ -162,7 +177,11 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
         }
         console.log("invoice data ", invoicesData);
         // Call the REST API function to submit the invoice for this client
-        const response = await axios.post('http://localhost:8000/submit_client_invoice', invoicesData);
+        const response = await axios.post('http://localhost:8000/submit_client_invoice', invoicesData, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
         if (response.status === 200) {
           console.log(`Invoice(s) submitted successfully for client: ${client}`);
@@ -183,36 +202,45 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
   // Implement the saveInvoice function
   const saveInvoice = async () => {
     try {
-      //console.log(invoiceTableData);
-
       let recruiterTotal = 0;
       let clientTotal = 0;
-
+  
       for (const invoice of invoiceTableData) {
-        invoice.recruiterTotal = invoice.recruiter_price * invoice.hours_worked;
-        invoice.clientTotal = invoice.client_price * invoice.hours_worked;
-        recruiterTotal += invoice.recruiterTotal;
-        clientTotal += invoice.clientTotal;
+        const recruiterPriceTotal = invoice.recruiter_price * invoice.hours_worked;
+        const clientPriceTotal = invoice.client_price * invoice.hours_worked;
+        recruiterTotal += recruiterPriceTotal;
+        clientTotal += clientPriceTotal;
+  
         if (clientTotal < recruiterTotal) {
           throw new Error('Client total is less than recruiter total');
         }
-        invoice.recruiterTotal = recruiterTotal;
-        invoice.clientTotal = clientTotal;
-        invoice.inv_status = "SAVED";
-        await axios.post('http://localhost:8000/new_invoice', invoice);
-        console.log('invoice is ',invoice);
+  
+        const newInvoice = {
+          inv_date: invoice.inv_date || new Date().toISOString(),  // Provide a default value if inv_date is not available
+          candidate_id: invoice.candidate_id,
+          period_start: invoice.period_start,
+          period_end: invoice.period_end,
+          txn_id: invoice.txn_id,
+          hours_worked: invoice.hours_worked,
+          inv_value: invoice.inv_value || clientPriceTotal,  // Provide a default value if inv_value is not available
+          inv_status: "SAVED",
+        };
+        const response = await axios.post('http://localhost:8000/new_invoice', newInvoice, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+  
       }
-      //recTotal = recruiterTotal;
-      console.log('Invoices saved successfully! ', recTotal);
-      // Now that the invoices are saved, enable the Submit button
+  
+      console.log('Invoices saved successfully! ', { recruiterTotal, clientTotal });
       setSubmitDisabled(false);
-      //recTotal = recruiterTotal;
       return [recruiterTotal, clientTotal];
     } catch (error) {
       console.error('Error saving invoices:', error);
     }
   };
-
+  
 
   // Function to filter invoice table data based on selected client
   const filteredInvoiceTableData = selectedClient === 'All' ? invoiceTableData :
