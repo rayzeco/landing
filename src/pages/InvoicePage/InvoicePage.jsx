@@ -21,6 +21,8 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
   const [saveClicked, setSaveClicked] = useState(false);
   const [submitDisabled, setSubmitDisabled] = useState(true); // State to control Submit button disablement
   const [recTotal, setRecTotal] = useState(0);
+  const [invoiceStatus, setInvoiceStatus] = useState('INITIALIZED');
+
 
 
   // Function to get the first business day of the month
@@ -190,6 +192,7 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
         });
 
         if (response.status === 200) {
+          setInvoiceStatus('SUBMITTED');
           console.log(`Invoice(s) submitted successfully for client: ${client}`);
           //console.log(response.data);
           // Optionally, you can add further actions here, such as showing a success message to the user
@@ -240,6 +243,7 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
       }
   
       console.log('Invoices saved successfully! ', { recruiterTotal, clientTotal });
+      setInvoiceStatus('SAVED')
       setSubmitDisabled(false);
       return [recruiterTotal, clientTotal];
     } catch (error) {
@@ -329,6 +333,9 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
           <button onClick={saveInvoice}>Save</button>
           <button onClick={submitInvoice} disabled={submitDisabled} className={submitDisabled ? "submit-button-disabled" : "submit-button-enabled"}>Submit</button>
           <button>Cancel</button>
+          <h2>  </h2>
+          <h3> {invoiceStatus}</h3>
+          
         </div>
       </div>
     </div>
