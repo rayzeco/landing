@@ -16,7 +16,7 @@ const LoginPage = () => {
       const formData = new FormData();
       formData.append('username', username);
       formData.append('password', password);
-      const response = await axios.post('http://localhost:8000/authenticate', formData);
+      const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/authenticate`, formData);
       const token = response.data.access_token;
       sessionStorage.setItem('token', token);
       navigate('/invoice');

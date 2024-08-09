@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './invoice-page.scss'; // Import CSS file for styling
 import axios from 'axios';
+require('dotenv').config();
+
 
 const InvoicePage = ({ clientName }) => {
 
   // Define your Square API access token
 const accessToken = 'YOUR_SQUARE_ACCESS_TOKEN';
 const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
+const rayzeURL = process.env.RAYZE_SERVER_URL;
 
 
   // State for invoice date, client, start period, end period, and invoice table data
@@ -63,8 +66,10 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get('http://localhost:8000/get_client_transactions/2');
-        console.log('getClientTran:\n', response.data)
+        //const jsvar = JSON.stringify(process.env.REACT_APP_RYZ_SERVER)
+        //console.log('url is ', jsvar, `${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`);
+        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`);
+        //console.log('getClientTran:\n', response.data)
         const data = response.data;
         const formattedData = data.map(item => ({
           inv_date: invoiceDate,
@@ -87,7 +92,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
           client_phone: item.client_phone, // Adjust based on actual field names
           client_id: item.client_id // Adjust based on actual field names
         }));
-        console.log('formatClientTran:\n', formattedData)
+        //console.log('formatClientTran:\n', formattedData)
         setInvoiceTableData(formattedData);
 
       } catch (error) {
@@ -146,7 +151,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
       // Step 2: Iterate through each client group and submit the invoice
       for (const client in clientGroups) {
         const clientInvoices = clientGroups[client];
-        console.log("client invocies ",clientInvoices);
+        //console.log("client invocies ",clientInvoices);
 
         const due_date = new Date(new Date(clientInvoices[0].period_end).setMonth(new Date(clientInvoices[0].period_end).getMonth() + 1)).toISOString().split('T')[0];
         let totalClientPrice = 0;
@@ -155,8 +160,9 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
           totalClientPrice += clientInvoices[i].client_price * clientInvoices[i].hours_worked;
           //explainStr += clientInvoices[i].candidate + " ($" + clientInvoices[i].client_price + "/hr x " + clientInvoices[i].hours_worked + " =  $" + clientInvoices[i].client_price * clientInvoices[i].hours_worked + " <br>";
           explainStr += `<tr><td>${clientInvoices[i].candidate}</td><td>Technology Services</td><td>${clientInvoices[i].hours_worked}</td><td>${formatNumber(clientInvoices[i].client_price)}</td><td>${formatNumber(clientInvoices[i].client_price * clientInvoices[i].hours_worked)}</td></tr>`;
+          //console.log('debug: totalprice ', totalClientPrice, explainStr);
         }
-        console.log('final explain : ',explainStr);
+        //console.log('final explain : ',explainStr);
 
         const invoicesData = {
           inv_date: clientInvoices[0].inv_date,
@@ -175,9 +181,9 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
           inv_value: totalClientPrice,
           inv_status: "SUBMITTED"
         }
-        console.log("invoice data ", invoicesData);
+        //console.log("invoice data ", invoicesData);
         // Call the REST API function to submit the invoice for this client
-        const response = await axios.post('http://localhost:8000/submit_client_invoice', invoicesData, {
+        const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/submit_client_invoice`, invoicesData, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -185,7 +191,7 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
 
         if (response.status === 200) {
           console.log(`Invoice(s) submitted successfully for client: ${client}`);
-          console.log(response.data);
+          //console.log(response.data);
           // Optionally, you can add further actions here, such as showing a success message to the user
         } else {
           console.error(`Failed to submit invoice(s) for client: ${client}`);
@@ -222,10 +228,10 @@ const squareBaseUrl = 'https://connect.squareupsandbox.com/v2';
           period_end: invoice.period_end,
           txn_id: invoice.txn_id,
           hours_worked: invoice.hours_worked,
-          inv_value: invoice.inv_value || clientPriceTotal,  // Provide a default value if inv_value is not available
+          inv_value: invoice.inv_value,  // Provide a default value if inv_value is not available
           inv_status: "SAVED",
         };
-        const response = await axios.post('http://localhost:8000/new_invoice', newInvoice, {
+        const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_invoice`, newInvoice, {
           headers: {
             'Content-Type': 'application/json',
           },

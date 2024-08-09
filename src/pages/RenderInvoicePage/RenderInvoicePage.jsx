@@ -21,10 +21,15 @@ const RenderInvoicePage = () => {
 
 
   useEffect(() => {
+
+    const formatNumber = (num) => {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    };
+    
     const fetchInvoice = async () => {
       try {
         console.log("hash is ",id_str);
-        const response = await axios.get('http://localhost:8000/get_invoice/'+id_str);
+        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_invoice/`+id_str);
         //   params: { id_str }
         // });
         setHtmlString(response.data.html);
