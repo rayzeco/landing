@@ -1,0 +1,65 @@
+.select-invoice-container {
+  background-color: f5f5dc;
+  color: black;
+}
+
+
+.select-invoice-container .panel logo {
+  top: 20px; /* Adjust as needed */
+  right: 20px; /* Adjust as needed */
+  z-index: 1000; /* Ensure it's on top of other content */
+}
+
+.select-invoice-container .panel {
+  padding: 20px;
+  border: 1px solid var(--theme-color);
+  margin-bottom: 20px;
+  //background-color: gray; /* Set background color of panel */
+  background-color: #f5f5dc; ; /* Set background color of panel */
+  color: black; /* Set text color of panel */
+}
+
+.select-invoice-container .panel h2 {
+  margin-top: 0;
+  color: black;
+}
+.select-invoice-container .panel h3 {
+  margin-top: 0;
+  color: black;
+}
+
+.select-invoice-countainer .panel h4 {
+  padding-left: 20px; /* Adjust as needed */
+  color: black;
+  font-weight: normal; /* Set font weight to normal (non-bold) */
+  margin-top: 20px;
+}
+
+.select-invoice-container .panel h7 {
+  padding-top: 200px;
+  margin-top: 200px;
+  color: black;
+}
+
+.select-invoice-countainer .label {
+  padding-left: 20px; /* Adjust as needed */
+  //color: var(--theme-color);
+  color: wheat;
+  font-weight: normal; /* Set font weight to normal (non-bold) */
+  margin-top: 50px;
+}
+.select-invoice-container table {
+  width: 50%;
+  border-collapse: collapse;
+  margin-top: 40px;
+  color: black;
+}
+
+.select-invoice-container th,
+.select-invoice-container td {
+  border: 1px solid black;
+  padding: 10px;
+  color: black;
+}
+
+
