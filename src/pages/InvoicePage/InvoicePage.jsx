@@ -70,7 +70,13 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
       try {
         //const jsvar = JSON.stringify(process.env.REACT_APP_RYZ_SERVER)
         //console.log('url is ', jsvar, `${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`);
-        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`);
+        const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
+        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include the token in the request header
+            },
+          });
         //console.log('getClientTran:\n', response.data)
         const data = response.data;
         const formattedData = data.map(item => ({
@@ -185,9 +191,11 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
         }
         //console.log("invoice data ", invoicesData);
         // Call the REST API function to submit the invoice for this client
+        const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
         const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/submit_client_invoice`, invoicesData, {
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the request header
           },
         });
 
@@ -234,9 +242,11 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
           inv_value: invoice.inv_value,  // Provide a default value if inv_value is not available
           inv_status: "SAVED",
         };
+        const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
         const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_invoice`, newInvoice, {
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the request header
           },
         });
   
