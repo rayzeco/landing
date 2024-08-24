@@ -29,7 +29,14 @@ const RenderInvoicePage = () => {
     const fetchInvoice = async () => {
       try {
         console.log("hash is ",id_str);
-        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_invoice/`+id_str);
+        const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
+        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_invoice/`+id_str,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Include the token in the request header
+          },
+        });
         //   params: { id_str }
         // });
         setHtmlString(response.data.html);

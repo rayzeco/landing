@@ -9,7 +9,14 @@ const SelectInvoicePage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_client_invoices`)
+        const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
+        axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_client_invoices`,
+        {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`, // Include the token in the request header
+            },
+          })
             .then(response => {
                 setInvoices(response.data);
             })
