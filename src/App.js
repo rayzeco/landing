@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import RenderInvoicePage from "./pages/RenderInvoicePage/RenderInvoicePage";
 import InvoicePage from "./pages/InvoicePage/InvoicePage";
 import SelectInvoicePage from "./pages/SelectInvoicePage/SelectInvoicePage";
+import AddCandidatePage from "./pages/AddCandidatePage/AddCandidatePage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import OGLandingPage from "./pages/OGLanding/OGLandingPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -47,6 +48,8 @@ function App() {
           <Route path='/story6' element={<Story6 />} />
 
           <Route path="/select_invoice" element={<SelectInvoicePage />} />
+          <Route path="/candidates" element={<AddCandidatePage />} />
+
 
 
           <Route path="*" element={<NotFound />} />
