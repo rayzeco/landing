@@ -88,6 +88,7 @@ const SubmitCandidatePage = () => {
 
             const token = sessionStorage.getItem('token');
             const clientId = clientMap[selectedValues.clientName]?.id;
+            console.log("client id is ",clientId);
 
             if (!clientId) return;
 
@@ -160,26 +161,22 @@ const SubmitCandidatePage = () => {
         }
 
         try {
-            console.log(                {
+            const submitData = {
                 client_id: clientId,
                 open_roles_id: roleId,
                 candidates_id: candidateId,
                 remote: selectedValues.workType,
                 status: 'Open',
-                submittedOn: new Date().toISOString(),
-                cv_link: cvLink
-            });
-            await axios.post(
+                submitted_on: new Date().toISOString(),
+                cv_link: cvLink,
+            };
+
+
+            console.log('Submitting data:', JSON.stringify(submitData, null, 2));
+
+            const response = await axios.post(
                 `${process.env.REACT_APP_RYZ_SERVER}/new_submit_cvrole`,
-                {
-                    client_id: clientId,
-                    open_roles_id: roleId,
-                    candidates_id: candidateId,
-                    remote: selectedValues.workType,
-                    status: 'Open',
-                    submitted_on: new Date().toISOString(),
-                    cv_link: cvLink
-                },
+                submitData,
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -188,7 +185,7 @@ const SubmitCandidatePage = () => {
                 }
             );
 
-            // Reset form
+            // Reset form and show success message
             setSelectedValues({
                 clientName: '',
                 openRole: '',
@@ -198,8 +195,8 @@ const SubmitCandidatePage = () => {
 
             alert('Candidate successfully submitted for the role!');
         } catch (error) {
-            console.error('Error submitting candidate:', error);
-            alert('Error submitting candidate. Please try again.');
+            console.error('Error submitting candidate:', error.response?.data || error);
+            alert(`Error submitting candidate: ${error.response?.data?.detail || 'Please try again.'}`);
         }
     };
 
