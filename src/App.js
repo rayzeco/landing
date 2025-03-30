@@ -21,6 +21,7 @@ import Story3 from "./pages/Clients/Story3";
 import Story4 from "./pages/Clients/Story4";
 import Story5 from "./pages/Clients/Story5";
 import Story6 from "./pages/Clients/Story6";
+import SubmitCandidatePage from "./pages/SubmitCandidatePage/SubmitCandidatePage";
 
 
 function App() {
@@ -46,9 +47,10 @@ function App() {
           <Route path='/story4' element={<Story4 />} />
           <Route path='/story5' element={<Story5 />} />
           <Route path='/story6' element={<Story6 />} />
-
           <Route path="/select_invoice" element={<SelectInvoicePage />} />
           <Route path="/candidates" element={<AddCandidatePage />} />
+          <Route path="/submit_candidates" element={<SubmitCandidatePage />} />
+
 
 
 
