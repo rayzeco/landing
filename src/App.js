@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import RenderInvoicePage from "./pages/RenderInvoicePage/RenderInvoicePage";
 import InvoicePage from "./pages/InvoicePage/InvoicePage";
 import SelectInvoicePage from "./pages/SelectInvoicePage/SelectInvoicePage";
+import AddOpenRolesPage from "./pages/AddOpenRoles/AddOpenRolesPage";
 import AddCandidatePage from "./pages/AddCandidatePage/AddCandidatePage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import OGLandingPage from "./pages/OGLanding/OGLandingPage";
@@ -50,6 +51,8 @@ function App() {
           <Route path="/select_invoice" element={<SelectInvoicePage />} />
           <Route path="/candidates" element={<AddCandidatePage />} />
           <Route path="/submit_candidates" element={<SubmitCandidatePage />} />
+          <Route path="/open_roles" element={<AddOpenRolesPage />} />
+
 
 
 
