@@ -29,7 +29,7 @@ const AddOpenRolesPage = () => {
         remote: 'no', // Default to 'no'
         job_desc: '', // Changed from job_desc_link
         job_desc_link: '', // Added new field for job description link
-        test_doc: '' // Added new field for HTML content
+        job_desc_html: '' // Added new field for HTML content
     });
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -139,49 +139,9 @@ const AddOpenRolesPage = () => {
                     }
                 }
             );
-            console.log(evalResponse.data);
+
             if (evalResponse.data.status === 'success') {
-                // Parse the evaluation JSON string into an object
-                const evaluation = JSON.parse(evalResponse.data.evaluation.replace(/^```html\s*|\s*```$/g, ''));
-                console.log('Parsed evaluation:', evaluation);
-
-                let htmlContent = '';
-
-                // Format Instructions
-                if (evaluation.instruction) {
-                    htmlContent += '<div class="evaluation-section"><h3>INSTRUCTIONS</h3><p>' + evaluation.instruction + '</p></div>';
-                }
-
-                // Format Questions
-                if (evaluation.questions) {
-                    htmlContent += '<div class="evaluation-section"><h3>QUESTIONS</h3>';
-                    const questions = evaluation.questions.split('::::');
-                    questions.forEach((q, index) => {
-                        htmlContent += `<p>${q.trim()}</p>`;
-                    });
-                    htmlContent += '</div>';
-                }
-
-                // Format Answers
-                if (evaluation.answers) {
-                    htmlContent += '<div class="evaluation-section"><h3>ANSWERS</h3>';
-                    const answers = evaluation.answers.split('::::');
-                    answers.forEach((a, index) => {
-                        htmlContent += `<p>${a.trim()}</p>`;
-                    });
-                    htmlContent += '</div>';
-                }
-
-                // Create a JSON object with the HTML content
-                const responseJson = {
-                    content: htmlContent
-                };
-
-                // Update the state with HTML content
-                setNewOpenRole(prev => ({
-                    ...prev,
-                    test_doc: htmlContent
-                }));
+                return evalResponse.data.evaluation;
             } else {
                 throw new Error(evalResponse.data.message || 'Failed to generate evaluation');
             }
@@ -210,8 +170,7 @@ const AddOpenRolesPage = () => {
                 status: newOpenRole.status,
                 posted_on: newOpenRole.posted_on,
                 remote: newOpenRole.remote.toLowerCase(),
-                job_desc_link: newOpenRole.job_desc_link,
-                test_doc: newOpenRole.test_doc || '' // Add test_doc field
+                job_desc: newOpenRole.job_desc_link // Use link if available, otherwise use text
             };
 
             await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_open_role`, payload, {
@@ -230,7 +189,7 @@ const AddOpenRolesPage = () => {
                 remote: 'no',
                 job_desc: '',
                 job_desc_link: '',
-                test_doc: ''
+                job_desc_html: ''
             });
 
             // Refresh open roles list
@@ -307,17 +266,48 @@ const AddOpenRolesPage = () => {
                     }
                 );
 
-                console.log('Raw evaluation response:', evalResponse);
-                //const evaluation = JSON.parse(evalResponse.data.evaluation.replace(/^```html\s*|\s*```$/g, ''));
+                console.log('Raw evaluation response:', evalResponse.data);
 
+                if (evalResponse.data.status === 'success') {
+                    // Parse the evaluation JSON string into an object
+                    const evaluation = JSON.parse(evalResponse.data.evaluation.replace(/^```json\s*|\s*```$/g, ''));
+                    console.log('Parsed evaluation:', evaluation);
 
-                // Update the state with HTML content directly
-                setNewOpenRole(prev => ({
-                    ...prev,
-                    //test_doc: evaluation
-                    test_doc: evalResponse.data.evaluation
+                    let htmlContent = '';
 
-                }));
+                    // Format Instructions
+                    if (evaluation.instruction) {
+                        htmlContent += '<div class="evaluation-section"><h3>INSTRUCTIONS</h3><p>' + evaluation.instruction + '</p></div>';
+                    }
+
+                    // Format Questions
+                    if (evaluation.questions) {
+                        htmlContent += '<div class="evaluation-section"><h3>QUESTIONS</h3>';
+                        const questions = evaluation.questions.split('::::');
+                        questions.forEach((q, index) => {
+                            htmlContent += `<p>${q.trim()}</p>`;
+                        });
+                        htmlContent += '</div>';
+                    }
+
+                    // Format Answers
+                    if (evaluation.answers) {
+                        htmlContent += '<div class="evaluation-section"><h3>ANSWERS</h3>';
+                        const answers = evaluation.answers.split('::::');
+                        answers.forEach((a, index) => {
+                            htmlContent += `<p>${a.trim()}</p>`;
+                        });
+                        htmlContent += '</div>';
+                    }
+
+                    // Update the state with HTML content
+                    setNewOpenRole(prev => ({
+                        ...prev,
+                        job_desc_html: htmlContent
+                    }));
+                } else {
+                    throw new Error(evalResponse.data.message || 'Failed to generate evaluation');
+                }
             }
         } catch (error) {
             console.error('Error processing PDF:', error);
@@ -325,30 +315,6 @@ const AddOpenRolesPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const handleDownloadEvaluation = () => {
-        if (!newOpenRole.test_doc) {
-            alert('No evaluation content to download');
-            return;
-        }
-
-        // Create a blob with the HTML content
-        const blob = new Blob([newOpenRole.test_doc], { type: 'text/html' });
-        const url = window.URL.createObjectURL(blob);
-        
-        // Create a temporary link element
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'candidate_evaluation.html';
-        
-        // Append to body, click, and remove
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up the URL object
-        window.URL.revokeObjectURL(url);
     };
 
     return (
@@ -454,7 +420,7 @@ const AddOpenRolesPage = () => {
                                         <div 
                                             id="job_desc"
                                             className="evaluation-content"
-                                            dangerouslySetInnerHTML={{ __html: newOpenRole.test_doc }}
+                                            dangerouslySetInnerHTML={{ __html: newOpenRole.job_desc_html }}
                                         />
                                         <div className="pdf-upload-container">
                                             {isLoading ? (
@@ -483,22 +449,13 @@ const AddOpenRolesPage = () => {
                                 </div>
                             </div>
 
-                            <div className="button-group">
-                                <button 
-                                    type="button" 
-                                    className="submit-button"
-                                    onClick={handleSubmitOpenRole}
-                                >
-                                    Add Open Role
-                                </button>
-                                <button 
-                                    type="button" 
-                                    className="download-button"
-                                    onClick={handleDownloadEvaluation}
-                                >
-                                    Download Candidate Evaluation
-                                </button>
-                            </div>
+                            <button 
+                                type="button" 
+                                className="submit-button"
+                                onClick={handleSubmitOpenRole}
+                            >
+                                Add Open Role
+                            </button>
                         </div>
                     )}
                 </div>
@@ -575,11 +532,11 @@ const AddOpenRolesPage = () => {
                                     <td>{role.posted_on || '-'}</td>
                                     <td>{role.remote || '-'}</td>
                                     <td>
-                                        {role.job_desc_link ? (
+                                        {role.job_desc ? (
                                             <button 
                                                 type="button"
                                                 className="role-link"
-                                                onClick={(e) => handleCVClick(e, role.job_desc_link)}
+                                                onClick={(e) => handleCVClick(e, role.job_desc)}
                                             >
                                                 View Job Description
                                             </button>
