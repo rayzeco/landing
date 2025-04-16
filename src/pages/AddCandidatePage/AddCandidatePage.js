@@ -6,8 +6,12 @@ import './add-candidate-page.scss';
 const AddCandidatePage = () => {
     const [candidates, setCandidates] = useState([]);
     const [filteredCandidates, setFilteredCandidates] = useState([]);
+    const [unfilteredCandidates, setUnfilteredCandidates] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
+    const [showUploadAnswers, setShowUploadAnswers] = useState(false);
+    const [selectedAnswerCandidate, setSelectedAnswerCandidate] = useState('');
+    const [candidateAnswers, setCandidateAnswers] = useState('');
     const [clients, setClients] = useState([]);
     const [openRoles, setOpenRoles] = useState([]);
     const [filteredOpenRoles, setFilteredOpenRoles] = useState([]);
@@ -15,7 +19,10 @@ const AddCandidatePage = () => {
     const [isOpenRolesEnabled, setIsOpenRolesEnabled] = useState(false);
     const [showOnlyMatched, setShowOnlyMatched] = useState(true);
     const [showTestModal, setShowTestModal] = useState(false);
+    const [showTestAnswersModal, setShowTestAnswersModal] = useState(false);
+    const [showSaveAnswersConfirmModal, setShowSaveAnswersConfirmModal] = useState(false);
     const [currentTestDoc, setCurrentTestDoc] = useState('');
+    const [currentTestAnswers, setCurrentTestAnswers] = useState('');
     const [filters, setFilters] = useState({
         name: '',
         role: '',
@@ -97,6 +104,7 @@ const AddCandidatePage = () => {
                 const allClients = clientsResponse.data.filter(client => client.client_type === 'Client');
 
                 // Store all data in state
+                setUnfilteredCandidates(allCandidates);
                 setCandidates(allCandidates);
                 setFilteredCandidates(allCandidates);
                 setOpenRoles(allOpenRoles);
@@ -302,9 +310,29 @@ const AddCandidatePage = () => {
         setCurrentTestDoc('');
     };
 
+    const handleTestAnswersClick = (e, candidateId) => {
+        e.stopPropagation();
+        
+        // Find the submission for this candidate
+        const submission = getCVRoleSubmission(candidateId);
+        if (!submission || !submission.test_answers) return;
+        
+        // Set the test answers content and show the modal
+        setCurrentTestAnswers(submission.test_answers);
+        setShowTestAnswersModal(true);
+    };
+
+    const handleCloseTestAnswersModal = () => {
+        setShowTestAnswersModal(false);
+        setCurrentTestAnswers('');
+    };
+
     // Helper function to get CV role submission for a candidate
     const getCVRoleSubmission = (candidateId) => {
-        return submitCVRoles.find(submission => submission.candidates_id === candidateId);
+        if (!candidateId) return null;
+        const numericCandidateId = parseInt(candidateId, 10);
+        //console.log('candidateId is ', candidateId, 'numericCandidateId is ', numericCandidateId, 'submitCVRoles is ', submitCVRoles);
+        return submitCVRoles.find(submission => parseInt(submission.candidates_id, 10) === numericCandidateId);
     };
 
     // Helper function to get client name by ID
@@ -348,6 +376,167 @@ const AddCandidatePage = () => {
     const handleSubmitCVRole = () => {
         // Implementation of handleSubmitCVRole function
     };
+
+    const handleAnswerCandidateSelect = (e) => {
+        setSelectedAnswerCandidate(e.target.value);
+    };
+
+    const handleAnswersFileUpload = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.txt')) {
+            alert('Please upload a text file');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setCandidateAnswers(e.target.result);
+        };
+        reader.readAsText(file);
+    };
+
+    const handleSaveAnswers = async () => {
+        if (!selectedAnswerCandidate || !candidateAnswers) {
+            alert('Please select a candidate and upload answers file');
+            return;
+        }
+        setShowSaveAnswersConfirmModal(true);
+    };
+
+    const handleConfirmSaveAnswers = async () => {
+        const token = sessionStorage.getItem('token');
+        const submission = getCVRoleSubmission(selectedAnswerCandidate);
+
+        if (!submission) {
+            alert('No submission found for this candidate. Please ensure the candidate is submitted for an open role first.');
+            return;
+        }
+
+        try {
+            // Update the submit_cv_role entry with the test answers
+            const updatePayload = {
+                client_id: submission.client_id,
+                open_roles_id: submission.open_roles_id,
+                candidates_id: parseInt(selectedAnswerCandidate, 10),
+                status: submission.status,
+                submitted_on: submission.submitted_on,
+                remote: submission.remote,
+                cv_link: submission.cv_link,
+                test_answers: candidateAnswers
+            };
+
+            await axios.put(
+                `${process.env.REACT_APP_RYZ_SERVER}/update_submit_cvrole/${submission.id}`,
+                updatePayload,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            // Refresh the submit CV roles data
+            const submitCVRolesResponse = await axios.get(
+                `${process.env.REACT_APP_RYZ_SERVER}/list_submit_cvroles`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            setSubmitCVRoles(submitCVRolesResponse.data);
+
+            // Reset the form
+            setSelectedAnswerCandidate('');
+            setCandidateAnswers('');
+            setShowSaveAnswersConfirmModal(false);
+            alert('Test answers saved successfully!');
+        } catch (error) {
+            console.error('Error saving test answers:', error);
+            alert('Error saving test answers. Please try again.');
+        }
+    };
+
+    const renderUploadAnswersSection = () => (
+        <div className="add-candidate-form">
+            <div className="form-row" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                    <label htmlFor="answer_candidate">Candidate</label>
+                    <select
+                        id="answer_candidate"
+                        name="answer_candidate"
+                        value={selectedAnswerCandidate}
+                        onChange={handleAnswerCandidateSelect}
+                        required
+                        style={{ width: '200px' }}
+                    >
+                        <option value="">Select Candidate...</option>
+                        {unfilteredCandidates.map(candidate => (
+                            <option key={candidate.id} value={candidate.id}>
+                                {candidate.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '10px'
+                }}>
+                    <button 
+                        type="button"
+                        className="submit-button"
+                        onClick={() => document.getElementById('answers-upload').click()}
+                        disabled={!selectedAnswerCandidate}
+                        style={{ 
+                            backgroundColor: '#00A389',
+                            margin: 0,
+                            width: 'fit-content',
+                            whiteSpace: 'nowrap',
+                            padding: '8px 16px',
+                            cursor: selectedAnswerCandidate ? 'pointer' : 'not-allowed',
+                            opacity: selectedAnswerCandidate ? 1 : 0.5
+                        }}
+                    >
+                        Upload Test Answers
+                    </button>
+                    <input
+                        type="file"
+                        id="answers-upload"
+                        accept=".txt"
+                        onChange={handleAnswersFileUpload}
+                        style={{ display: 'none' }}
+                        disabled={!selectedAnswerCandidate}
+                    />
+                    <button 
+                        type="button" 
+                        className="submit-button"
+                        onClick={handleSaveAnswers}
+                        disabled={!candidateAnswers}
+                        style={{
+                            margin: 0,
+                            width: 'fit-content',
+                            whiteSpace: 'nowrap',
+                            padding: '8px 16px',
+                            opacity: candidateAnswers ? 1 : 0.5,
+                            cursor: candidateAnswers ? 'pointer' : 'not-allowed'
+                        }}
+                    >
+                        Save Answers
+                    </button>
+                </div>
+            </div>
+            {candidateAnswers && (
+                <div className="file-preview" style={{ marginTop: '5px', fontSize: '0.9em', color: '#666' }}>
+                    ( {candidateAnswers.length} characters)
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <div className="add-candidate-container">
@@ -519,6 +708,18 @@ const AddCandidatePage = () => {
                     )}
                 </div>
 
+                {/* Upload Candidate Test Answers Accordion */}
+                <div className="accordion">
+                    <div 
+                        className="accordion-header"
+                        onClick={() => setShowUploadAnswers(!showUploadAnswers)}
+                    >
+                        <h2>Upload Candidate Test Answers</h2>
+                        <span className={`arrow ${showUploadAnswers ? 'open' : ''}`}>▼</span>
+                    </div>
+                    {showUploadAnswers && renderUploadAnswersSection()}
+                </div>
+
                 {/* Filters Accordion */}
                 <div className="accordion">
                     <div 
@@ -600,6 +801,7 @@ const AddCandidatePage = () => {
                                 <th>Open Role</th>
                                 <th>JD Link</th>
                                 <th>Test</th>
+                                <th>Test Answers</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -633,7 +835,7 @@ const AddCandidatePage = () => {
                                         <td>{clientId ? getClientName(clientId) : '-'}</td>
                                         <td>{openRoleId ? getOpenRoleDesc(openRoleId) : '-'}</td>
                                         <td>
-                                            {jdLink ? (
+                                            {jdLink && jdLink.trim() ? (
                                                 <button 
                                                     type="button"
                                                     className="jd-link"
@@ -644,13 +846,24 @@ const AddCandidatePage = () => {
                                             ) : '-'}
                                         </td>
                                         <td>
-                                            {submission ? (
+                                            {submission && openRoles.find(role => role.id === submission.open_roles_id)?.test_doc ? (
                                                 <button 
                                                     type="button"
                                                     className="download-test"
                                                     onClick={(e) => handleDownloadTest(e, candidate.id)}
                                                 >
                                                     Download Test
+                                                </button>
+                                            ) : '-'}
+                                        </td>
+                                        <td>
+                                            {submission && submission.test_answers ? (
+                                                <button 
+                                                    type="button"
+                                                    className="view-test-answers"
+                                                    onClick={(e) => handleTestAnswersClick(e, candidate.id)}
+                                                >
+                                                    View Answers
                                                 </button>
                                             ) : '-'}
                                         </td>
@@ -678,26 +891,133 @@ const AddCandidatePage = () => {
                             <button 
                                 className="modal-button primary"
                                 onClick={() => {
-                                    // Create a printable version
-                                    const printWindow = window.open('', '_blank');
-                                    printWindow.document.write(`
+                                    const content = `
+                                        <!DOCTYPE html>
                                         <html>
                                             <head>
                                                 <title>Test Document</title>
                                                 <style>
-                                                    body { font-family: Arial, sans-serif; padding: 20px; }
+                                                    body { 
+                                                        font-family: Arial, sans-serif; 
+                                                        padding: 20px;
+                                                        -webkit-print-color-adjust: exact;
+                                                        print-color-adjust: exact;
+                                                    }
+                                                    @media print {
+                                                        body { 
+                                                            -webkit-print-color-adjust: exact;
+                                                            print-color-adjust: exact;
+                                                        }
+                                                    }
                                                 </style>
                                             </head>
                                             <body>
                                                 ${currentTestDoc}
                                             </body>
                                         </html>
-                                    `);
-                                    printWindow.document.close();
-                                    printWindow.print();
+                                    `;
+                                    const blob = new Blob([content], { type: 'text/html' });
+                                    const url = URL.createObjectURL(blob);
+                                    const printWindow = window.open(url, '_blank');
+                                    printWindow.onload = () => {
+                                        printWindow.document.close();
+                                        printWindow.focus();
+                                        const mediaQueryList = printWindow.matchMedia('print');
+                                        mediaQueryList.addListener(function(mql) {
+                                            if (!mql.matches) {
+                                                URL.revokeObjectURL(url);
+                                                printWindow.close();
+                                            }
+                                        });
+                                        printWindow.print();
+                                    };
                                 }}
                             >
-                                Print
+                                Save as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Save Answers Confirmation Modal */}
+            {showSaveAnswersConfirmModal && (
+                <div className="modal-overlay" onClick={() => setShowSaveAnswersConfirmModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Confirm Save Answers</h2>
+                            <button className="close-button" onClick={() => setShowSaveAnswersConfirmModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <p>Confirm saving of answers for {unfilteredCandidates.find(c => c.id === parseInt(selectedAnswerCandidate))?.name}</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-button" onClick={() => setShowSaveAnswersConfirmModal(false)}>Cancel</button>
+                            <button className="modal-button primary" onClick={handleConfirmSaveAnswers}>Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Test Answers Modal */}
+            {showTestAnswersModal && (
+                <div className="modal-overlay" onClick={handleCloseTestAnswersModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Test Answers</h2>
+                            <button className="close-button" onClick={handleCloseTestAnswersModal}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div dangerouslySetInnerHTML={{ __html: currentTestAnswers }} />
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-button" onClick={handleCloseTestAnswersModal}>Close</button>
+                            <button 
+                                className="modal-button primary"
+                                onClick={() => {
+                                    const content = `
+                                        <!DOCTYPE html>
+                                        <html>
+                                            <head>
+                                                <title>Test Answers</title>
+                                                <style>
+                                                    body { 
+                                                        font-family: Arial, sans-serif; 
+                                                        padding: 20px;
+                                                        -webkit-print-color-adjust: exact;
+                                                        print-color-adjust: exact;
+                                                    }
+                                                    @media print {
+                                                        body { 
+                                                            -webkit-print-color-adjust: exact;
+                                                            print-color-adjust: exact;
+                                                        }
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                ${currentTestAnswers}
+                                            </body>
+                                        </html>
+                                    `;
+                                    const blob = new Blob([content], { type: 'text/html' });
+                                    const url = URL.createObjectURL(blob);
+                                    const printWindow = window.open(url, '_blank');
+                                    printWindow.onload = () => {
+                                        printWindow.document.close();
+                                        printWindow.focus();
+                                        const mediaQueryList = printWindow.matchMedia('print');
+                                        mediaQueryList.addListener(function(mql) {
+                                            if (!mql.matches) {
+                                                URL.revokeObjectURL(url);
+                                                printWindow.close();
+                                            }
+                                        });
+                                        printWindow.print();
+                                    };
+                                }}
+                            >
+                                Save as PDF
                             </button>
                         </div>
                     </div>

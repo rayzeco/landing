@@ -10,6 +10,8 @@ const AddOpenRolesPage = () => {
     const [clients, setClients] = useState([]);
     const [showAddForm, setShowAddForm] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
+    const [showTestModal, setShowTestModal] = useState(false);
+    const [currentTestDoc, setCurrentTestDoc] = useState('');
     const [filters, setFilters] = useState({
         clientName: '',
         role_desc: '',
@@ -351,6 +353,19 @@ const AddOpenRolesPage = () => {
         window.URL.revokeObjectURL(url);
     };
 
+    const handleTestClick = (e, testDoc) => {
+        e.stopPropagation();
+        if (!testDoc) return;
+        
+        setCurrentTestDoc(testDoc);
+        setShowTestModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowTestModal(false);
+        setCurrentTestDoc('');
+    };
+
     return (
         <div className="add-open-roles-container">
             <div className="panel">
@@ -559,6 +574,7 @@ const AddOpenRolesPage = () => {
                                 <th>Posted On</th>
                                 <th>Remote</th>
                                 <th>Job Description</th>
+                                <th>Test</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -578,10 +594,21 @@ const AddOpenRolesPage = () => {
                                         {role.job_desc_link ? (
                                             <button 
                                                 type="button"
-                                                className="role-link"
+                                                className="view-link"
                                                 onClick={(e) => handleCVClick(e, role.job_desc_link)}
                                             >
-                                                View Job Description
+                                                View JD
+                                            </button>
+                                        ) : '-'}
+                                    </td>
+                                    <td>
+                                        {role.test_doc ? (
+                                            <button 
+                                                type="button"
+                                                className="download-test"
+                                                onClick={(e) => handleTestClick(e, role.test_doc)}
+                                            >
+                                                View Test
                                             </button>
                                         ) : '-'}
                                     </td>
@@ -591,6 +618,71 @@ const AddOpenRolesPage = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Test Document Modal */}
+            {showTestModal && (
+                <div className="modal-overlay" onClick={handleCloseModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Test Document</h2>
+                            <button className="close-button" onClick={handleCloseModal}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div dangerouslySetInnerHTML={{ __html: currentTestDoc }} />
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-button" onClick={handleCloseModal}>Close</button>
+                            <button 
+                                className="modal-button primary"
+                                onClick={() => {
+                                    const content = `
+                                        <!DOCTYPE html>
+                                        <html>
+                                            <head>
+                                                <title>Test Document</title>
+                                                <style>
+                                                    body { 
+                                                        font-family: Arial, sans-serif; 
+                                                        padding: 20px;
+                                                        -webkit-print-color-adjust: exact;
+                                                        print-color-adjust: exact;
+                                                    }
+                                                    @media print {
+                                                        body { 
+                                                            -webkit-print-color-adjust: exact;
+                                                            print-color-adjust: exact;
+                                                        }
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                ${currentTestDoc}
+                                            </body>
+                                        </html>
+                                    `;
+                                    const blob = new Blob([content], { type: 'text/html' });
+                                    const url = URL.createObjectURL(blob);
+                                    const printWindow = window.open(url, '_blank');
+                                    printWindow.onload = () => {
+                                        printWindow.document.close();
+                                        printWindow.focus();
+                                        const mediaQueryList = printWindow.matchMedia('print');
+                                        mediaQueryList.addListener(function(mql) {
+                                            if (!mql.matches) {
+                                                URL.revokeObjectURL(url);
+                                                printWindow.close();
+                                            }
+                                        });
+                                        printWindow.print();
+                                    };
+                                }}
+                            >
+                                Save as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
