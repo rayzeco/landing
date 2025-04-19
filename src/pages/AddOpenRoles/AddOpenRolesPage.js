@@ -26,12 +26,13 @@ const AddOpenRolesPage = () => {
         clientName: '',
         role_desc: '',
         location: '',
-        status: 'Open', // Defaulted to 'Open'
-        posted_on: new Date().toISOString().split('T')[0], // Default to today's date
-        remote: 'no', // Default to 'no'
-        job_desc: '', // Changed from job_desc_link
-        job_desc_link: '', // Added new field for job description link
-        test_doc: '' // Added new field for HTML content
+        status: 'Open',
+        posted_on: new Date().toISOString().split('T')[0],
+        remote: 'no',
+        job_desc: '',
+        job_desc_link: '',
+        test_doc: '',
+        jd_doc: ''
     });
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -197,7 +198,6 @@ const AddOpenRolesPage = () => {
         e.preventDefault();
         const token = sessionStorage.getItem('token');
 
-        // Get client ID from client name
         const selectedClient = clients.find(client => client.name === newOpenRole.clientName);
         if (!selectedClient) {
             alert('Please select a valid client');
@@ -213,7 +213,8 @@ const AddOpenRolesPage = () => {
                 posted_on: newOpenRole.posted_on,
                 remote: newOpenRole.remote.toLowerCase(),
                 job_desc_link: newOpenRole.job_desc_link,
-                test_doc: newOpenRole.test_doc || '' // Add test_doc field
+                test_doc: newOpenRole.test_doc || '',
+                jd_doc: newOpenRole.jd_doc || '',
             };
 
             await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_open_role`, payload, {
@@ -232,7 +233,8 @@ const AddOpenRolesPage = () => {
                 remote: 'no',
                 job_desc: '',
                 job_desc_link: '',
-                test_doc: ''
+                test_doc: '',
+                jd_doc: ''
             });
 
             // Refresh open roles list
@@ -268,7 +270,6 @@ const AddOpenRolesPage = () => {
         formData.append('file', file);
 
         try {
-            // First, extract text from PDF
             const token = sessionStorage.getItem('token');
             const response = await axios.post(
                 `${process.env.REACT_APP_RYZ_SERVER}/extract_pdf_text`,
@@ -282,17 +283,19 @@ const AddOpenRolesPage = () => {
             );
 
             if (response.data.status === 'success') {
-                // Clean up the text by removing extra formatting
                 let cleanText = response.data.text
                     .replace(/\r\n/g, '\n')
                     .replace(/\r/g, '\n')
                     .replace(/[ \t]+/g, ' ')
                     .replace(/\n\s*\n/g, '\n\n')
                     .trim();
+                
+                //console.log(cleanText); // Store the cleaned text in jd_doc
+                setNewOpenRole(prev => ({
+                    ...prev,
+                    jd_doc: cleanText
+                }));
 
-                console.log('Cleaned PDF text:', cleanText);
-
-                // Create the job description JSON object
                 const jobDescriptionObj = {
                     content: cleanText
                 };

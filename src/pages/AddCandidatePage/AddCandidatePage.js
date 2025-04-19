@@ -12,6 +12,9 @@ const AddCandidatePage = () => {
     const [showUploadAnswers, setShowUploadAnswers] = useState(false);
     const [selectedAnswerCandidate, setSelectedAnswerCandidate] = useState('');
     const [candidateAnswers, setCandidateAnswers] = useState('');
+    const [showMatchScoreModal, setShowMatchScoreModal] = useState(false);
+    const [matchScoreResult, setMatchScoreResult] = useState('');
+    const [cvFile, setCvFile] = useState(null);
     const [clients, setClients] = useState([]);
     const [openRoles, setOpenRoles] = useState([]);
     const [filteredOpenRoles, setFilteredOpenRoles] = useState([]);
@@ -47,6 +50,9 @@ const AddCandidatePage = () => {
     const [selectedClient, setSelectedClient] = useState('');
     const [selectedRole, setSelectedRole] = useState('');
     const [submissionNotes, setSubmissionNotes] = useState('');
+    const [isSavingAnswers, setIsSavingAnswers] = useState(false);
+    const [showTestScoreModal, setShowTestScoreModal] = useState(false);
+    const [currentTestScore, setCurrentTestScore] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -211,7 +217,6 @@ const AddCandidatePage = () => {
             alert(`Please fill in the following required fields:\n${missingFields.join('\n')}`);
             return;
         }
-
         try {
             // First create the candidate
             const candidateResponse = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_candidate`, newCandidate, {
@@ -229,8 +234,10 @@ const AddCandidatePage = () => {
                 status: 'Submitted',
                 submitted_on: new Date().toISOString(),
                 remote: 'no',
-                cv_link: newCandidate.cv_link
+                cv_link: newCandidate.cv_link,
+                match_score: newCandidate.match_score || null
             };
+            console.log("match_score", newCandidate.match_score, " : ", newCandidate.id);
 
             await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_submit_cvrole`, submitCVRoleData, {
                 headers: {
@@ -249,8 +256,12 @@ const AddCandidatePage = () => {
                 feedback: '',
                 cv_link: '',
                 client_id: '',
-                open_role_id: ''
+                open_role_id: '',
+                match_score: ''
             });
+
+            // Reset match score
+            setMatchScoreResult('');
 
             // Refresh candidate list
             const fetchCandidates = async () => {
@@ -325,6 +336,63 @@ const AddCandidatePage = () => {
     const handleCloseTestAnswersModal = () => {
         setShowTestAnswersModal(false);
         setCurrentTestAnswers('');
+    };
+
+    const handleMatchScoreClick = () => {
+        setShowMatchScoreModal(true);
+        setCvFile(null);
+        setMatchScoreResult('');
+    };
+
+    const handleCvUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setCvFile(file);
+        const selectedRole = openRoles.find(role => role.id === parseInt(newCandidate.open_role_id));
+        
+        if (!selectedRole || !selectedRole.jd_doc) {
+            alert('No job description found for the selected role');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('cv', file);
+            formData.append('job_desc', selectedRole.jd_doc);
+
+            const token = sessionStorage.getItem('token');
+            const response = await axios.post(
+                `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate_match`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            // Set the match score result in state
+            const matchScore = response.data.evaluation;
+            setMatchScoreResult(matchScore);
+
+            // Update the newCandidate state with the match score
+            setNewCandidate(prev => ({
+                ...prev,
+                match_score: matchScore
+            }));
+
+        } catch (error) {
+            console.error('Error generating match score:', error);
+            alert('Error generating match score. Please try again.');
+        }
+    };
+
+    const handleCloseMatchScoreModal = () => {
+        setShowMatchScoreModal(false);
+        setCvFile(null);
+        setMatchScoreResult('');
     };
 
     // Helper function to get CV role submission for a candidate
@@ -406,16 +474,45 @@ const AddCandidatePage = () => {
     };
 
     const handleConfirmSaveAnswers = async () => {
+        setIsSavingAnswers(true);
         const token = sessionStorage.getItem('token');
         const submission = getCVRoleSubmission(selectedAnswerCandidate);
 
         if (!submission) {
             alert('No submission found for this candidate. Please ensure the candidate is submitted for an open role first.');
+            setIsSavingAnswers(false);
             return;
         }
 
         try {
-            // Update the submit_cv_role entry with the test answers
+            // Get the open role's test document
+            const openRole = openRoles.find(role => role.id === submission.open_roles_id);
+            if (!openRole || !openRole.test_doc) {
+                alert('No test document found for this role.');
+                setIsSavingAnswers(false);
+                return;
+            }
+
+            // Generate score using the test document and candidate answers
+            const scoreResponse = await axios.post(
+                `${process.env.REACT_APP_RYZ_SERVER}/generate_score`,
+                {
+                    test_doc: openRole.test_doc,
+                    test_answers: candidateAnswers
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (scoreResponse.data.status !== 'success') {
+                throw new Error('Failed to generate score');
+            }
+
+            // Update the submit_cv_role entry with the test answers and generated score
             const updatePayload = {
                 client_id: submission.client_id,
                 open_roles_id: submission.open_roles_id,
@@ -424,7 +521,8 @@ const AddCandidatePage = () => {
                 submitted_on: submission.submitted_on,
                 remote: submission.remote,
                 cv_link: submission.cv_link,
-                test_answers: candidateAnswers
+                test_answers: candidateAnswers,
+                test_score: scoreResponse.data.evaluation
             };
 
             await axios.put(
@@ -454,11 +552,24 @@ const AddCandidatePage = () => {
             setSelectedAnswerCandidate('');
             setCandidateAnswers('');
             setShowSaveAnswersConfirmModal(false);
+            setIsSavingAnswers(false);
             alert('Test answers saved successfully!');
         } catch (error) {
             console.error('Error saving test answers:', error);
             alert('Error saving test answers. Please try again.');
+            setIsSavingAnswers(false);
         }
+    };
+
+    const handleTestScoreClick = (e, testScore) => {
+        e.stopPropagation();
+        setCurrentTestScore(testScore);
+        setShowTestScoreModal(true);
+    };
+
+    const handleCloseTestScoreModal = () => {
+        setShowTestScoreModal(false);
+        setCurrentTestScore('');
     };
 
     const renderUploadAnswersSection = () => (
@@ -526,7 +637,7 @@ const AddCandidatePage = () => {
                             cursor: candidateAnswers ? 'pointer' : 'not-allowed'
                         }}
                     >
-                        Save Answers
+                        Submit Score
                     </button>
                 </div>
             </div>
@@ -699,6 +810,20 @@ const AddCandidatePage = () => {
                                     </select>
                                 </div>
                                 <div className="form-group">
+                                    <button 
+                                        type="button" 
+                                        className="submit-button"
+                                        onClick={handleMatchScoreClick}
+                                        disabled={!newCandidate.open_role_id}
+                                        style={{
+                                            opacity: newCandidate.open_role_id ? 1 : 0.5,
+                                            cursor: newCandidate.open_role_id ? 'pointer' : 'not-allowed'
+                                        }}
+                                    >
+                                        Match Score
+                                    </button>
+                                </div>
+                                <div className="form-group">
                                     <button type="submit" className="submit-button">
                                         Add Candidate
                                     </button>
@@ -789,7 +914,7 @@ const AddCandidatePage = () => {
                         <thead>
                             <tr>
                                 <th colSpan="5" className="section-header" style={{borderRight: '3px solid #00A389'}}>Candidate</th>
-                                <th colSpan="6" className="section-header">Open Role</th>
+                                <th colSpan="7" className="section-header">Open Role</th>
                             </tr>
                             <tr>
                                 <th>Name</th>
@@ -802,6 +927,8 @@ const AddCandidatePage = () => {
                                 <th>JD Link</th>
                                 <th>Test</th>
                                 <th>Test Answers</th>
+                                <th>Test Score</th>
+                                <th>Match Score</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -867,6 +994,30 @@ const AddCandidatePage = () => {
                                                 </button>
                                             ) : '-'}
                                         </td>
+                                        <td>
+                                            {submission?.test_score ? (
+                                                <button 
+                                                    type="button"
+                                                    className="view-test-score"
+                                                    onClick={(e) => handleTestScoreClick(e, submission.test_score)}
+                                                >
+                                                    View Score
+                                                </button>
+                                            ) : '-'}
+                                        </td>
+                                        <td>{submission?.match_score ? (
+                                            <button 
+                                                type="button"
+                                                className="view-match-score"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setMatchScoreResult(submission.match_score);
+                                                    setShowMatchScoreModal(true);
+                                                }}
+                                            >
+                                                View Score
+                                            </button>
+                                        ) : '-'}</td>
                                     </tr>
                                 );
                             })}
@@ -942,18 +1093,45 @@ const AddCandidatePage = () => {
 
             {/* Save Answers Confirmation Modal */}
             {showSaveAnswersConfirmModal && (
-                <div className="modal-overlay" onClick={() => setShowSaveAnswersConfirmModal(false)}>
+                <div className="modal-overlay" onClick={() => !isSavingAnswers && setShowSaveAnswersConfirmModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>Confirm Save Answers</h2>
-                            <button className="close-button" onClick={() => setShowSaveAnswersConfirmModal(false)}>×</button>
+                            <button className="close-button" onClick={() => !isSavingAnswers && setShowSaveAnswersConfirmModal(false)}>×</button>
                         </div>
                         <div className="modal-body">
                             <p>Confirm saving of answers for {unfilteredCandidates.find(c => c.id === parseInt(selectedAnswerCandidate))?.name}</p>
                         </div>
                         <div className="modal-footer">
-                            <button className="modal-button" onClick={() => setShowSaveAnswersConfirmModal(false)}>Cancel</button>
-                            <button className="modal-button primary" onClick={handleConfirmSaveAnswers}>Confirm</button>
+                            <button 
+                                className="modal-button" 
+                                onClick={() => setShowSaveAnswersConfirmModal(false)}
+                                disabled={isSavingAnswers}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="modal-button primary" 
+                                onClick={handleConfirmSaveAnswers}
+                                disabled={isSavingAnswers}
+                            >
+                                {isSavingAnswers ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <img 
+                                            src="/rayze-icon.png" 
+                                            alt="Loading" 
+                                            style={{ 
+                                                width: '20px', 
+                                                height: '20px', 
+                                                animation: 'spin 1s linear infinite' 
+                                            }} 
+                                        />
+                                        <span>Processing...</span>
+                                    </div>
+                                ) : (
+                                    'Confirm'
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -997,6 +1175,102 @@ const AddCandidatePage = () => {
                                             </head>
                                             <body>
                                                 ${currentTestAnswers}
+                                            </body>
+                                        </html>
+                                    `;
+                                    const blob = new Blob([content], { type: 'text/html' });
+                                    const url = URL.createObjectURL(blob);
+                                    const printWindow = window.open(url, '_blank');
+                                    printWindow.onload = () => {
+                                        printWindow.document.close();
+                                        printWindow.focus();
+                                        const mediaQueryList = printWindow.matchMedia('print');
+                                        mediaQueryList.addListener(function(mql) {
+                                            if (!mql.matches) {
+                                                URL.revokeObjectURL(url);
+                                                printWindow.close();
+                                            }
+                                        });
+                                        printWindow.print();
+                                    };
+                                }}
+                            >
+                                Save as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Match Score Modal */}
+            {showMatchScoreModal && (
+                <div className="modal-overlay" onClick={handleCloseMatchScoreModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Candidate Match Score</h2>
+                            <button className="close-button" onClick={handleCloseMatchScoreModal}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            {!matchScoreResult ? (
+                                <div className="upload-section">
+                                    <p>Please upload the candidate's CV to generate a match score.</p>
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.doc,.docx"
+                                        onChange={handleCvUpload}
+                                        style={{ marginTop: '10px' }}
+                                    />
+                                    {cvFile && <p>Processing... Please wait.</p>}
+                                </div>
+                            ) : (
+                                <div dangerouslySetInnerHTML={{ __html: matchScoreResult }} />
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-button" onClick={handleCloseMatchScoreModal}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Test Score Modal */}
+            {showTestScoreModal && (
+                <div className="modal-overlay" onClick={handleCloseTestScoreModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Test Score</h2>
+                            <button className="close-button" onClick={handleCloseTestScoreModal}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div dangerouslySetInnerHTML={{ __html: currentTestScore }} />
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-button" onClick={handleCloseTestScoreModal}>Close</button>
+                            <button 
+                                className="modal-button primary"
+                                onClick={() => {
+                                    const content = `
+                                        <!DOCTYPE html>
+                                        <html>
+                                            <head>
+                                                <title>Test Score</title>
+                                                <style>
+                                                    body { 
+                                                        font-family: Arial, sans-serif; 
+                                                        padding: 20px;
+                                                        -webkit-print-color-adjust: exact;
+                                                        print-color-adjust: exact;
+                                                    }
+                                                    @media print {
+                                                        body { 
+                                                            -webkit-print-color-adjust: exact;
+                                                            print-color-adjust: exact;
+                                                        }
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                ${currentTestScore}
                                             </body>
                                         </html>
                                     `;
