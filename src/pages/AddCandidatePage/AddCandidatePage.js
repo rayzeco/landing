@@ -593,53 +593,39 @@ const AddCandidatePage = () => {
                         ))}
                     </select>
                 </div>
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '10px'
-                }}>
-                    <button 
-                        type="button"
-                        className="submit-button"
-                        onClick={() => document.getElementById('answers-upload').click()}
-                        disabled={!selectedAnswerCandidate}
-                        style={{ 
-                            backgroundColor: '#00A389',
-                            margin: 0,
-                            width: 'fit-content',
-                            whiteSpace: 'nowrap',
-                            padding: '8px 16px',
-                            cursor: selectedAnswerCandidate ? 'pointer' : 'not-allowed',
-                            opacity: selectedAnswerCandidate ? 1 : 0.5
-                        }}
-                    >
-                        Upload Test Answers
-                    </button>
-                    <input
-                        type="file"
-                        id="answers-upload"
-                        accept=".txt"
-                        onChange={handleAnswersFileUpload}
-                        style={{ display: 'none' }}
-                        disabled={!selectedAnswerCandidate}
-                    />
-                    <button 
-                        type="button" 
-                        className="submit-button"
-                        onClick={handleSaveAnswers}
-                        disabled={!candidateAnswers}
-                        style={{
-                            margin: 0,
-                            width: 'fit-content',
-                            whiteSpace: 'nowrap',
-                            padding: '8px 16px',
-                            opacity: candidateAnswers ? 1 : 0.5,
-                            cursor: candidateAnswers ? 'pointer' : 'not-allowed'
-                        }}
-                    >
-                        Submit Score
-                    </button>
-                </div>
+                <button 
+                    type="button"
+                    className="submit-button"
+                    onClick={() => {}}
+                    disabled={!selectedAnswerCandidate}
+                    style={{ 
+                        backgroundColor: '#00A389',
+                        margin: 0,
+                        width: 'fit-content',
+                        whiteSpace: 'nowrap',
+                        padding: '8px 16px',
+                        cursor: selectedAnswerCandidate ? 'pointer' : 'not-allowed',
+                        opacity: selectedAnswerCandidate ? 1 : 0.5
+                    }}
+                >
+                    Hire Candidate
+                </button>
+                <button 
+                    type="button" 
+                    className="submit-button"
+                    onClick={handleSaveAnswers}
+                    disabled={!selectedAnswerCandidate}
+                    style={{
+                        margin: 0,
+                        width: 'fit-content',
+                        whiteSpace: 'nowrap',
+                        padding: '8px 16px',
+                        opacity: selectedAnswerCandidate ? 1 : 0.5,
+                        cursor: selectedAnswerCandidate ? 'pointer' : 'not-allowed'
+                    }}
+                >
+                    Submit Answers
+                </button>
             </div>
             {candidateAnswers && (
                 <div className="file-preview" style={{ marginTop: '5px', fontSize: '0.9em', color: '#666' }}>
@@ -839,7 +825,7 @@ const AddCandidatePage = () => {
                         className="accordion-header"
                         onClick={() => setShowUploadAnswers(!showUploadAnswers)}
                     >
-                        <h2>Upload Candidate Test Answers</h2>
+                        <h2>Candidate Actions</h2>
                         <span className={`arrow ${showUploadAnswers ? 'open' : ''}`}>▼</span>
                     </div>
                     {showUploadAnswers && renderUploadAnswersSection()}
@@ -1096,11 +1082,42 @@ const AddCandidatePage = () => {
                 <div className="modal-overlay" onClick={() => !isSavingAnswers && setShowSaveAnswersConfirmModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Confirm Save Answers</h2>
+                            <h2>Submit Test Answers</h2>
                             <button className="close-button" onClick={() => !isSavingAnswers && setShowSaveAnswersConfirmModal(false)}>×</button>
                         </div>
                         <div className="modal-body">
-                            <p>Confirm saving of answers for {unfilteredCandidates.find(c => c.id === parseInt(selectedAnswerCandidate))?.name}</p>
+                            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                                <button 
+                                    type="button"
+                                    className="submit-button"
+                                    onClick={() => document.getElementById('answers-upload').click()}
+                                    disabled={isSavingAnswers}
+                                    style={{ 
+                                        backgroundColor: '#00A389',
+                                        margin: '0 auto',
+                                        width: 'fit-content',
+                                        whiteSpace: 'nowrap',
+                                        padding: '8px 16px',
+                                        cursor: isSavingAnswers ? 'not-allowed' : 'pointer',
+                                        opacity: isSavingAnswers ? 0.5 : 1
+                                    }}
+                                >
+                                    Upload Answers
+                                </button>
+                                <input
+                                    type="file"
+                                    id="answers-upload"
+                                    accept=".txt"
+                                    onChange={handleAnswersFileUpload}
+                                    style={{ display: 'none' }}
+                                    disabled={isSavingAnswers}
+                                />
+                                {candidateAnswers && (
+                                    <div className="file-preview" style={{ marginTop: '20px', fontSize: '0.9em', color: '#666' }}>
+                                        File uploaded successfully ( {candidateAnswers.length} characters)
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="modal-footer">
                             <button 
@@ -1113,7 +1130,7 @@ const AddCandidatePage = () => {
                             <button 
                                 className="modal-button primary" 
                                 onClick={handleConfirmSaveAnswers}
-                                disabled={isSavingAnswers}
+                                disabled={isSavingAnswers || !candidateAnswers}
                             >
                                 {isSavingAnswers ? (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
