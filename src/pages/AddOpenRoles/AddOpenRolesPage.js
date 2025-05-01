@@ -299,7 +299,7 @@ const AddOpenRolesPage = () => {
                 const jobDescriptionObj = {
                     content: cleanText
                 };
-
+                console.log('jobDescriptionObj is ', jobDescriptionObj);
                 // Call the evaluation API
                 const evalResponse = await axios.post(
                     `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate_evaluation`,

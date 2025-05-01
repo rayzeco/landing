@@ -53,6 +53,15 @@ const AddCandidatePage = () => {
     const [isSavingAnswers, setIsSavingAnswers] = useState(false);
     const [showTestScoreModal, setShowTestScoreModal] = useState(false);
     const [currentTestScore, setCurrentTestScore] = useState('');
+    const [showHireModal, setShowHireModal] = useState(false);
+    const [hireForm, setHireForm] = useState({
+        start_date: '',
+        end_date: '',
+        client_price: '',
+        recruiter_price: ''
+    });
+    const [isFormEnabled, setIsFormEnabled] = useState(false);
+    const [isCVProcessing, setIsCVProcessing] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -344,26 +353,20 @@ const AddCandidatePage = () => {
         setMatchScoreResult('');
     };
 
-    const handleCvUpload = async (event) => {
+    const handleNewCV = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
         setCvFile(file);
-        const selectedRole = openRoles.find(role => role.id === parseInt(newCandidate.open_role_id));
+        setIsCVProcessing(true);
         
-        if (!selectedRole || !selectedRole.jd_doc) {
-            alert('No job description found for the selected role');
-            return;
-        }
-
         try {
             const formData = new FormData();
             formData.append('cv', file);
-            formData.append('job_desc', selectedRole.jd_doc);
-
+            
             const token = sessionStorage.getItem('token');
             const response = await axios.post(
-                `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate_match`,
+                `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate`,
                 formData,
                 {
                     headers: {
@@ -373,19 +376,86 @@ const AddCandidatePage = () => {
                 }
             );
 
-            // Set the match score result in state
-            const matchScore = response.data.evaluation;
-            setMatchScoreResult(matchScore);
+            // Parse the candidate_info string into a JSON object
+            const candidateInfo = JSON.parse(response.data.candidate_info);
 
-            // Update the newCandidate state with the match score
+            // Update the newCandidate state with the parsed information
             setNewCandidate(prev => ({
                 ...prev,
-                match_score: matchScore
+                name: candidateInfo.name || '',
+                phone: candidateInfo.phone || '',
+                email: candidateInfo.email || '',
+                role: candidateInfo.role || '',
+                location: candidateInfo.location || '',
+                cv_link: candidateInfo.cv_summary || '',
+
+
+                // Keep existing values for fields not provided by the API
+                candidate_cost: prev.candidate_cost,
+                client_id: prev.client_id,
+                open_role_id: prev.open_role_id
             }));
 
+            // Enable the form after successful CV upload
+            setIsFormEnabled(true);
+
+            // If there's a selected role, proceed with match score generation
+            const selectedRole = openRoles.find(role => role.id === parseInt(newCandidate.open_role_id));
+            if (selectedRole && selectedRole.jd_doc) {
+                await handleCvUpload(event);
+            }
+
         } catch (error) {
-            console.error('Error generating match score:', error);
-            alert('Error generating match score. Please try again.');
+            console.error('Error processing CV:', error);
+            alert('Error processing CV. Please try again.');
+            setIsFormEnabled(false);
+        } finally {
+            setIsCVProcessing(false);
+        }
+    };
+
+    const handleCvUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        setCvFile(file);
+        const selectedRole = openRoles.find(role => role.id === parseInt(newCandidate.open_role_id));
+        
+        try {
+            const formData = new FormData();
+            formData.append('cv', file);
+            
+            // If there's a selected role with JD, include it
+            if (selectedRole && selectedRole.jd_doc) {
+                formData.append('job_desc', selectedRole.jd_doc);
+                
+                const token = sessionStorage.getItem('token');
+                const response = await axios.post(
+                    `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate_match`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                const matchScore = response.data.evaluation;
+                setMatchScoreResult(matchScore);
+                setNewCandidate(prev => ({
+                    ...prev,
+                    match_score: matchScore
+                }));
+            }
+
+            // Enable the form after successful CV upload
+            setIsFormEnabled(true);
+
+        } catch (error) {
+            console.error('Error processing CV:', error);
+            alert('Error processing CV. Please try again.');
+            setIsFormEnabled(false);
         }
     };
 
@@ -466,11 +536,9 @@ const AddCandidatePage = () => {
     };
 
     const handleSaveAnswers = async () => {
-        if (!selectedAnswerCandidate || !candidateAnswers) {
-            alert('Please select a candidate and upload answers file');
-            return;
-        }
         setShowSaveAnswersConfirmModal(true);
+
+
     };
 
     const handleConfirmSaveAnswers = async () => {
@@ -508,8 +576,8 @@ const AddCandidatePage = () => {
                 }
             );
 
-            if (scoreResponse.data.status !== 'success') {
-                throw new Error('Failed to generate score');
+            if (!scoreResponse.data || !scoreResponse.data.evaluation) {
+                throw new Error('Invalid response from score generation');
             }
 
             // Update the submit_cv_role entry with the test answers and generated score
@@ -556,7 +624,11 @@ const AddCandidatePage = () => {
             alert('Test answers saved successfully!');
         } catch (error) {
             console.error('Error saving test answers:', error);
-            alert('Error saving test answers. Please try again.');
+            let errorMessage = 'Error saving test answers. Please try again.';
+            if (error.response) {
+                errorMessage = `Error: ${error.response.data.message || error.response.statusText}`;
+            }
+            alert(errorMessage);
             setIsSavingAnswers(false);
         }
     };
@@ -570,6 +642,125 @@ const AddCandidatePage = () => {
     const handleCloseTestScoreModal = () => {
         setShowTestScoreModal(false);
         setCurrentTestScore('');
+    };
+
+    const handleHireClick = async () => {
+        // Find the candidate
+        const candidate = unfilteredCandidates.find(c => c.id === parseInt(selectedAnswerCandidate));
+        
+        if (!candidate) {
+            alert('Candidate not found');
+            return;
+        }
+
+        if (candidate.status === 'Hired') {
+            alert('This candidate is already hired');
+            return;
+        }
+
+        setShowHireModal(true);
+    };
+
+    const handleHireFormChange = (e) => {
+        const { name, value } = e.target;
+        setHireForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleHireConfirm = async () => {
+        const token = sessionStorage.getItem('token');
+
+        try {
+            // First get the candidate to ensure we have all necessary data
+            const candidate = unfilteredCandidates.find(c => c.id === parseInt(selectedAnswerCandidate));
+            if (!candidate) {
+                alert('Candidate not found');
+                return;
+            }
+
+            // Get the submission for this candidate
+            const submission = submitCVRoles.find(sub => sub.candidates_id === parseInt(selectedAnswerCandidate));
+            if (!submission) {
+                alert('No submission found for this candidate');
+                return;
+            }
+
+            // Create new transaction with exact required fields from TransactionCreate
+            const transactionData = {
+                txn_date: new Date().toISOString(),  // Required field
+                candidate_id: parseInt(selectedAnswerCandidate),
+                client_id: parseInt(submission.client_id),
+                client_price: parseFloat(hireForm.client_price),
+                start_date: new Date(hireForm.start_date).toISOString(),  // Convert to ISO string
+                end_date: new Date(hireForm.end_date).toISOString(),     // Convert to ISO string
+                // Optional fields
+                recruiter_id: 2,
+                referral_id: 4,
+                recruiter_price: parseFloat(hireForm.recruiter_price),
+                referral_price: 2.5,
+                num_payments_received: 0,
+                total_client_recv: 0,
+                total_recruiter_paid: 0,
+                total_referral_paid: 0
+            };
+
+            await axios.post(
+                `${process.env.REACT_APP_RYZ_SERVER}/new_transaction`,
+                transactionData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+            // Update candidate status
+            await axios.put(
+                `${process.env.REACT_APP_RYZ_SERVER}/update_candidate/${selectedAnswerCandidate}`,
+                { status: 'Hired' },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+
+            // Reset and close modal
+            setHireForm({
+                start_date: '',
+                end_date: '',
+                client_price: '',
+                recruiter_price: ''
+            });
+            setShowHireModal(false);
+
+            // Refresh candidates list
+            const candidatesResponse = await axios.get(
+                `${process.env.REACT_APP_RYZ_SERVER}/list_candidates`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+            setCandidates(candidatesResponse.data);
+            setFilteredCandidates(candidatesResponse.data);
+
+            alert('Candidate hired successfully!');
+        } catch (error) {
+            console.error('Error hiring candidate:', error);
+            if (error.response && error.response.data) {
+                console.log('Validation error:', error.response.data);
+                alert(`Error hiring candidate: ${JSON.stringify(error.response.data)}`);
+            } else {
+                alert('Error hiring candidate. Please try again.');
+            }
+        }
     };
 
     const renderUploadAnswersSection = () => (
@@ -596,7 +787,7 @@ const AddCandidatePage = () => {
                 <button 
                     type="button"
                     className="submit-button"
-                    onClick={() => {}}
+                    onClick={handleHireClick}
                     disabled={!selectedAnswerCandidate}
                     style={{ 
                         backgroundColor: '#00A389',
@@ -651,6 +842,67 @@ const AddCandidatePage = () => {
                     </div>
                     {showAddForm && (
                         <form onSubmit={handleSubmitCandidate} className="add-candidate-form">
+                            {/* Add Upload CV button */}
+                            <div className="form-row" style={{ marginBottom: '20px' }}>
+                                <button 
+                                    type="button"
+                                    className="submit-button"
+                                    onClick={() => document.getElementById('cv-upload').click()}
+                                    style={{
+                                        backgroundColor: '#00A389',
+                                        margin: 0,
+                                        width: 'fit-content',
+                                        whiteSpace: 'nowrap',
+                                        padding: '8px 16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}
+                                >
+                                    {isCVProcessing ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <img 
+                                                src="/rayze-icon.png" 
+                                                alt="Loading" 
+                                                style={{ 
+                                                    width: '20px', 
+                                                    height: '20px', 
+                                                    animation: 'spin 1s linear infinite' 
+                                                }} 
+                                            />
+                                            <span>Processing CV...</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            Upload CV {isFormEnabled && <span style={{ marginLeft: '5px' }}>✓</span>}
+                                        </>
+                                    )}
+                                </button>
+                                <input
+                                    type="file"
+                                    id="cv-upload"
+                                    accept=".pdf,.doc,.docx"
+                                    style={{ display: 'none' }}
+                                    onChange={handleNewCV}
+                                />
+                                {!isFormEnabled && (
+                                    <div style={{ 
+                                        marginLeft: '10px', 
+                                        color: '#666',
+                                        fontSize: '0.9em' 
+                                    }}>
+                                        Please upload a CV to enable the form
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Add horizontal line for separation */}
+                            <hr style={{ 
+                                margin: '0 0 20px 0',
+                                border: 'none',
+                                borderBottom: '1px solid #e0e0e0'
+                            }} />
+
                             {/* First Row: Name, Current Role, Location */}
                             <div className="form-row">
                                 <div className="form-group">
@@ -663,6 +915,7 @@ const AddCandidatePage = () => {
                                         value={newCandidate.name}
                                         onChange={handleNewCandidateChange}
                                         required
+                                        disabled={!isFormEnabled}
                                     />
                                 </div>
                                 <div className="form-group">
@@ -675,6 +928,7 @@ const AddCandidatePage = () => {
                                         value={newCandidate.role}
                                         onChange={handleNewCandidateChange}
                                         required
+                                        disabled={!isFormEnabled}
                                     />
                                 </div>
                                 <div className="form-group">
@@ -687,6 +941,7 @@ const AddCandidatePage = () => {
                                         value={newCandidate.location}
                                         onChange={handleNewCandidateChange}
                                         required
+                                        disabled={!isFormEnabled}
                                     />
                                 </div>
                             </div>
@@ -702,6 +957,7 @@ const AddCandidatePage = () => {
                                         value={newCandidate.phone}
                                         onChange={handleNewCandidateChange}
                                         required
+                                        disabled={!isFormEnabled}
                                     />
                                 </div>
                                 <div className="form-group">
@@ -714,6 +970,7 @@ const AddCandidatePage = () => {
                                         value={newCandidate.email}
                                         onChange={handleNewCandidateChange}
                                         required
+                                        disabled={!isFormEnabled}
                                     />
                                 </div>
                                 <div className="form-group">
@@ -726,39 +983,11 @@ const AddCandidatePage = () => {
                                         value={newCandidate.candidate_cost}
                                         onChange={handleNewCandidateChange}
                                         required
+                                        disabled={!isFormEnabled}
                                     />
                                 </div>
                             </div>
-                            {/* Third Row: Feedback */}
-                            <div className="form-row">
-                                <div className="form-group full-width">
-                                    <label htmlFor="feedback">Feedback</label>
-                                    <textarea
-                                        id="feedback"
-                                        name="feedback"
-                                        placeholder="Enter feedback about the candidate"
-                                        value={newCandidate.feedback}
-                                        onChange={handleNewCandidateChange}
-                                        rows="3"
-                                    />
-                                </div>
-                            </div>
-                            {/* Fourth Row: CV Link */}
-                            <div className="form-row">
-                                <div className="form-group full-width">
-                                    <label htmlFor="cv_link">CV Link</label>
-                                    <input
-                                        type="url"
-                                        id="cv_link"
-                                        name="cv_link"
-                                        placeholder="Enter CV link"
-                                        value={newCandidate.cv_link}
-                                        onChange={handleNewCandidateChange}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            {/* Fifth Row: Client, Open Role, Submit Button */}
+                            {/* Last Row: Client, Open Role, Submit Button */}
                             <div className="form-row">
                                 <div className="form-group">
                                     <label htmlFor="client_id">Client</label>
@@ -768,6 +997,7 @@ const AddCandidatePage = () => {
                                         value={newCandidate.client_id}
                                         onChange={handleNewCandidateChange}
                                         required
+                                        disabled={!isFormEnabled}
                                     >
                                         <option value="">Select a client</option>
                                         {clients.map(client => (
@@ -785,7 +1015,7 @@ const AddCandidatePage = () => {
                                         value={newCandidate.open_role_id}
                                         onChange={handleNewCandidateChange}
                                         required
-                                        disabled={!isOpenRolesEnabled}
+                                        disabled={!isFormEnabled || !isOpenRolesEnabled}
                                     >
                                         <option value="">Select an open role</option>
                                         {filteredOpenRoles.map(role => (
@@ -800,17 +1030,25 @@ const AddCandidatePage = () => {
                                         type="button" 
                                         className="submit-button"
                                         onClick={handleMatchScoreClick}
-                                        disabled={!newCandidate.open_role_id}
+                                        disabled={!newCandidate.open_role_id || !isFormEnabled}
                                         style={{
-                                            opacity: newCandidate.open_role_id ? 1 : 0.5,
-                                            cursor: newCandidate.open_role_id ? 'pointer' : 'not-allowed'
+                                            opacity: newCandidate.open_role_id && isFormEnabled ? 1 : 0.5,
+                                            cursor: newCandidate.open_role_id && isFormEnabled ? 'pointer' : 'not-allowed'
                                         }}
                                     >
                                         Match Score
                                     </button>
                                 </div>
                                 <div className="form-group">
-                                    <button type="submit" className="submit-button">
+                                    <button 
+                                        type="submit" 
+                                        className="submit-button"
+                                        disabled={!isFormEnabled}
+                                        style={{
+                                            opacity: isFormEnabled ? 1 : 0.5,
+                                            cursor: isFormEnabled ? 'pointer' : 'not-allowed'
+                                        }}
+                                    >
                                         Add Candidate
                                     </button>
                                 </div>
@@ -1086,7 +1324,53 @@ const AddCandidatePage = () => {
                             <button className="close-button" onClick={() => !isSavingAnswers && setShowSaveAnswersConfirmModal(false)}>×</button>
                         </div>
                         <div className="modal-body">
-                            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                            <div style={{ 
+                                height: '300px', 
+                                overflowY: 'auto', 
+                                border: '1px solid #ccc',
+                                padding: '10px',
+                                marginBottom: '20px',
+                                backgroundColor: '#f9f9f9'
+                            }}>
+                                {candidateAnswers ? (
+                                    <pre style={{ 
+                                        whiteSpace: 'pre-wrap',
+                                        wordWrap: 'break-word',
+                                        margin: 0,
+                                        fontFamily: 'monospace'
+                                    }}>
+                                        {candidateAnswers}
+                                    </pre>
+                                ) : (
+                                    <div style={{ 
+                                        color: '#666',
+                                        textAlign: 'center',
+                                        padding: '20px'
+                                    }}>
+                                        No answers uploaded yet
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="modal-footer" style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            gap: '10px'
+                        }}>
+                            <button 
+                                className="modal-button" 
+                                onClick={() => setShowSaveAnswersConfirmModal(false)}
+                                disabled={isSavingAnswers}
+                            >
+                                Cancel
+                            </button>
+                            <div style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                alignItems: 'center',
+                                gap: '5px'
+                            }}>
                                 <button 
                                     type="button"
                                     className="submit-button"
@@ -1094,7 +1378,7 @@ const AddCandidatePage = () => {
                                     disabled={isSavingAnswers}
                                     style={{ 
                                         backgroundColor: '#00A389',
-                                        margin: '0 auto',
+                                        margin: 0,
                                         width: 'fit-content',
                                         whiteSpace: 'nowrap',
                                         padding: '8px 16px',
@@ -1113,20 +1397,11 @@ const AddCandidatePage = () => {
                                     disabled={isSavingAnswers}
                                 />
                                 {candidateAnswers && (
-                                    <div className="file-preview" style={{ marginTop: '20px', fontSize: '0.9em', color: '#666' }}>
-                                        File uploaded successfully ( {candidateAnswers.length} characters)
+                                    <div className="file-preview" style={{ fontSize: '0.9em', color: '#666' }}>
+                                        {candidateAnswers.length} characters
                                     </div>
                                 )}
                             </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="modal-button" 
-                                onClick={() => setShowSaveAnswersConfirmModal(false)}
-                                disabled={isSavingAnswers}
-                            >
-                                Cancel
-                            </button>
                             <button 
                                 className="modal-button primary" 
                                 onClick={handleConfirmSaveAnswers}
@@ -1234,7 +1509,7 @@ const AddCandidatePage = () => {
                                     <input
                                         type="file"
                                         accept=".pdf,.doc,.docx"
-                                        onChange={handleCvUpload}
+                                        onChange={handleNewCV}
                                         style={{ marginTop: '10px' }}
                                     />
                                     {cvFile && <p>Processing... Please wait.</p>}
@@ -1309,6 +1584,79 @@ const AddCandidatePage = () => {
                                 }}
                             >
                                 Save as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Hire Candidate Modal */}
+            {showHireModal && (
+                <div className="modal-overlay" onClick={() => setShowHireModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Hire Candidate</h2>
+                            <button className="close-button" onClick={() => setShowHireModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label htmlFor="start_date">Start Date</label>
+                                <input
+                                    type="date"
+                                    id="start_date"
+                                    name="start_date"
+                                    value={hireForm.start_date}
+                                    onChange={handleHireFormChange}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="end_date">End Date</label>
+                                <input
+                                    type="date"
+                                    id="end_date"
+                                    name="end_date"
+                                    value={hireForm.end_date}
+                                    onChange={handleHireFormChange}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="client_price">Client Price</label>
+                                <input
+                                    type="number"
+                                    id="client_price"
+                                    name="client_price"
+                                    value={hireForm.client_price}
+                                    onChange={handleHireFormChange}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="recruiter_price">Recruiter Price</label>
+                                <input
+                                    type="number"
+                                    id="recruiter_price"
+                                    name="recruiter_price"
+                                    value={hireForm.recruiter_price}
+                                    onChange={handleHireFormChange}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button 
+                                className="modal-button" 
+                                onClick={() => setShowHireModal(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="modal-button primary"
+                                onClick={handleHireConfirm}
+                                disabled={!hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price}
+                            >
+                                Hire Confirmed
                             </button>
                         </div>
                     </div>
