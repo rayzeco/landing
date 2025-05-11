@@ -226,6 +226,7 @@ const AddCandidatePage = () => {
             alert(`Please fill in the following required fields:\n${missingFields.join('\n')}`);
             return;
         }
+        console.log(newCandidate);
         try {
             // First create the candidate
             const candidateResponse = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_candidate`, newCandidate, {
@@ -286,6 +287,7 @@ const AddCandidatePage = () => {
             fetchCandidates();
             
             alert('Candidate created and submitted successfully!');
+            window.location.reload(); // Refresh the page after successful creation
         } catch (error) {
             console.error('Error creating candidate:', error);
             alert('Error creating candidate. Please try again.');
@@ -389,7 +391,6 @@ const AddCandidatePage = () => {
                 location: candidateInfo.location || '',
                 cv_link: candidateInfo.cv_summary || '',
 
-
                 // Keep existing values for fields not provided by the API
                 candidate_cost: prev.candidate_cost,
                 client_id: prev.client_id,
@@ -402,7 +403,31 @@ const AddCandidatePage = () => {
             // If there's a selected role, proceed with match score generation
             const selectedRole = openRoles.find(role => role.id === parseInt(newCandidate.open_role_id));
             if (selectedRole && selectedRole.jd_doc) {
-                await handleCvUpload(event);
+                // Create a new FormData for match score
+                const matchScoreFormData = new FormData();
+                matchScoreFormData.append('cv', file);
+                matchScoreFormData.append('job_desc', selectedRole.jd_doc);
+                
+                const matchScoreResponse = await axios.post(
+                    `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate_match`,
+                    matchScoreFormData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                const matchScore = matchScoreResponse.data.evaluation;
+                setMatchScoreResult(matchScore);
+                setNewCandidate(prev => ({
+                    ...prev,
+                    match_score: matchScore
+                }));
+                
+                // Show the match score modal
+                setShowMatchScoreModal(true);
             }
 
         } catch (error) {
@@ -661,12 +686,39 @@ const AddCandidatePage = () => {
         setShowHireModal(true);
     };
 
+    const calculateEndDate = (startDate) => {
+        if (!startDate) return '';
+        
+        // Create date 6 months from start date
+        const date = new Date(startDate);
+        date.setMonth(date.getMonth() + 6);
+        
+        // Adjust to nearest business day (Monday-Friday)
+        const day = date.getDay();
+        if (day === 0) { // Sunday
+            date.setDate(date.getDate() + 1);
+        } else if (day === 6) { // Saturday
+            date.setDate(date.getDate() + 2);
+        }
+        
+        return date.toISOString().split('T')[0];
+    };
+
     const handleHireFormChange = (e) => {
         const { name, value } = e.target;
-        setHireForm(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        if (name === 'start_date') {
+            const endDate = calculateEndDate(value);
+            setHireForm(prev => ({
+                ...prev,
+                start_date: value,
+                end_date: endDate
+            }));
+        } else {
+            setHireForm(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
 
     const handleHireConfirm = async () => {
@@ -766,7 +818,7 @@ const AddCandidatePage = () => {
     const renderUploadAnswersSection = () => (
         <div className="add-candidate-form">
             <div className="form-row" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
-                <div className="form-group" style={{ margin: 0 }}>
+                <div className="form-group" style={{ flex: 1 }}>
                     <label htmlFor="answer_candidate">Candidate</label>
                     <select
                         id="answer_candidate"
@@ -842,58 +894,119 @@ const AddCandidatePage = () => {
                     </div>
                     {showAddForm && (
                         <form onSubmit={handleSubmitCandidate} className="add-candidate-form">
-                            {/* Add Upload CV button */}
-                            <div className="form-row" style={{ marginBottom: '20px' }}>
-                                <button 
-                                    type="button"
-                                    className="submit-button"
-                                    onClick={() => document.getElementById('cv-upload').click()}
-                                    style={{
-                                        backgroundColor: '#00A389',
-                                        margin: 0,
-                                        width: 'fit-content',
-                                        whiteSpace: 'nowrap',
-                                        padding: '8px 16px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '5px'
-                                    }}
-                                >
-                                    {isCVProcessing ? (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <img 
-                                                src="/rayze-icon.png" 
-                                                alt="Loading" 
-                                                style={{ 
-                                                    width: '20px', 
-                                                    height: '20px', 
-                                                    animation: 'spin 1s linear infinite' 
-                                                }} 
-                                            />
-                                            <span>Processing CV...</span>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            Upload CV {isFormEnabled && <span style={{ marginLeft: '5px' }}>✓</span>}
-                                        </>
-                                    )}
-                                </button>
-                                <input
-                                    type="file"
-                                    id="cv-upload"
-                                    accept=".pdf,.doc,.docx"
-                                    style={{ display: 'none' }}
-                                    onChange={handleNewCV}
-                                />
-                                {!isFormEnabled && (
-                                    <div style={{ 
-                                        marginLeft: '10px', 
-                                        color: '#666',
-                                        fontSize: '0.9em' 
-                                    }}>
-                                        Please upload a CV to enable the form
-                                    </div>
-                                )}
+                            {/* First Row: Client, Open Role, Candidate Cost, CV Upload, Add Candidate */}
+                            <div className="form-row" style={{ marginBottom: '20px', display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                                <div className="form-group" style={{ flex: 0.5 }}>
+                                    <label htmlFor="client_id">Client</label>
+                                    <select
+                                        id="client_id"
+                                        name="client_id"
+                                        value={newCandidate.client_id}
+                                        onChange={handleNewCandidateChange}
+                                        required
+                                        style={{ width: '100%' }}
+                                    >
+                                        <option value="">Select a client</option>
+                                        {clients.map(client => (
+                                            <option key={client.id} value={client.id}>
+                                                {client.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group" style={{ flex: 0.5 }}>
+                                    <label htmlFor="open_role_id">Open Role</label>
+                                    <select
+                                        id="open_role_id"
+                                        name="open_role_id"
+                                        value={newCandidate.open_role_id}
+                                        onChange={handleNewCandidateChange}
+                                        required
+                                        disabled={!isOpenRolesEnabled}
+                                        style={{ width: '100%' }}
+                                    >
+                                        <option value="">Select an open role</option>
+                                        {filteredOpenRoles.map(role => (
+                                            <option key={role.id} value={role.id}>
+                                                {role.role_desc}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group" style={{ flex: 0.3 }}>
+                                    <label htmlFor="candidate_cost">Candidate Cost</label>
+                                    <input
+                                        type="number"
+                                        id="candidate_cost"
+                                        name="candidate_cost"
+                                        placeholder="Enter cost"
+                                        value={newCandidate.candidate_cost}
+                                        onChange={handleNewCandidateChange}
+                                        required
+                                        disabled={!isFormEnabled}
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px', marginLeft: 'auto' }}>
+                                    <button 
+                                        type="button"
+                                        className="submit-button"
+                                        onClick={() => document.getElementById('cv-upload').click()}
+                                        style={{
+                                            backgroundColor: '#00A389',
+                                            margin: 0,
+                                            flex: 1,
+                                            whiteSpace: 'nowrap',
+                                            padding: '8px 16px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '5px',
+                                            minWidth: '120px'
+                                        }}
+                                    >
+                                        {isCVProcessing ? (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <img 
+                                                    src="/rayze-icon.png" 
+                                                    alt="Loading" 
+                                                    style={{ 
+                                                        width: '20px', 
+                                                        height: '20px', 
+                                                        animation: 'spin 1s linear infinite' 
+                                                    }} 
+                                                />
+                                                <span>Processing CV...</span>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                Upload CV {isFormEnabled && <span style={{ marginLeft: '5px' }}>✓</span>}
+                                            </>
+                                        )}
+                                    </button>
+                                    <input
+                                        type="file"
+                                        id="cv-upload"
+                                        accept=".pdf,.doc,.docx"
+                                        style={{ display: 'none' }}
+                                        onChange={handleNewCV}
+                                    />
+                                    <button 
+                                        type="submit" 
+                                        className="submit-button"
+                                        disabled={!isFormEnabled}
+                                        style={{
+                                            opacity: isFormEnabled ? 1 : 0.5,
+                                            cursor: isFormEnabled ? 'pointer' : 'not-allowed',
+                                            margin: 0,
+                                            flex: 1,
+                                            whiteSpace: 'nowrap',
+                                            padding: '8px 16px',
+                                            minWidth: '120px'
+                                        }}
+                                    >
+                                        Add Candidate
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Add horizontal line for separation */}
@@ -903,7 +1016,7 @@ const AddCandidatePage = () => {
                                 borderBottom: '1px solid #e0e0e0'
                             }} />
 
-                            {/* First Row: Name, Current Role, Location */}
+                            {/* Second Row: Name, Current Role, Location */}
                             <div className="form-row">
                                 <div className="form-group">
                                     <label htmlFor="name">Name</label>
@@ -945,7 +1058,8 @@ const AddCandidatePage = () => {
                                     />
                                 </div>
                             </div>
-                            {/* Second Row: Phone, Email, Candidate Cost */}
+
+                            {/* Third Row: Phone, Email */}
                             <div className="form-row">
                                 <div className="form-group">
                                     <label htmlFor="phone">Phone</label>
@@ -972,85 +1086,6 @@ const AddCandidatePage = () => {
                                         required
                                         disabled={!isFormEnabled}
                                     />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="candidate_cost">Candidate Cost</label>
-                                    <input
-                                        type="number"
-                                        id="candidate_cost"
-                                        name="candidate_cost"
-                                        placeholder="Enter candidate cost"
-                                        value={newCandidate.candidate_cost}
-                                        onChange={handleNewCandidateChange}
-                                        required
-                                        disabled={!isFormEnabled}
-                                    />
-                                </div>
-                            </div>
-                            {/* Last Row: Client, Open Role, Submit Button */}
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label htmlFor="client_id">Client</label>
-                                    <select
-                                        id="client_id"
-                                        name="client_id"
-                                        value={newCandidate.client_id}
-                                        onChange={handleNewCandidateChange}
-                                        required
-                                        disabled={!isFormEnabled}
-                                    >
-                                        <option value="">Select a client</option>
-                                        {clients.map(client => (
-                                            <option key={client.id} value={client.id}>
-                                                {client.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="open_role_id">Open Role</label>
-                                    <select
-                                        id="open_role_id"
-                                        name="open_role_id"
-                                        value={newCandidate.open_role_id}
-                                        onChange={handleNewCandidateChange}
-                                        required
-                                        disabled={!isFormEnabled || !isOpenRolesEnabled}
-                                    >
-                                        <option value="">Select an open role</option>
-                                        {filteredOpenRoles.map(role => (
-                                            <option key={role.id} value={role.id}>
-                                                {role.role_desc}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <button 
-                                        type="button" 
-                                        className="submit-button"
-                                        onClick={handleMatchScoreClick}
-                                        disabled={!newCandidate.open_role_id || !isFormEnabled}
-                                        style={{
-                                            opacity: newCandidate.open_role_id && isFormEnabled ? 1 : 0.5,
-                                            cursor: newCandidate.open_role_id && isFormEnabled ? 'pointer' : 'not-allowed'
-                                        }}
-                                    >
-                                        Match Score
-                                    </button>
-                                </div>
-                                <div className="form-group">
-                                    <button 
-                                        type="submit" 
-                                        className="submit-button"
-                                        disabled={!isFormEnabled}
-                                        style={{
-                                            opacity: isFormEnabled ? 1 : 0.5,
-                                            cursor: isFormEnabled ? 'pointer' : 'not-allowed'
-                                        }}
-                                    >
-                                        Add Candidate
-                                    </button>
                                 </div>
                             </div>
                         </form>
@@ -1599,55 +1634,80 @@ const AddCandidatePage = () => {
                             <button className="close-button" onClick={() => setShowHireModal(false)}>×</button>
                         </div>
                         <div className="modal-body">
-                            <div className="form-group">
-                                <label htmlFor="start_date">Start Date</label>
-                                <input
-                                    type="date"
-                                    id="start_date"
-                                    name="start_date"
-                                    value={hireForm.start_date}
-                                    onChange={handleHireFormChange}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="end_date">End Date</label>
-                                <input
-                                    type="date"
-                                    id="end_date"
-                                    name="end_date"
-                                    value={hireForm.end_date}
-                                    onChange={handleHireFormChange}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="client_price">Client Price</label>
-                                <input
-                                    type="number"
-                                    id="client_price"
-                                    name="client_price"
-                                    value={hireForm.client_price}
-                                    onChange={handleHireFormChange}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="recruiter_price">Recruiter Price</label>
-                                <input
-                                    type="number"
-                                    id="recruiter_price"
-                                    name="recruiter_price"
-                                    value={hireForm.recruiter_price}
-                                    onChange={handleHireFormChange}
-                                    required
-                                />
+                            <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                {/* First Row: Dates */}
+                                <div style={{ display: 'flex', gap: '15px' }}>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label htmlFor="start_date">Start Date</label>
+                                        <input
+                                            type="date"
+                                            id="start_date"
+                                            name="start_date"
+                                            value={hireForm.start_date}
+                                            onChange={handleHireFormChange}
+                                            required
+                                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label htmlFor="end_date">End Date (6 months)</label>
+                                        <input
+                                            type="date"
+                                            id="end_date"
+                                            name="end_date"
+                                            value={hireForm.end_date}
+                                            onChange={handleHireFormChange}
+                                            required
+                                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        />
+                                    </div>
+                                </div>
+                                {/* Second Row: Prices */}
+                                <div style={{ display: 'flex', gap: '15px' }}>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label htmlFor="client_price">Client Price</label>
+                                        <input
+                                            type="number"
+                                            id="client_price"
+                                            name="client_price"
+                                            value={hireForm.client_price}
+                                            onChange={handleHireFormChange}
+                                            required
+                                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label htmlFor="recruiter_price">Recruiter Price</label>
+                                        <input
+                                            type="number"
+                                            id="recruiter_price"
+                                            name="recruiter_price"
+                                            value={hireForm.recruiter_price}
+                                            onChange={handleHireFormChange}
+                                            required
+                                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="modal-footer">
+                        <div className="modal-footer" style={{ 
+                            display: 'flex', 
+                            justifyContent: 'flex-end', 
+                            gap: '10px',
+                            padding: '15px',
+                            borderTop: '1px solid #e0e0e0'
+                        }}>
                             <button 
                                 className="modal-button" 
                                 onClick={() => setShowHireModal(false)}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    backgroundColor: '#fff',
+                                    cursor: 'pointer'
+                                }}
                             >
                                 Cancel
                             </button>
@@ -1655,6 +1715,15 @@ const AddCandidatePage = () => {
                                 className="modal-button primary"
                                 onClick={handleHireConfirm}
                                 disabled={!hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    border: 'none',
+                                    backgroundColor: '#00A389',
+                                    color: '#fff',
+                                    cursor: !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price ? 'not-allowed' : 'pointer',
+                                    opacity: !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price ? 0.5 : 1
+                                }}
                             >
                                 Hire Confirmed
                             </button>

@@ -289,6 +289,10 @@
             }
           }
 
+          /* Firefox scrollbar */
+          scrollbar-width: thin;
+          scrollbar-color: #888 #f1f1f1;
+
           &:focus {
             outline: none;
             border-color: #007bff;
@@ -395,6 +399,7 @@
 
     .evaluation-content {
         min-height: 300px;
+        max-height: 500px;
         padding: 20px;
         border: 1px solid #ddd;
         border-radius: 4px;
@@ -403,21 +408,38 @@
         line-height: 1.6;
         overflow-y: auto;
         margin-bottom: 20px;
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
 
-        .evaluation-section {
-            margin-bottom: 20px;
+        // Custom scrollbar styles
+        &::-webkit-scrollbar {
+            width: 12px;
+        }
 
-            h3 {
-                color: #007bff;
-                margin-bottom: 10px;
-                font-size: 16px;
-                font-weight: 600;
+        &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 6px;
+            border: 3px solid #f1f1f1;
+
+            &:hover {
+                background: #555;
             }
+        }
 
-            p {
-                margin-bottom: 10px;
-                padding-left: 10px;
-            }
+        // Firefox scrollbar
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+
+        &:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
         }
     }
   }
@@ -594,5 +616,74 @@
     
     &:hover {
         background-color: #0b7dda;
+    }
+}
+
+.button-row {
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-top: 0.5rem;
+        width: 100%;
+
+        .upload-button, button {
+            flex: 1;
+            min-width: 0;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+
+        .upload-button {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            color: #333;
+
+            &:hover {
+                background-color: #e0e0e0;
+            }
+
+            .pdf-icon {
+                color: #ff4444;
+                flex-shrink: 0;
+            }
+        }
+
+        .download-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+
+            &:hover:not(:disabled) {
+                background-color: #45a049;
+            }
+        }
+
+        .submit-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+
+            &:hover:not(:disabled) {
+                background-color: #1976D2;
+            }
+        }
     }
 }
