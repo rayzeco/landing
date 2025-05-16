@@ -44,7 +44,7 @@ const AddCandidatePage = () => {
         feedback: '',
         cv_link: '',
         client_id: '',
-        open_role_id: ''
+        status: ''
     });
     const [selectedCandidate, setSelectedCandidate] = useState('');
     const [selectedClient, setSelectedClient] = useState('');
@@ -69,7 +69,7 @@ const AddCandidatePage = () => {
             const token = sessionStorage.getItem('token');
             const user = JSON.parse(sessionStorage.getItem('user'));
             const id = JSON.parse(sessionStorage.getItem('id'));
-            console.log('id is ',id);
+            //console.log('id is ',id);
             
             try {
                 // Fetch candidates
@@ -163,38 +163,36 @@ const AddCandidatePage = () => {
 
     const handleNewCandidateChange = (e) => {
         const { name, value } = e.target;
+        
+        // Special handling for client_id to filter open roles
         if (name === 'client_id') {
-
-            // When client changes, filter open roles for that client
             const selectedClient = clients.find(client => client.id === parseInt(value));
 
             if (selectedClient) {
                 const filteredRoles = openRoles.filter(role => role.client_id === selectedClient.id);
-                //console.log('filteredRoles is ', openRoles[0], 'openRoles is ',  selectedClient.id);
                 setFilteredOpenRoles(filteredRoles);
                 setIsOpenRolesEnabled(true);
-                // Reset open_role_id if it's not valid for the new client
-                if (!filteredRoles.some(role => role.id === newCandidate.open_role_id)) {
-                    setNewCandidate(prev => ({
-                        ...prev,
-                        open_role_id: '',
-                        [name]: value
-                    }));
-                    return;
-                }
+                
+                // Update the newCandidate state with the new client_id
+                setNewCandidate(prev => ({
+                    ...prev,
+                    client_id: value,
+                    // Reset open_role_id if it's not valid for the new client
+                    open_role_id: filteredRoles.some(role => role.id === prev.open_role_id) ? prev.open_role_id : ''
+                }));
             } else {
-                // If no client selected, disable open roles and clear selection
                 setIsOpenRolesEnabled(false);
                 setFilteredOpenRoles([]);
                 setNewCandidate(prev => ({
                     ...prev,
-                    open_role_id: '',
-                    [name]: value
+                    client_id: value,
+                    open_role_id: ''
                 }));
-                return;
             }
+            return;
         }
-        
+
+        // Handle all other field updates
         setNewCandidate(prev => ({
             ...prev,
             [name]: value
@@ -215,7 +213,7 @@ const AddCandidatePage = () => {
             candidate_cost: 'Candidate Cost',
             cv_link: 'CV Link',
             client_id: 'Client',
-            open_role_id: 'Open Role'
+            // open_role_id: 'Open Role'
         };
 
         const missingFields = Object.entries(requiredFields)
@@ -226,16 +224,51 @@ const AddCandidatePage = () => {
             alert(`Please fill in the following required fields:\n${missingFields.join('\n')}`);
             return;
         }
-        console.log(newCandidate);
+        // Then create the submit_cvrole entry
+        const candidateData = {
+            name: newCandidate.name,
+            role: newCandidate.role,
+            location: newCandidate.location,
+            candidate_cost: newCandidate.candidate_cost,
+            phone: newCandidate.phone,
+            email: newCandidate.email,
+            feedback: newCandidate.feedback,
+            cv_link: newCandidate.cv_link,
+            client_id: newCandidate.client_id,
+            status: 'Submitted'
+        };
+        //console.log(candidateData);
+        // Store the CV in the bucket
+
+        if (newCandidate.cv_link) {
+            const formData = new FormData();
+            formData.append('file', newCandidate.cv_link);
+            
+            const token = sessionStorage.getItem('token');
+            const response = await axios.post(
+                `${process.env.REACT_APP_RYZ_SERVER}/store_bucket`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            //console.log(response.data);
+            candidateData.cv_link = response.data.filename;
+        }
+
         try {
             // First create the candidate
-            const candidateResponse = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_candidate`, newCandidate, {
+            const candidateResponse = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_candidate`, candidateData, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 }
             });
-
+            //console.log('now store bucket');
+            
             // Then create the submit_cvrole entry
             const submitCVRoleData = {
                 client_id: newCandidate.client_id,
@@ -244,10 +277,10 @@ const AddCandidatePage = () => {
                 status: 'Submitted',
                 submitted_on: new Date().toISOString(),
                 remote: 'no',
-                cv_link: newCandidate.cv_link,
+                cv_link: candidateData.cv_link,
                 match_score: newCandidate.match_score || null
             };
-            console.log("match_score", newCandidate.match_score, " : ", newCandidate.id);
+            //console.log("match_score", newCandidate.match_score, " : ", newCandidate.id);
 
             await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_submit_cvrole`, submitCVRoleData, {
                 headers: {
@@ -266,10 +299,8 @@ const AddCandidatePage = () => {
                 feedback: '',
                 cv_link: '',
                 client_id: '',
-                open_role_id: '',
-                match_score: ''
+                status: '',
             });
-
             // Reset match score
             setMatchScoreResult('');
 
@@ -283,6 +314,7 @@ const AddCandidatePage = () => {
                 });
                 setCandidates(response.data);
                 setFilteredCandidates(response.data);
+                //console.log('candidates are ', response.data);
             };
             fetchCandidates();
             
@@ -389,12 +421,15 @@ const AddCandidatePage = () => {
                 email: candidateInfo.email || '',
                 role: candidateInfo.role || '',
                 location: candidateInfo.location || '',
-                cv_link: candidateInfo.cv_summary || '',
+                cv_link: file,
+                feedback: candidateInfo.cv_summary || '',
+
 
                 // Keep existing values for fields not provided by the API
                 candidate_cost: prev.candidate_cost,
                 client_id: prev.client_id,
-                open_role_id: prev.open_role_id
+                status: ''
+               // open_role_id: prev.open_role_id
             }));
 
             // Enable the form after successful CV upload

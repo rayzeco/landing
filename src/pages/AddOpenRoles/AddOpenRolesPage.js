@@ -122,7 +122,7 @@ const AddOpenRolesPage = () => {
             // First, fetch the job description content
             const response = await axios.get(jobDescLink);
             const jobDescription = response.data;
-            console.log('jd ',jobDescription);
+            //console.log('jd ',jobDescription);
 
             // Create the job description object
             const jobDescriptionObj = {
@@ -141,11 +141,11 @@ const AddOpenRolesPage = () => {
                     }
                 }
             );
-            console.log(evalResponse.data);
+            //console.log(evalResponse.data);
             if (evalResponse.data.status === 'success') {
                 // Parse the evaluation JSON string into an object
                 const evaluation = JSON.parse(evalResponse.data.evaluation.replace(/^```html\s*|\s*```$/g, ''));
-                console.log('Parsed evaluation:', evaluation);
+                //console.log('Parsed evaluation:', evaluation);
 
                 let textContent = '';
 
@@ -187,6 +187,20 @@ const AddOpenRolesPage = () => {
         }
     };
 
+    const sanitizeFilename = (filename) => {
+        // First, replace spaces with underscores
+        let sanitized = filename.replace(/\s+/g, '_');
+        
+        // Remove any characters that aren't URL-safe
+        sanitized = sanitized.replace(/[^a-zA-Z0-9._-]/g, '');
+        
+        // Ensure the filename doesn't start or end with a dot or underscore
+        sanitized = sanitized.replace(/^[._]+|[._]+$/g, '');
+        
+        // URL encode the result to ensure it's fully URL-safe
+        return encodeURIComponent(sanitized);
+    };
+
     const handleSubmitOpenRole = async (e) => {
         e.preventDefault();
         const token = sessionStorage.getItem('token');
@@ -209,7 +223,25 @@ const AddOpenRolesPage = () => {
                 test_doc: newOpenRole.test_doc || "none",
                 jd_doc: newOpenRole.jd_doc || "none",
             };
-            console.log('Payload being sent:', payload);
+            //console.log('Payload being sent:', payload);
+            //call store bucket to store JD
+            if (newOpenRole.job_desc_link) {
+                const token = sessionStorage.getItem('token');
+                const formData = new FormData();
+                formData.append('file', newOpenRole.job_desc_link);
+                const response = await axios.post(
+                    `${process.env.REACT_APP_RYZ_SERVER}/store_bucket`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                //console.log(response.data);
+                payload.job_desc_link = response.data.filename;
+            }
 
             const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_open_role`, payload, {
                 headers: {
@@ -217,7 +249,7 @@ const AddOpenRolesPage = () => {
                     Authorization: `Bearer ${token}`,
                 }
             });
-            console.log('Response:', response.data);
+            //console.log('Response:', response.data);
 
             setNewOpenRole({
                 clientName: '',
@@ -283,7 +315,7 @@ const AddOpenRolesPage = () => {
                 // Store the parsed job description in both fields
                 setNewOpenRole(prev => ({
                     ...prev,
-                    job_desc_link: jobDescResponse.data.job_desc,
+                    job_desc_link: file,
                     jd_doc: jobDescResponse.data.job_desc
                 }));
                 const jd_str = JSON.stringify(jobDescResponse.data);
@@ -304,7 +336,7 @@ const AddOpenRolesPage = () => {
                 if (evalResponse.data.status === 'success') {
                     // Get the evaluation content and clean it up
                     let evaluationContent = evalResponse.data.evaluation;
-                    console.log(evaluationContent)
+                    //console.log(evaluationContent)
                     // Remove any markdown code block markers
                     //evaluationContent = evaluationContent.replace(/^```html\s*|\s*```$/g, '');
                     
@@ -484,7 +516,12 @@ const AddOpenRolesPage = () => {
                                     <div className="action-buttons">
                                         <label htmlFor="pdf-upload" className="upload-button">
                                             <FaFilePdf className="pdf-icon" />
-                                            <span>Upload Job Description</span>
+                                            <span>{isLoading ? 'Processing...' : 'Upload Job Description'}</span>
+                                            {isLoading && (
+                                                <div className="spinner">
+                                                    <div className="spinner-inner"></div>
+                                                </div>
+                                            )}
                                             <input
                                                 type="file"
                                                 id="pdf-upload"
