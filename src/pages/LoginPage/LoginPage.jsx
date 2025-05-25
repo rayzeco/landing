@@ -19,7 +19,10 @@ const LoginPage = () => {
       const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/authenticate`, formData);
       const token = response.data.access_token;
       sessionStorage.setItem('token', token);
-      navigate('/invoice');
+      if (response.data.user) {
+        sessionStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      navigate('/console');
     } catch (error) {
       setError('Login failed. Please try again.');
       console.error('Login error:', error);
@@ -49,11 +52,11 @@ const LoginPage = () => {
         <button type="submit">Login</button>
       </form>
       {error && <p className="error-message">{error}</p>}
-      <h3>
+      {/* <h3>
           <Link to='/register'>
           <span style={{ color: '#000000' }}>{'>>>'} {'\u00A0'} Click to Register New User </span>
           </Link>
-      </h3>
+      </h3> */}
     </div>
   );
 };

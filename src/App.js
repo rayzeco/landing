@@ -23,7 +23,7 @@ import Story4 from "./pages/Clients/Story4";
 import Story5 from "./pages/Clients/Story5";
 import Story6 from "./pages/Clients/Story6";
 import SubmitCandidatePage from "./pages/SubmitCandidatePage/SubmitCandidatePage";
-
+import RayzeConsole from "./pages/RayzeConsole/RayzeConsole";
 
 function App() {
   return (
@@ -52,11 +52,7 @@ function App() {
           <Route path="/candidates" element={<AddCandidatePage />} />
           <Route path="/submit_candidates" element={<SubmitCandidatePage />} />
           <Route path="/open_roles" element={<AddOpenRolesPage />} />
-
-
-
-
-
+          <Route path="/console" element={<RayzeConsole />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>

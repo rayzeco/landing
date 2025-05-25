@@ -80,10 +80,12 @@ const AddOpenRolesPage = () => {
                 },
             });
 
-            const allOpenRoles = response.data.map(role => ({
-                ...role,
-                clientName: clientMapping[role.client_id]?.name || 'Unknown'
-            }));
+            const allOpenRoles = response.data
+                .filter(role => role.status === 'Open')
+                .map(role => ({
+                    ...role,
+                    clientName: clientMapping[role.client_id]?.name || 'Unknown'
+                }));
             setOpenRoles(allOpenRoles);
             setFilteredOpenRoles(allOpenRoles);
         } catch (error) {

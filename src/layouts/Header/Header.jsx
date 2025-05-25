@@ -1,7 +1,7 @@
 import "./header.scss";
 
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEthers, shortenAddress } from "@usedapp/core";
 import WalletModal from "../../components/WalletModal/WalletModal";
 import Web3 from 'web3'
@@ -14,6 +14,7 @@ import config from '../../config/config.json'
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { account, chainId, library, deactivate } = useEthers();
 
@@ -51,21 +52,9 @@ export default function Header() {
       setWalletModalOpen(true)
     }
   };
-  const openMailToLink = () => {
-    // Replace 'aa@xx.io' with the desired email address
-    const emailAddress = 'jc@rayze.xyz';
 
-    // Construct the mailto link
-    const mailtoLink = `mailto:${emailAddress}`;
-
-    // Create an anchor element
-    const linkElement = document.createElement('a');
-
-    // Set the href attribute to the mailto link
-    linkElement.setAttribute('href', mailtoLink);
-
-    // Simulate a click to open the default mail client
-    linkElement.click();
+  const handleLogin = () => {
+    navigate('/login');
   };
 
   return (
@@ -90,12 +79,13 @@ export default function Header() {
           <Link to={"/team"}>Who we are</Link>
           <Link to={"/clients"}>How we help clients</Link>
           <Link to={"/accel"}>Accelerators</Link>
+          <Link to={"/console"}>Console</Link>
           <button
             className={"wallet-button " + (account ? 'connected' : '')}
-            onClick={openMailToLink}
+            onClick={handleLogin}
           >
             <img src="/images/wallet-account.svg" alt="wallet-account" />
-            {account ? shortenAddress(account) : "Get in Touch"}
+            {account ? shortenAddress(account) : "Login"}
           </button>
         </div>
       </div>

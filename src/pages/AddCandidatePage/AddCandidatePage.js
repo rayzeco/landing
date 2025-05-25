@@ -393,6 +393,7 @@ const AddCandidatePage = () => {
 
         setCvFile(file);
         setIsCVProcessing(true);
+        console.log(JSON.parse(sessionStorage.getItem('user'))?.role);
         
         try {
             const formData = new FormData();
@@ -875,15 +876,15 @@ const AddCandidatePage = () => {
                     type="button"
                     className="submit-button"
                     onClick={handleHireClick}
-                    disabled={!selectedAnswerCandidate}
+                    disabled={!selectedAnswerCandidate || JSON.parse(sessionStorage.getItem('user'))?.role !== 'ADMIN'}
                     style={{ 
                         backgroundColor: '#00A389',
                         margin: 0,
                         width: 'fit-content',
                         whiteSpace: 'nowrap',
                         padding: '8px 16px',
-                        cursor: selectedAnswerCandidate ? 'pointer' : 'not-allowed',
-                        opacity: selectedAnswerCandidate ? 1 : 0.5
+                        cursor: selectedAnswerCandidate && JSON.parse(sessionStorage.getItem('user'))?.role === 'ADMIN' ? 'pointer' : 'not-allowed',
+                        opacity: selectedAnswerCandidate && JSON.parse(sessionStorage.getItem('user'))?.role === 'ADMIN' ? 1 : 0.5
                     }}
                 >
                     Hire Candidate
