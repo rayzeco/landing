@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
@@ -25,6 +24,34 @@ const SelectInvoicePage = () => {
             });
     }, []);
 
+    const handleStatusChange = async (invoiceId, currentStatus) => {
+        try {
+            const token = sessionStorage.getItem('token');
+            const newStatus = currentStatus === 'PAID' ? 'SUBMITTED' : 'PAID';
+            console.log('status is ', newStatus)
+            await axios.put(
+                `${process.env.REACT_APP_RYZ_SERVER}/update_client_invoice/${invoiceId}`,
+                { inv_status: newStatus },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            // Update local state
+            setInvoices(invoices.map(invoice => 
+                invoice.id === invoiceId 
+                    ? { ...invoice, inv_status: newStatus }
+                    : invoice
+            ));
+        } catch (error) {
+            console.error('Error updating invoice status:', error);
+            alert('Failed to update invoice status. Please try again.');
+        }
+    };
+
     const handleRowClick = (inv_hash) => {
         navigate(`/render_invoice/${inv_hash}`);
     };
@@ -44,6 +71,7 @@ const SelectInvoicePage = () => {
                         <th>Period End</th>
                         <th>Invoice Value</th>
                         <th>Invoice Hash</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,11 +79,30 @@ const SelectInvoicePage = () => {
                         <tr key={invoice.inv_hash} onClick={() => handleRowClick(invoice.inv_hash)}>
                             <td>{invoice.client_name}</td>
                             <td>{invoice.id}</td>
-                            <td>{invoice.invoice_date}</td>
+                            <td>{invoice.inv_date}</td>
                             <td>{invoice.period_start}</td>
                             <td>{invoice.period_end}</td>
-                            <td>{invoice.inv_value}</td>
+                            <td>{invoice.inv_value.toLocaleString()}</td>
                             <td>{invoice.inv_hash}</td>
+                            <td>
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    {invoice.inv_status === 'PAID' ? (
+                                        <input
+                                            type="checkbox"
+                                            checked={true}
+                                            onChange={() => handleStatusChange(invoice.id, invoice.inv_status)}
+                                            label="PAID"
+                                        />
+                                    ) : (
+                                        <button
+                                            onClick={() => handleStatusChange(invoice.id, invoice.inv_status)}
+                                            className="status-button"
+                                        >
+                                            NOT PAID
+                                        </button>
+                                    )}
+                                </div>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

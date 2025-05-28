@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import html2pdf from 'html2pdf.js';
 import './add-candidate-page.scss';
 
 const AddCandidatePage = () => {
@@ -62,6 +63,12 @@ const AddCandidatePage = () => {
     });
     const [isFormEnabled, setIsFormEnabled] = useState(false);
     const [isCVProcessing, setIsCVProcessing] = useState(false);
+    const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
+    const [workOrderHtml, setWorkOrderHtml] = useState('');
+    const [isHiring, setIsHiring] = useState(false);
+    const [candidateSearch, setCandidateSearch] = useState('');
+    const [showCandidateSuggestions, setShowCandidateSuggestions] = useState(false);
+    const [filteredCandidatesForSearch, setFilteredCandidatesForSearch] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -556,28 +563,28 @@ const AddCandidatePage = () => {
         setShowOnlyMatched(!showOnlyMatched);
     };
 
-    const handleCandidateSelect = (e) => {
-        setSelectedCandidate(e.target.value);
+    const handleCandidateSearch = (e) => {
+        const searchTerm = e.target.value;
+        setCandidateSearch(searchTerm);
+        
+        if (searchTerm.length > 0) {
+            const filtered = unfilteredCandidates.filter(candidate => 
+                candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                candidate.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                candidate.location.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredCandidatesForSearch(filtered);
+            setShowCandidateSuggestions(true);
+        } else {
+            setFilteredCandidatesForSearch([]);
+            setShowCandidateSuggestions(false);
+        }
     };
 
-    const handleClientSelect = (e) => {
-        setSelectedClient(e.target.value);
-    };
-
-    const handleRoleSelect = (e) => {
-        setSelectedRole(e.target.value);
-    };
-
-    const handleNotesChange = (e) => {
-        setSubmissionNotes(e.target.value);
-    };
-
-    const handleSubmitCVRole = () => {
-        // Implementation of handleSubmitCVRole function
-    };
-
-    const handleAnswerCandidateSelect = (e) => {
-        setSelectedAnswerCandidate(e.target.value);
+    const handleCandidateSearchSelect = (candidate) => {
+        setSelectedAnswerCandidate(candidate.id);
+        setCandidateSearch(candidate.name);
+        setShowCandidateSuggestions(false);
     };
 
     const handleAnswersFileUpload = (event) => {
@@ -759,12 +766,14 @@ const AddCandidatePage = () => {
 
     const handleHireConfirm = async () => {
         const token = sessionStorage.getItem('token');
+        setIsHiring(true);
 
         try {
             // First get the candidate to ensure we have all necessary data
             const candidate = unfilteredCandidates.find(c => c.id === parseInt(selectedAnswerCandidate));
             if (!candidate) {
                 alert('Candidate not found');
+                setIsHiring(false);
                 return;
             }
 
@@ -772,6 +781,7 @@ const AddCandidatePage = () => {
             const submission = submitCVRoles.find(sub => sub.candidates_id === parseInt(selectedAnswerCandidate));
             if (!submission) {
                 alert('No submission found for this candidate');
+                setIsHiring(false);
                 return;
             }
 
@@ -815,9 +825,27 @@ const AddCandidatePage = () => {
                     }
                 }
             );
+            // Generate work order
+            const workOrderResponse = await axios.post(
+                `${process.env.REACT_APP_RYZ_SERVER}/generate_client_work_order`,
+                transactionData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                }
+            );
 
+            if (workOrderResponse.data && workOrderResponse.data.html) {
+                setWorkOrderHtml(workOrderResponse.data.html);
+                setShowWorkOrderModal(true);
+            } else {
+                throw new Error('Invalid response format from server');
+            }
 
-            // Reset and close modal
+            // Reset and close hire modal
             setHireForm({
                 start_date: '',
                 end_date: '',
@@ -848,30 +876,70 @@ const AddCandidatePage = () => {
             } else {
                 alert('Error hiring candidate. Please try again.');
             }
+        } finally {
+            setIsHiring(false);
         }
     };
 
     const renderUploadAnswersSection = () => (
         <div className="add-candidate-form">
-            <div className="form-row" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
-                <div className="form-group" style={{ flex: 1 }}>
+            <div className="form-row" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', position: 'relative' }}>
+                <div className="form-group" style={{ flex: 1, position: 'relative', marginBottom: '200px' }}>
                     <label htmlFor="answer_candidate">Candidate</label>
-                    <select
+                    <input
+                        type="text"
                         id="answer_candidate"
-                        name="answer_candidate"
-                        value={selectedAnswerCandidate}
-                        onChange={handleAnswerCandidateSelect}
-                        required
-                        style={{ width: '200px' }}
-                    >
-                        <option value="">Select Candidate...</option>
-                        {unfilteredCandidates.map(candidate => (
-                            <option key={candidate.id} value={candidate.id}>
-                                {candidate.name}
-                            </option>
-                        ))}
-                    </select>
+                        placeholder="Search candidate by name, role, or location..."
+                        value={candidateSearch}
+                        onChange={handleCandidateSearch}
+                        style={{ 
+                            width: '100%',
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid #ccc'
+                        }}
+                    />
+                    {showCandidateSuggestions && filteredCandidatesForSearch.length > 0 && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            backgroundColor: '#fff',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            maxHeight: '180px',
+                            overflowY: 'auto',
+                            zIndex: 1000,
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}>
+                            {filteredCandidatesForSearch.map(candidate => (
+                                <div
+                                    key={candidate.id}
+                                    onClick={() => handleCandidateSearchSelect(candidate)}
+                                    style={{
+                                        padding: '8px 12px',
+                                        cursor: 'pointer',
+                                        borderBottom: '1px solid #eee',
+                                        backgroundColor: '#fff',
+                                        transition: 'background-color 0.2s',
+                                        ':hover': {
+                                            backgroundColor: '#f5f5f5'
+                                        }
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                                >
+                                    <div style={{ fontWeight: 'bold' }}>{candidate.name}</div>
+                                    <div style={{ fontSize: '0.9em', color: '#666' }}>
+                                        {candidate.role} - {candidate.location}
+                                    </div>
+                                </div>
+                            ))}
                 </div>
+                    )}
+                </div>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
                 <button 
                     type="button"
                     className="submit-button"
@@ -905,6 +973,7 @@ const AddCandidatePage = () => {
                 >
                     Submit Answers
                 </button>
+                </div>
             </div>
             {candidateAnswers && (
                 <div className="file-preview" style={{ marginTop: '5px', fontSize: '0.9em', color: '#666' }}>
@@ -1663,11 +1732,11 @@ const AddCandidatePage = () => {
 
             {/* Hire Candidate Modal */}
             {showHireModal && (
-                <div className="modal-overlay" onClick={() => setShowHireModal(false)}>
+                <div className="modal-overlay" onClick={() => !isHiring && setShowHireModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>Hire Candidate</h2>
-                            <button className="close-button" onClick={() => setShowHireModal(false)}>×</button>
+                            <button className="close-button" onClick={() => !isHiring && setShowHireModal(false)} disabled={isHiring}>×</button>
                         </div>
                         <div className="modal-body">
                             <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1682,6 +1751,7 @@ const AddCandidatePage = () => {
                                             value={hireForm.start_date}
                                             onChange={handleHireFormChange}
                                             required
+                                            disabled={isHiring}
                                             style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                                         />
                                     </div>
@@ -1694,6 +1764,7 @@ const AddCandidatePage = () => {
                                             value={hireForm.end_date}
                                             onChange={handleHireFormChange}
                                             required
+                                            disabled={isHiring}
                                             style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                                         />
                                     </div>
@@ -1709,6 +1780,7 @@ const AddCandidatePage = () => {
                                             value={hireForm.client_price}
                                             onChange={handleHireFormChange}
                                             required
+                                            disabled={isHiring}
                                             style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                                         />
                                     </div>
@@ -1721,6 +1793,7 @@ const AddCandidatePage = () => {
                                             value={hireForm.recruiter_price}
                                             onChange={handleHireFormChange}
                                             required
+                                            disabled={isHiring}
                                             style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                                         />
                                     </div>
@@ -1737,12 +1810,14 @@ const AddCandidatePage = () => {
                             <button 
                                 className="modal-button" 
                                 onClick={() => setShowHireModal(false)}
+                                disabled={isHiring}
                                 style={{
                                     padding: '8px 16px',
                                     borderRadius: '4px',
                                     border: '1px solid #ccc',
-                                    backgroundColor: '#fff',
-                                    cursor: 'pointer'
+                                    backgroundColor: '#ffffff',
+                                    cursor: isHiring ? 'not-allowed' : 'pointer',
+                                    opacity: isHiring ? 0.5 : 1
                                 }}
                             >
                                 Cancel
@@ -1750,18 +1825,280 @@ const AddCandidatePage = () => {
                             <button 
                                 className="modal-button primary"
                                 onClick={handleHireConfirm}
-                                disabled={!hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price}
+                                disabled={isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price}
                                 style={{
                                     padding: '8px 16px',
                                     borderRadius: '4px',
                                     border: 'none',
                                     backgroundColor: '#00A389',
                                     color: '#fff',
-                                    cursor: !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price ? 'not-allowed' : 'pointer',
-                                    opacity: !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price ? 0.5 : 1
+                                    cursor: isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price ? 'not-allowed' : 'pointer',
+                                    opacity: isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price ? 0.5 : 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
                                 }}
                             >
-                                Hire Confirmed
+                                {isHiring ? (
+                                    <>
+                                        <img 
+                                            src="/rayze-icon.png" 
+                                            alt="Loading" 
+                                            style={{ 
+                                                width: '20px', 
+                                                height: '20px', 
+                                                animation: 'spin 1s linear infinite' 
+                                            }} 
+                                        />
+                                        <span>Processing...</span>
+                                    </>
+                                ) : (
+                                    'Hire Confirmed'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Work Order Modal */}
+            {showWorkOrderModal && (
+                <div className="modal-overlay" onClick={() => setShowWorkOrderModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ 
+                        maxWidth: '90%', 
+                        width: '800px', 
+                        maxHeight: '90vh',
+                        backgroundColor: '#ffffff',
+                        color: '#000000'
+                    }}>
+                        <div className="modal-header" style={{ 
+                            borderBottom: '1px solid #e0e0e0',
+                            backgroundColor: '#ffffff',
+                            color: '#000000'
+                        }}>
+                            <h2 style={{ color: '#000000' }}>Work Order</h2>
+                            <button className="close-button" onClick={() => setShowWorkOrderModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body" style={{ 
+                            maxHeight: 'calc(90vh - 120px)', 
+                            overflowY: 'auto',
+                            padding: '20px',
+                            backgroundColor: '#ffffff',
+                            color: '#000000'
+                        }}>
+                            <div id="workOrderContent" style={{ 
+                                backgroundColor: '#ffffff',
+                                color: '#000000'
+                            }} dangerouslySetInnerHTML={{ __html: workOrderHtml }} />
+                        </div>
+                        <div className="modal-footer" style={{ 
+                            display: 'flex', 
+                            gap: '10px', 
+                            justifyContent: 'flex-end',
+                            borderTop: '1px solid #e0e0e0',
+                            backgroundColor: '#ffffff',
+                            padding: '15px'
+                        }}>
+                            <button 
+                                className="modal-button" 
+                                onClick={() => setShowWorkOrderModal(false)}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    backgroundColor: '#ffffff',
+                                    color: '#000000',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Close
+                            </button>
+                            <button 
+                                className="modal-button"
+                                onClick={() => {
+                                    // Create a complete HTML document with proper styling
+                                    const content = `
+                                        <!DOCTYPE html>
+                                        <html>
+                                            <head>
+                                                <title>Work Order</title>
+                                                <meta charset="UTF-8">
+                                                <style>
+                                                    body { 
+                                                        font-family: Arial, sans-serif; 
+                                                        padding: 20px;
+                                                        background-color: #ffffff;
+                                                        color: #000000;
+                                                        -webkit-print-color-adjust: exact;
+                                                        print-color-adjust: exact;
+                                                    }
+                                                    img {
+                                                        max-width: 100%;
+                                                        height: auto;
+                                                    }
+                                                    .panel {
+                                                        margin-bottom: 20px;
+                                                    }
+                                                    h1, h2, h3, h4, h5 {
+                                                        color: #000000;
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                ${workOrderHtml}
+                                            </body>
+                                        </html>
+                                    `;
+                                    const blob = new Blob([content], { type: 'text/html' });
+                                    const url = URL.createObjectURL(blob);
+                                    const printWindow = window.open(url, '_blank');
+                                    printWindow.onload = () => {
+                                        printWindow.document.close();
+                                        printWindow.focus();
+                                        const mediaQueryList = printWindow.matchMedia('print');
+                                        mediaQueryList.addListener(function(mql) {
+                                            if (!mql.matches) {
+                                                URL.revokeObjectURL(url);
+                                                printWindow.close();
+                                            }
+                                        });
+                                        printWindow.print();
+                                    };
+                                }}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    backgroundColor: '#ffffff',
+                                    color: '#000000',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Print
+                            </button>
+                            <button 
+                                className="modal-button"
+                                onClick={() => {
+                                    // Create a complete HTML document with proper styling
+                                    const content = `
+                                        <!DOCTYPE html>
+                                        <html>
+                                            <head>
+                                                <title>Work Order</title>
+                                                <meta charset="UTF-8">
+                                                <style>
+                                                    body { 
+                                                        font-family: Arial, sans-serif; 
+                                                        padding: 20px;
+                                                        background-color: #ffffff;
+                                                        color: #000000;
+                                                        -webkit-print-color-adjust: exact;
+                                                        print-color-adjust: exact;
+                                                    }
+                                                    img {
+                                                        max-width: 100%;
+                                                        height: auto;
+                                                    }
+                                                    .panel {
+                                                        margin-bottom: 20px;
+                                                    }
+                                                    h1, h2, h3, h4, h5 {
+                                                        color: #000000;
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                ${workOrderHtml}
+                                            </body>
+                                        </html>
+                                    `;
+                                    
+                                    // Create a blob with the HTML content
+                                    const blob = new Blob([content], { type: 'text/html' });
+                                    
+                                    // Create a download link
+                                    const downloadLink = document.createElement('a');
+                                    downloadLink.href = URL.createObjectURL(blob);
+                                    downloadLink.download = 'work_order.html';
+                                    
+                                    // Append to body, click, and remove
+                                    document.body.appendChild(downloadLink);
+                                    downloadLink.click();
+                                    document.body.removeChild(downloadLink);
+                                    
+                                    // Clean up the URL object
+                                    URL.revokeObjectURL(downloadLink.href);
+                                }}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    backgroundColor: '#ffffff',
+                                    color: '#000000',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Download HTML
+                            </button>
+                            <button 
+                                className="modal-button primary"
+                                onClick={() => {
+                                    const element = document.getElementById('workOrderContent');
+                                    const opt = {
+                                        margin: 1,
+                                        filename: 'work_order.pdf',
+                                        image: { type: 'jpeg', quality: 0.98 },
+                                        html2canvas: { 
+                                            scale: 2,
+                                            useCORS: true,
+                                            logging: true,
+                                            backgroundColor: '#ffffff'
+                                        },
+                                        jsPDF: { 
+                                            unit: 'in', 
+                                            format: 'letter', 
+                                            orientation: 'portrait' 
+                                        }
+                                    };
+
+                                    // Create a clone of the element to modify for PDF
+                                    const clone = element.cloneNode(true);
+                                    const images = clone.getElementsByTagName('img');
+                                    for (let img of images) {
+                                        img.crossOrigin = 'anonymous';
+                                    }
+
+                                    // Add styles to ensure proper rendering
+                                    const style = document.createElement('style');
+                                    style.textContent = `
+                                        body { 
+                                            font-family: Arial, sans-serif; 
+                                            padding: 20px;
+                                            background-color: #ffffff;
+                                            color: #000000;
+                                            -webkit-print-color-adjust: exact;
+                                            print-color-adjust: exact;
+                                        }
+                                        img { 
+                                            max-width: 100%;
+                                            height: auto;
+                                        }
+                                    `;
+                                    clone.appendChild(style);
+
+                                    // Generate PDF
+                                    html2pdf().set(opt).from(clone).save();
+                                }}
+                                style={{
+                                    padding: '8px 16px',
+                                    borderRadius: '4px',
+                                    border: 'none',
+                                    backgroundColor: '#00A389',
+                                    color: '#ffffff',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Download PDF
                             </button>
                         </div>
                     </div>

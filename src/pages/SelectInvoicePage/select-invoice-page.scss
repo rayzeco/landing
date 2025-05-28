@@ -1,65 +1,408 @@
 .select-invoice-container {
-  background-color: f5f5dc;
-  color: black;
-}
-
-
-.select-invoice-container .panel logo {
-  top: 20px; /* Adjust as needed */
-  right: 20px; /* Adjust as needed */
-  z-index: 1000; /* Ensure it's on top of other content */
-}
-
-.select-invoice-container .panel {
+  min-height: 100vh;
+  background-color: black;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #fff;
   padding: 20px;
-  border: 1px solid var(--theme-color);
-  margin-bottom: 20px;
-  //background-color: gray; /* Set background color of panel */
-  background-color: #f5f5dc; ; /* Set background color of panel */
-  color: black; /* Set text color of panel */
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+
+  .panel {
+    background-color: #111;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    margin-bottom: 24px;
+    width: 100%;
+    box-sizing: border-box;
+
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 24px 0;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0;
+    }
+
+    h3 {
+      font-size: 14px;
+      color: #666;
+      margin: 0 0 12px 0;
+    }
+
+    h4 {
+      font-size: 12px;
+      color: #666;
+      margin: 0 0 8px 0;
+    }
+
+    .label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+      margin: 50px 0 0 20px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background-color: #222;
+      color: #fff;
+      font-size: 14px;
+      transition: border-color 0.2s ease;
+      margin-bottom: 12px;
+
+      &::placeholder {
+        color: #666;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: var(--theme-color);
+      }
+    }
+  }
+
+  .dashboard-section {
+    background-color: #111;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    margin-bottom: 48px;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:last-child {
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+        margin: 0;
+      }
+
+      .filters {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 15px;
+        width: 100%;
+
+        .filter-input {
+          flex: 1;
+          min-width: 200px;
+          padding: 8px 12px;
+          border: 1px solid #333;
+          border-radius: 6px;
+          background-color: #222;
+          color: #fff;
+          font-size: 14px;
+          box-sizing: border-box;
+
+          &::placeholder {
+            color: #666;
+          }
+
+          &:focus {
+            outline: none;
+            border-color: var(--theme-color);
+          }
+        }
+      }
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+    margin: 0 -24px;
+    padding: 0 24px;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #fff;
+
+      th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+        white-space: nowrap;
+      }
+
+      th {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #666;
+        font-weight: 500;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+
+      td {
+        font-size: 13px;
+        color: #fff;
+        padding-top: 8px;
+        padding-bottom: 8px;
+      }
+
+      tbody tr {
+        cursor: pointer;
+        &:hover {
+          background-color: #222;
+        }
+      }
+
+      .status-button {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        background-color: var(--theme-color);
+        color: black;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--theme-color);
+      }
+    }
+  }
+
+  button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.btn-primary {
+      background-color: var(--theme-color);
+      color: black;
+      border: none;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+
+    &.btn-secondary {
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #333;
+
+      &:hover {
+        background-color: #333;
+        border-color: #444;
+      }
+    }
+  }
 }
 
-.select-invoice-container .panel h2 {
-  margin-top: 0;
-  color: black;
-}
-.select-invoice-container .panel h3 {
-  margin-top: 0;
-  color: black;
-}
-
-.select-invoice-countainer .panel h4 {
-  padding-left: 20px; /* Adjust as needed */
-  color: black;
-  font-weight: normal; /* Set font weight to normal (non-bold) */
-  margin-top: 20px;
-}
-
-.select-invoice-container .panel h7 {
-  padding-top: 200px;
-  margin-top: 200px;
-  color: black;
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
 }
 
-.select-invoice-countainer .label {
-  padding-left: 20px; /* Adjust as needed */
-  //color: var(--theme-color);
-  color: wheat;
-  font-weight: normal; /* Set font weight to normal (non-bold) */
-  margin-top: 50px;
-}
-.select-invoice-container table {
-  width: 50%;
-  border-collapse: collapse;
-  margin-top: 40px;
-  color: black;
+.modal-content {
+  background-color: #111;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.select-invoice-container th,
-.select-invoice-container td {
-  border: 1px solid black;
-  padding: 10px;
-  color: black;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #333;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #fff;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  color: #fff;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #333;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-button {
+  padding: 8px 16px;
+  border: 1px solid #333;
+  background-color: #222;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #333;
+  }
+  
+  &.primary {
+    background-color: var(--theme-color);
+    color: black;
+    border-color: var(--theme-color);
+    
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+// Enhanced responsive design
+@media screen and (max-width: 1200px) {
+  .select-invoice-container {
+    padding: 16px;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .select-invoice-container {
+    .dashboard-section {
+      .section-header {
+        .filters {
+          .filter-input {
+            min-width: 180px;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .select-invoice-container {
+    padding: 16px;
+
+    .panel {
+      padding: 16px;
+    }
+
+    .table-container {
+      margin: 0 -16px;
+      padding: 0 16px;
+    }
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .select-invoice-container {
+    padding: 12px;
+
+    .panel {
+      padding: 12px;
+
+      h1 {
+        font-size: 20px;
+      }
+    }
+
+    .table-container {
+      margin: 0 -12px;
+      padding: 0 12px;
+
+      table {
+        th, td {
+          padding: 6px 8px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+// Handle very small screens
+@media screen and (max-width: 360px) {
+  .select-invoice-container {
+    .panel {
+      padding: 8px;
+    }
+
+    .dashboard-section {
+      padding: 8px;
+    }
+
+    .table-container {
+      table {
+        th, td {
+          padding: 6px 8px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
 }
 
 
