@@ -22,8 +22,17 @@ export default function RayzeConsole() {
   const [openRoles, setOpenRoles] = useState([]);
   const [filteredOpenRoles, setFilteredOpenRoles] = useState([]);
   const [clients, setClients] = useState([]);
-  const [selectedClientId, setSelectedClientId] = useState(null);
-  const [clientSearch, setClientSearch] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState(() => {
+    return localStorage.getItem('selectedClientId') || null;
+  });
+  const [clientSearch, setClientSearch] = useState(() => {
+    const savedClientId = localStorage.getItem('selectedClientId');
+    if (savedClientId) {
+      const savedClient = clients.find(client => client.id === savedClientId);
+      return savedClient ? savedClient.name : '';
+    }
+    return '';
+  });
   const [filters, setFilters] = useState({
     name: '',
     role: '',
@@ -151,10 +160,11 @@ export default function RayzeConsole() {
         const user_role = user_data.role;
         const user_id = user_data.id;
         const client_id = selectedClientId || user_data.client_id;
+        console.log('client_id', client_id);
 
         const [consoleResponse, activityResponse, candidatesResponse, openRolesResponse] = await Promise.all([
           axios.get(
-            `${process.env.REACT_APP_RYZ_SERVER}/get_console_data`,
+            `${process.env.REACT_APP_RYZ_SERVER}/get_console_data_by_client/${client_id}`,
             {
               headers: {
                 'Content-Type': 'application/json',
@@ -171,7 +181,7 @@ export default function RayzeConsole() {
               },
             }
           ),
-          axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_candidates`, {
+          axios.get(`${process.env.REACT_APP_RYZ_SERVER}/find_candidate_by_client/${client_id}`, {
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
@@ -184,6 +194,7 @@ export default function RayzeConsole() {
             },
           })
         ]);
+        console.log('consoleResponse', consoleResponse.data);
         setConsoleData(consoleResponse.data);
         setActivityData(activityResponse.data);
         setCandidates(candidatesResponse.data);
@@ -218,11 +229,14 @@ export default function RayzeConsole() {
       );
       if (matchingClient) {
         setSelectedClientId(matchingClient.id);
+        localStorage.setItem('selectedClientId', matchingClient.id);
       } else {
         setSelectedClientId(null);
+        localStorage.removeItem('selectedClientId');
       }
     } else {
       setSelectedClientId(null);
+      localStorage.removeItem('selectedClientId');
     }
   }, [clientSearch, clients]);
 
@@ -357,26 +371,24 @@ export default function RayzeConsole() {
 
             <div className="dashboard-grid">
               <div className="dashboard-card">
-                <h3>Total Open Roles</h3>
-                <div className="card-value">{consoleData.payroll_candidates}</div>
-                <div className="card-trend positive">+{consoleData.hired_last_month} this month</div>
+                <h3>Active Open Roles</h3>
+                <div className="card-value">{consoleData.active_client_roles}</div>
+                <div className="card-trend positive">+{consoleData.active_client_roles_last30} this month</div>
               </div>
               <div className="dashboard-card">
-                <h3>Candidates Submitted</h3>
-                <div className="card-value">{consoleData.submit_cvs}</div>
-                <div className="card-trend positive">+{consoleData.submit_last_month} this month</div>
+                <h3>CVs submitted</h3>
+                <div className="card-value">{consoleData.submit_client_cvs}</div>
+                <div className="card-trend positive">+{consoleData.submit_client_cvs_last30} this month</div>
               </div>
               <div className="dashboard-card">
-                <h3>Total Active Engineers</h3>
-                <div className="card-value">{consoleData.active_roles}</div>
-                <div className="card-trend positive">+{consoleData.roles_last_month} this month</div>
+                <h3>Active Engineers</h3>
+                <div className="card-value">{consoleData.total_active_eng}</div>
+                <div className="card-trend positive">+{consoleData.total_active_eng_last30} this month</div>
               </div>
               <div className="dashboard-card">
-                <h3>Hired</h3>
-                <div className="card-value">{consoleData.invoice_hours}</div>
-                <div className="card-trend neutral">
-                  {consoleData.max_invoice_date ? new Date(consoleData.max_invoice_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'No data'}
-                </div>
+                <h3>Hired last 30 days</h3>
+                <div className="card-value">{consoleData.hired_client_cvs}</div>
+                <div className="card-trend positive">+{consoleData.hired_client_cvs_last30} this month</div>
               </div>
             </div>
 
@@ -479,10 +491,10 @@ export default function RayzeConsole() {
               </div>
             </div>
 
-            {/* Candidates Section */}
+            {/* Open Candidates Section */}
             <div className="dashboard-section">
               <div className="section-header">
-                <h2>Candidates</h2>
+                <h2>Open Candidates</h2>
                 <div className="filters">
                   <input
                     type="text"
@@ -505,13 +517,6 @@ export default function RayzeConsole() {
                     onChange={(e) => handleFilterChange(e, 'location')}
                     className="filter-input"
                   />
-                  <input
-                    type="text"
-                    placeholder="Filter by status"
-                    value={filters.status}
-                    onChange={(e) => handleFilterChange(e, 'status')}
-                    className="filter-input"
-                  />
                 </div>
               </div>
               <div className="table-container">
@@ -528,7 +533,9 @@ export default function RayzeConsole() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredCandidates.map(candidate => (
+                    {filteredCandidates
+                      .filter(candidate => candidate.status === 'Open')
+                      .map(candidate => (
                       <tr key={candidate.id}>
                         <td>{candidate.name || '-'}</td>
                         <td>{candidate.role || '-'}</td>
@@ -554,6 +561,82 @@ export default function RayzeConsole() {
                           <span className="score-badge">
                             {candidate.match_score || '-'}
                           </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Hired Candidates Section */}
+            <div className="dashboard-section" style={{ marginTop: '2rem' }}>
+              <div className="section-header">
+                <h2>Hired Candidates</h2>
+                <div className="filters">
+                  <input
+                    type="text"
+                    placeholder="Filter by name"
+                    value={filters.name}
+                    onChange={(e) => handleFilterChange(e, 'name')}
+                    className="filter-input"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Filter by Current Role"
+                    value={filters.role}
+                    onChange={(e) => handleFilterChange(e, 'role')}
+                    className="filter-input"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Filter by location"
+                    value={filters.location}
+                    onChange={(e) => handleFilterChange(e, 'location')}
+                    className="filter-input"
+                  />
+                </div>
+              </div>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Current Role</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                      <th>CV</th>
+                      <th>Hours Last Month</th>
+                      <th>Hire Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCandidates
+                      .filter(candidate => candidate.status === 'Hired')
+                      .map(candidate => (
+                      <tr key={candidate.id}>
+                        <td>{candidate.name || '-'}</td>
+                        <td>{candidate.role || '-'}</td>
+                        <td>{candidate.location || '-'}</td>
+                        <td>
+                          <span className={`status-badge ${candidate.status?.toLowerCase()}`}>
+                            {candidate.status || '-'}
+                          </span>
+                        </td>
+                        <td>
+                          {candidate.cv_link ? (
+                            <button 
+                              type="button"
+                              className="action-button"
+                              onClick={() => window.open(candidate.cv_link, '_blank')}
+                            >
+                              View CV
+                            </button>
+                          ) : '-'}
+                        </td>
+                        <td>{candidate.hours_last_month || '-'}</td>
+                        <td>
+                          {candidate.hire_date ? new Date(candidate.hire_date).toLocaleDateString() : '-'}
                         </td>
                       </tr>
                     ))}
