@@ -419,6 +419,7 @@ const AddCandidatePage = () => {
             );
 
             // Parse the candidate_info string into a JSON object
+            console.log(response.data.candidate_info);
             const candidateInfo = JSON.parse(response.data.candidate_info);
 
             // Update the newCandidate state with the parsed information
@@ -463,6 +464,7 @@ const AddCandidatePage = () => {
                 );
 
                 const matchScore = matchScoreResponse.data.evaluation;
+                console.log(matchScore);
                 setMatchScoreResult(matchScore);
                 setNewCandidate(prev => ({
                     ...prev,
@@ -569,9 +571,7 @@ const AddCandidatePage = () => {
         
         if (searchTerm.length > 0) {
             const filtered = unfilteredCandidates.filter(candidate => 
-                candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                candidate.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                candidate.location.toLowerCase().includes(searchTerm.toLowerCase())
+                candidate.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
             setFilteredCandidatesForSearch(filtered);
             setShowCandidateSuggestions(true);
@@ -889,7 +889,7 @@ const AddCandidatePage = () => {
                     <input
                         type="text"
                         id="answer_candidate"
-                        placeholder="Search candidate by name, role, or location..."
+                        placeholder="Search candidate by name..."
                         value={candidateSearch}
                         onChange={handleCandidateSearch}
                         style={{ 
@@ -905,13 +905,13 @@ const AddCandidatePage = () => {
                             top: '100%',
                             left: 0,
                             right: 0,
-                            backgroundColor: '#fff',
-                            border: '1px solid #ccc',
+                            backgroundColor: '#333333',
+                            border: '1px solid #444444',
                             borderRadius: '4px',
                             maxHeight: '180px',
                             overflowY: 'auto',
                             zIndex: 1000,
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                         }}>
                             {filteredCandidatesForSearch.map(candidate => (
                                 <div
@@ -920,20 +920,18 @@ const AddCandidatePage = () => {
                                     style={{
                                         padding: '8px 12px',
                                         cursor: 'pointer',
-                                        borderBottom: '1px solid #eee',
-                                        backgroundColor: '#fff',
+                                        borderBottom: '1px solid #444444',
+                                        backgroundColor: '#333333',
                                         transition: 'background-color 0.2s',
+                                        color: '#ffffff',
                                         ':hover': {
-                                            backgroundColor: '#f5f5f5'
+                                            backgroundColor: '#444444'
                                         }
                                     }}
-                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#444444'}
+                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#333333'}
                                 >
                                     <div style={{ fontWeight: 'bold' }}>{candidate.name}</div>
-                                    <div style={{ fontSize: '0.9em', color: '#666' }}>
-                                        {candidate.role} - {candidate.location}
-                                    </div>
                                 </div>
                             ))}
                 </div>
@@ -946,13 +944,14 @@ const AddCandidatePage = () => {
                     onClick={handleHireClick}
                     disabled={!selectedAnswerCandidate || JSON.parse(sessionStorage.getItem('user'))?.role !== 'ADMIN'}
                     style={{ 
-                        backgroundColor: '#00A389',
+                        backgroundColor: !selectedAnswerCandidate || JSON.parse(sessionStorage.getItem('user'))?.role !== 'ADMIN' ? '#cccccc' : '#00A389',
                         margin: 0,
                         width: 'fit-content',
                         whiteSpace: 'nowrap',
                         padding: '8px 16px',
                         cursor: selectedAnswerCandidate && JSON.parse(sessionStorage.getItem('user'))?.role === 'ADMIN' ? 'pointer' : 'not-allowed',
-                        opacity: selectedAnswerCandidate && JSON.parse(sessionStorage.getItem('user'))?.role === 'ADMIN' ? 1 : 0.5
+                        opacity: 1,
+                        color: !selectedAnswerCandidate || JSON.parse(sessionStorage.getItem('user'))?.role !== 'ADMIN' ? '#666666' : '#ffffff'
                     }}
                 >
                     Hire Candidate
@@ -967,8 +966,10 @@ const AddCandidatePage = () => {
                         width: 'fit-content',
                         whiteSpace: 'nowrap',
                         padding: '8px 16px',
-                        opacity: selectedAnswerCandidate ? 1 : 0.5,
-                        cursor: selectedAnswerCandidate ? 'pointer' : 'not-allowed'
+                        opacity: 1,
+                        backgroundColor: !selectedAnswerCandidate ? '#cccccc' : '#00A389',
+                        cursor: selectedAnswerCandidate ? 'pointer' : 'not-allowed',
+                        color: !selectedAnswerCandidate ? '#666666' : '#ffffff'
                     }}
                 >
                     Submit Answers

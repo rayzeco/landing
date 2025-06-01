@@ -517,8 +517,8 @@ const AddOpenRolesPage = () => {
                                     <label>Actions:</label>
                                     <div className="action-buttons">
                                         <label htmlFor="pdf-upload" className="upload-button">
-                                            <FaFilePdf className="pdf-icon" />
-                                            <span>{isLoading ? 'Processing...' : 'Upload Job Description'}</span>
+                                            <FaFilePdf className="pdf-icon" style={{ color: '#000000' }} />
+                                            <span style={{ color: '#000000' }}>{isLoading ? 'Processing...' : 'Upload Job Description'}</span>
                                             {isLoading && (
                                                 <div className="spinner">
                                                     <div className="spinner-inner"></div>

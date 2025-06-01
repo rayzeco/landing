@@ -1,0 +1,12 @@
+.git/
+node_modules/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+*.log
+.DS_Store 
