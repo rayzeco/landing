@@ -167,16 +167,18 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
         for (let i = 0; i < clientInvoices.length; i++) {
           totalClientPrice += clientInvoices[i].client_price * clientInvoices[i].hours_worked;
           //explainStr += clientInvoices[i].candidate + " ($" + clientInvoices[i].client_price + "/hr x " + clientInvoices[i].hours_worked + " =  $" + clientInvoices[i].client_price * clientInvoices[i].hours_worked + " <br>";
-          explainStr += `<tr><td>${clientInvoices[i].candidate}</td><td>Technology Services</td><td>${clientInvoices[i].hours_worked}</td><td>${formatNumber(clientInvoices[i].client_price)}</td><td>${formatNumber(clientInvoices[i].client_price * clientInvoices[i].hours_worked)}</td></tr>`;
+          if (clientInvoices[i].hours_worked > 0) {
+            explainStr += `<tr><td>${clientInvoices[i].candidate}</td><td>Technology Services</td><td>${clientInvoices[i].hours_worked}</td><td>${formatNumber(clientInvoices[i].client_price)}</td><td>${formatNumber(clientInvoices[i].client_price * clientInvoices[i].hours_worked)}</td></tr>`;
+          }
           //console.log('debug: totalprice ', totalClientPrice, explainStr);
         }
         //console.log('final explain : ',explainStr);
 
         const invoicesData = {
-          inv_date: clientInvoices[0].inv_date,
+          inv_date: invoiceDate,
           due_date: due_date,
-          period_start: clientInvoices[0].period_start,
-          period_end: clientInvoices[0].period_end,
+          period_start: startPeriod,
+          period_end: endPeriod,
           client_id: clientInvoices[0].client_id,
           client_name: clientInvoices[0].client,
           client_contact: clientInvoices[0].client_contact,
@@ -233,15 +235,16 @@ const rayzeURL = process.env.RAYZE_SERVER_URL;
         }
   
         const newInvoice = {
-          inv_date: invoice.inv_date || new Date().toISOString(),  // Provide a default value if inv_date is not available
+          inv_date: invoiceDate,  // Use the invoiceDate from UI state
           candidate_id: invoice.candidate_id,
-          period_start: invoice.period_start,
-          period_end: invoice.period_end,
+          period_start: startPeriod,
+          period_end: endPeriod,
           txn_id: invoice.txn_id,
           hours_worked: invoice.hours_worked,
           inv_value: invoice.inv_value,  // Provide a default value if inv_value is not available
           inv_status: "SAVED",
         };
+        //console.log('newInvoice ', newInvoice);
         const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
         const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_invoice`, newInvoice, {
           headers: {
