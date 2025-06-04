@@ -334,7 +334,15 @@ const AddCandidatePage = () => {
     };
 
     const handleRowClick = (candidateId) => {
-        navigate(`/candidate/${candidateId}`);
+        // Find the submission for this candidate
+        const submission = getCVRoleSubmission(candidateId);
+        
+        // Only show modal if there's a match score
+        if (submission?.match_score) {
+            setMatchScoreResult(submission.match_score);
+            setShowMatchScoreModal(true);
+        }
+        // If no match score, do nothing
     };
 
     const handleCVClick = (e, cvLink) => {

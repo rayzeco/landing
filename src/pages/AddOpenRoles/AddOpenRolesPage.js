@@ -11,6 +11,8 @@ const AddOpenRolesPage = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [showTestModal, setShowTestModal] = useState(false);
+    const [showJDModal, setShowJDModal] = useState(false);
+    const [currentJD, setCurrentJD] = useState('');
     const [currentTestDoc, setCurrentTestDoc] = useState('');
     const [filters, setFilters] = useState({
         clientName: '',
@@ -119,6 +121,8 @@ const AddOpenRolesPage = () => {
         }));
     };
 
+    //https://tmqcprxidpcefgegkczt.supabase.co/storage/v1/object/public/rayze-bucket/a721be378076c162bfbf94e99c7dcd9c1b96040df5fc3677b8a5bd16cbfc39d0
+    //https://tmqcprxidpcefgegkczt.supabase.co/storage/v1/object/sign/rayze-bucket/a721be378076c162bfbf94e99c7dcd9c1b96040df5fc3677b8a5bd16cbfc39d0?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kNGVlOTMyYy01MzQwLTQ3ZTItYWM1Yi0zMjIzY2NkN2MxYWYiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJyYXl6ZS1idWNrZXQvYTcyMWJlMzc4MDc2YzE2MmJmYmY5NGU5OWM3ZGNkOWMxYjk2MDQwZGY1ZmMzNjc3YjhhNWJkMTZjYmZjMzlkMCIsImlhdCI6MTc0ODc5ODU4NiwiZXhwIjoxNzgwMzM0NTg2fQ.raKycSXQJHS2eKL2SDptnIRgNREugJqgUPFmk8pSclU
     const handleGenerateEvaluation = async (jobDescLink) => {
         try {
             // First, fetch the job description content
@@ -277,7 +281,11 @@ const AddOpenRolesPage = () => {
     };
 
     const handleRowClick = (roleId) => {
-        navigate(`/open-role/${roleId}`);
+        const role = openRoles.find(r => r.id === roleId);
+        if (role?.test_doc) {
+            setCurrentTestDoc(role.test_doc);
+            setShowTestModal(true);
+        }
     };
 
     const handleCVClick = (e, cvLink) => {
@@ -428,6 +436,11 @@ const AddOpenRolesPage = () => {
     const handleCloseModal = () => {
         setShowTestModal(false);
         setCurrentTestDoc('');
+    };
+
+    const handleCloseJDModal = () => {
+        setShowJDModal(false);
+        setCurrentJD('');
     };
 
     return (
@@ -626,7 +639,7 @@ const AddOpenRolesPage = () => {
                                     <td>{role.role_desc || '-'}</td>
                                     <td>{role.location || '-'}</td>
                                     <td>{role.status || '-'}</td>
-                                    <td>{role.posted_on || '-'}</td>
+                                    <td>{role.posted_on ? new Date(role.posted_on).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).replace(/,/g, '').replace(/\s+/g, '-') : '-'}</td>
                                     <td>{role.remote || '-'}</td>
                                     <td>
                                         {role.job_desc_link ? (
@@ -716,6 +729,39 @@ const AddOpenRolesPage = () => {
                                 }}
                             >
                                 Save as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Job Description Modal */}
+            {showJDModal && (
+                <div className="modal-overlay" onClick={handleCloseJDModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Job Description</h2>
+                            <button className="close-button" onClick={handleCloseJDModal}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <iframe 
+                                src={currentJD} 
+                                style={{ 
+                                    width: '100%', 
+                                    height: '80vh', 
+                                    border: 'none',
+                                    backgroundColor: '#ffffff'
+                                }}
+                                title="Job Description"
+                            />
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-button" onClick={handleCloseJDModal}>Close</button>
+                            <button 
+                                className="modal-button primary"
+                                onClick={() => window.open(currentJD, '_blank')}
+                            >
+                                Open in New Tab
                             </button>
                         </div>
                     </div>
