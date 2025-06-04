@@ -494,7 +494,7 @@ export default function RayzeConsole() {
             {/* Open Candidates Section */}
             <div className="dashboard-section">
               <div className="section-header">
-                <h2>Open Candidates</h2>
+                <h2>Submitted Candidates</h2>
                 <div className="filters">
                   <input
                     type="text"
@@ -534,7 +534,7 @@ export default function RayzeConsole() {
                   </thead>
                   <tbody>
                     {filteredCandidates
-                      .filter(candidate => candidate.status === 'Open')
+                      .filter(candidate => candidate.status === 'Submitted')
                       .map(candidate => (
                       <tr key={candidate.id}>
                         <td>{candidate.name || '-'}</td>
