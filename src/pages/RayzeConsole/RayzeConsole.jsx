@@ -44,6 +44,8 @@ export default function RayzeConsole() {
     client_name: '',
     role_status: ''
   });
+  const [showMatchScoreModal, setShowMatchScoreModal] = useState(false);
+  const [matchScoreResult, setMatchScoreResult] = useState(null);
   const navigate = useNavigate();
 
   // Check user role and redirect if unauthorized
@@ -183,7 +185,7 @@ export default function RayzeConsole() {
               },
             }
           ),
-          axios.get(`${process.env.REACT_APP_RYZ_SERVER}/find_candidate_by_client/${client_id}`, {
+          axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_console_candidates_by_client/${client_id}`, {
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
@@ -196,6 +198,7 @@ export default function RayzeConsole() {
             },
           })
         ]);
+
         console.log('consoleResponse', consoleResponse.data);
         setConsoleData(consoleResponse.data);
         setActivityData(activityResponse.data);
@@ -281,6 +284,17 @@ export default function RayzeConsole() {
 
   const handleNavigation = (path) => {
     navigate(path);
+  };
+
+  const handleMatchScoreClick = (e, matchScore) => {
+    e.stopPropagation();
+    setMatchScoreResult(matchScore);
+    setShowMatchScoreModal(true);
+  };
+
+  const handleCloseMatchScoreModal = () => {
+    setShowMatchScoreModal(false);
+    setMatchScoreResult(null);
   };
 
   const renderMainContent = () => {
@@ -394,6 +408,111 @@ export default function RayzeConsole() {
               </div>
             </div>
 
+            {/* Open Candidates Section */}
+            <div className="dashboard-section">
+              <div className="section-header">
+                <h2 style={{ color: 'var(--theme-color)' }}>Your Input Required</h2>
+                <div className="filters">
+                  <input
+                    type="text"
+                    placeholder="Filter by name"
+                    value={filters.name}
+                    onChange={(e) => handleFilterChange(e, 'name')}
+                    className="filter-input"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Filter by Current Role"
+                    value={filters.role}
+                    onChange={(e) => handleFilterChange(e, 'role')}
+                    className="filter-input"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Filter by location"
+                    value={filters.location}
+                    onChange={(e) => handleFilterChange(e, 'location')}
+                    className="filter-input"
+                  />
+                </div>
+              </div>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Proceed</th>
+                      <th>Decline</th>
+                      <th>Name</th>
+                      <th>Current Role</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                      <th>CV</th>
+                      <th>Match Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCandidates
+                      .filter(candidate => candidate.status === 'Submitted')
+                      .map(candidate => (
+                        <tr key={candidate.id}>
+                          <td>
+                            <button 
+                              className="action-button proceed"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Add your proceed logic here
+                              }}
+                            >
+                              ✓
+                            </button>
+                          </td>
+                          <td>
+                            <button 
+                              className="action-button decline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Add your decline logic here
+                              }}
+                            >
+                              X
+                            </button>
+                          </td>
+                          <td>{candidate.name || '-'}</td>
+                          <td>{candidate.role || '-'}</td>
+                          <td>{candidate.location || '-'}</td>
+                          <td>
+                            <span className={`status-badge ${candidate.status?.toLowerCase()}`}>
+                              {candidate.status || '-'}
+                            </span>
+                          </td>
+                          <td>
+                            {candidate.cv_link && (
+                              <button 
+                                className="cv-link"
+                                onClick={() => window.open(candidate.cv_link, '_blank')}
+                              >
+                                View CV
+                              </button>
+                            )}
+                          </td>
+                          <td>
+                            {candidate.match_score ? (
+                              <button 
+                                type="button"
+                                className="view-match-score"
+                                onClick={(e) => handleMatchScoreClick(e, candidate.match_score)}
+                              >
+                                View Match
+                              </button>
+                            ) : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             {/* Open Roles Section */}
             <div className="dashboard-section">
               <div className="section-header">
@@ -493,83 +612,6 @@ export default function RayzeConsole() {
               </div>
             </div>
 
-            {/* Open Candidates Section */}
-            <div className="dashboard-section">
-              <div className="section-header">
-                <h2>Submitted Candidates</h2>
-                <div className="filters">
-                  <input
-                    type="text"
-                    placeholder="Filter by name"
-                    value={filters.name}
-                    onChange={(e) => handleFilterChange(e, 'name')}
-                    className="filter-input"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Filter by Current Role"
-                    value={filters.role}
-                    onChange={(e) => handleFilterChange(e, 'role')}
-                    className="filter-input"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Filter by location"
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange(e, 'location')}
-                    className="filter-input"
-                  />
-                </div>
-              </div>
-              <div className="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Current Role</th>
-                      <th>Location</th>
-                      <th>Status</th>
-                      <th>CV</th>
-                      <th>Open Role</th>
-                      <th>Match Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCandidates
-                      .filter(candidate => candidate.status === 'Submitted')
-                      .map(candidate => (
-                      <tr key={candidate.id}>
-                        <td>{candidate.name || '-'}</td>
-                        <td>{candidate.role || '-'}</td>
-                        <td>{candidate.location || '-'}</td>
-                        <td>
-                          <span className={`status-badge ${candidate.status?.toLowerCase()}`}>
-                            {candidate.status || '-'}
-                          </span>
-                        </td>
-                        <td>
-                          {candidate.cv_link ? (
-                            <button 
-                              type="button"
-                              className="action-button"
-                              onClick={() => window.open(candidate.cv_link, '_blank')}
-                            >
-                              View CV
-                            </button>
-                          ) : '-'}
-                        </td>
-                        <td>{candidate.open_role || '-'}</td>
-                        <td>
-                          <span className="score-badge">
-                            {candidate.match_score || '-'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
 
             {/* Hired Candidates Section */}
             <div className="dashboard-section" style={{ marginTop: '2rem' }}>
@@ -626,15 +668,14 @@ export default function RayzeConsole() {
                           </span>
                         </td>
                         <td>
-                          {candidate.cv_link ? (
+                          {candidate.cv_link && (
                             <button 
-                              type="button"
-                              className="action-button"
+                              className="cv-link"
                               onClick={() => window.open(candidate.cv_link, '_blank')}
                             >
                               View CV
                             </button>
-                          ) : '-'}
+                          )}
                         </td>
                         <td>{candidate.hours_last_month || '-'}</td>
                         <td>
@@ -758,6 +799,24 @@ export default function RayzeConsole() {
           {renderMainContent()}
         </div>
       </div>
+
+      {/* Match Score Modal */}
+      {showMatchScoreModal && (
+        <div className="modal-overlay" onClick={handleCloseMatchScoreModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Candidate Match Score</h2>
+              <button className="close-button" onClick={handleCloseMatchScoreModal}>×</button>
+            </div>
+            <div className="modal-body">
+              <div dangerouslySetInnerHTML={{ __html: matchScoreResult }} />
+            </div>
+            <div className="modal-footer">
+              <button className="modal-button" onClick={handleCloseMatchScoreModal}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
