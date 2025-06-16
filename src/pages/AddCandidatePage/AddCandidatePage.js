@@ -680,6 +680,18 @@ const AddCandidatePage = () => {
                 }
             );
 
+            // Update submit_cv_role status
+            await axios.put(
+                `${process.env.REACT_APP_RYZ_SERVER}/update_submit_cvrole/${submission.id}`,
+                { status: 'Hired' },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
             // Refresh the submit CV roles data
             const submitCVRolesResponse = await axios.get(
                 `${process.env.REACT_APP_RYZ_SERVER}/list_submit_cvroles`,
@@ -792,6 +804,7 @@ const AddCandidatePage = () => {
                 setIsHiring(false);
                 return;
             }
+//            console.log('submission is ', submission);
 
             // Create new transaction with exact required fields from TransactionCreate
             const transactionData = {
@@ -825,6 +838,17 @@ const AddCandidatePage = () => {
             // Update candidate status
             await axios.put(
                 `${process.env.REACT_APP_RYZ_SERVER}/update_candidate/${selectedAnswerCandidate}`,
+                { status: 'Hired' },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+            // Update submit_cv_role status
+            await axios.put(
+                `${process.env.REACT_APP_RYZ_SERVER}/update_submit_cvrole/${submission.id}`,
                 { status: 'Hired' },
                 {
                     headers: {

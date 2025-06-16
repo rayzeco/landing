@@ -21,6 +21,7 @@ export default function RayzeConsole() {
   const [userRole, setUserRole] = useState(null);
   const [candidates, setCandidates] = useState([]);
   const [filteredCandidates, setFilteredCandidates] = useState([]);
+  const [filteredInputRequiredCandidates, setFilteredInputRequiredCandidates] = useState([]);
   const [openRoles, setOpenRoles] = useState([]);
   const [filteredOpenRoles, setFilteredOpenRoles] = useState([]);
   const [clients, setClients] = useState([]);
@@ -43,6 +44,14 @@ export default function RayzeConsole() {
     role_desc: '',
     client_name: '',
     role_status: ''
+  });
+  const [inputRequiredFilters, setInputRequiredFilters] = useState({
+    name: '',
+    role: '',
+    location: ''
+  });
+  const [openRolesFilters, setOpenRolesFilters] = useState({
+    role_desc: ''
   });
   const [showMatchScoreModal, setShowMatchScoreModal] = useState(false);
   const [matchScoreResult, setMatchScoreResult] = useState(null);
@@ -191,7 +200,7 @@ export default function RayzeConsole() {
               Authorization: `Bearer ${token}`,
             },
           }),
-          axios.get(`${process.env.REACT_APP_RYZ_SERVER}/find_open_roles/${client_id}`, {
+          axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_console_open_roles_by_client/${client_id}`, {
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
@@ -226,6 +235,30 @@ export default function RayzeConsole() {
     setFilteredCandidates(filtered);
   }, [filters, candidates]);
 
+  // Add input required filter effect
+  useEffect(() => {
+    let filtered = candidates.filter(candidate => {
+      return Object.keys(inputRequiredFilters).every(key => {
+        if (!inputRequiredFilters[key]) return true;
+        const value = candidate[key]?.toString().toLowerCase() || '';
+        return value.includes(inputRequiredFilters[key].toLowerCase());
+      });
+    });
+    setFilteredInputRequiredCandidates(filtered);
+  }, [inputRequiredFilters, candidates]);
+
+  // Add open roles filter effect
+  useEffect(() => {
+    let filtered = openRoles.filter(role => {
+      return Object.keys(openRolesFilters).every(key => {
+        if (!openRolesFilters[key]) return true;
+        const value = role[key]?.toString().toLowerCase() || '';
+        return value.includes(openRolesFilters[key].toLowerCase());
+      });
+    });
+    setFilteredOpenRoles(filtered);
+  }, [openRolesFilters, openRoles]);
+
   // Add client search effect
   useEffect(() => {
     if (clientSearch) {
@@ -247,6 +280,20 @@ export default function RayzeConsole() {
 
   const handleFilterChange = (e, field) => {
     setFilters(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }));
+  };
+
+  const handleInputRequiredFilterChange = (e, field) => {
+    setInputRequiredFilters(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }));
+  };
+
+  const handleOpenRolesFilterChange = (e, field) => {
+    setOpenRolesFilters(prev => ({
       ...prev,
       [field]: e.target.value
     }));
@@ -397,7 +444,7 @@ export default function RayzeConsole() {
                 <div className="card-trend positive">+{consoleData.submit_client_cvs_last30} this month</div>
               </div>
               <div className="dashboard-card">
-                <h3>Active Engineers</h3>
+                <h3>Active Rayze Engineers</h3>
                 <div className="card-value">{consoleData.total_active_eng}</div>
                 <div className="card-trend positive">+{consoleData.total_active_eng_last30} this month</div>
               </div>
@@ -416,22 +463,22 @@ export default function RayzeConsole() {
                   <input
                     type="text"
                     placeholder="Filter by name"
-                    value={filters.name}
-                    onChange={(e) => handleFilterChange(e, 'name')}
+                    value={inputRequiredFilters.name}
+                    onChange={(e) => handleInputRequiredFilterChange(e, 'name')}
                     className="filter-input"
                   />
                   <input
                     type="text"
-                    placeholder="Filter by Current Role"
-                    value={filters.role}
-                    onChange={(e) => handleFilterChange(e, 'role')}
+                    placeholder="Filter by Open Role"
+                    value={inputRequiredFilters.role}
+                    onChange={(e) => handleInputRequiredFilterChange(e, 'role')}
                     className="filter-input"
                   />
                   <input
                     type="text"
                     placeholder="Filter by location"
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange(e, 'location')}
+                    value={inputRequiredFilters.location}
+                    onChange={(e) => handleInputRequiredFilterChange(e, 'location')}
                     className="filter-input"
                   />
                 </div>
@@ -443,15 +490,15 @@ export default function RayzeConsole() {
                       <th>Proceed</th>
                       <th>Decline</th>
                       <th>Name</th>
-                      <th>Current Role</th>
-                      <th>Location</th>
-                      <th>Status</th>
+                      <th>Open Role</th>
+                      <th>Candidate Location</th>
+                      <th>Interview Status</th>
                       <th>CV</th>
                       <th>Match Score</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredCandidates
+                    {filteredInputRequiredCandidates
                       .filter(candidate => candidate.status === 'Submitted')
                       .map(candidate => (
                         <tr key={candidate.id}>
@@ -521,22 +568,8 @@ export default function RayzeConsole() {
                   <input
                     type="text"
                     placeholder="Filter by role description"
-                    value={filters.role_desc || ''}
-                    onChange={(e) => handleFilterChange(e, 'role_desc')}
-                    className="filter-input"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Filter by client"
-                    value={filters.client_name || ''}
-                    onChange={(e) => handleFilterChange(e, 'client_name')}
-                    className="filter-input"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Filter by status"
-                    value={filters.role_status || ''}
-                    onChange={(e) => handleFilterChange(e, 'role_status')}
+                    value={openRolesFilters.role_desc}
+                    onChange={(e) => handleOpenRolesFilterChange(e, 'role_desc')}
                     className="filter-input"
                   />
                 </div>
@@ -545,63 +578,33 @@ export default function RayzeConsole() {
                 <table>
                   <thead>
                     <tr>
-                      <th>Role Description</th>
-                      <th>Candidates Submitted</th>
-                      <th>Status</th>
-                      <th>JD Link</th>
-                      <th>Test</th>
+                      <th style={{ textAlign: 'left', width: '120ch' }}>Role Description</th>
+                      <th style={{ textAlign: 'left',  width: '40ch' }}>Role Location</th>
+                      <th style={{ textAlign: 'left',  width: '40ch' }}>Role Status</th>
+                      <th style={{ textAlign: 'left' }}>Role Posted On</th>
+                      <th style={{ textAlign: 'left', width: '40ch' }}># Candidates Submitted</th>
+                      <th style={{ textAlign: 'left', width: '40ch' }}>JD Link</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredOpenRoles.map(role => (
-                      <tr key={role.id}>
-                        <td>{role.role_desc || '-'}</td>
-                        <td>{role.client_name || '-'}</td>
-                        <td>
+                      <tr key={role.role_desc}>
+                        <td style={{ textAlign: 'left', width: '60ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{role.role_desc || '-'}</td>
+                        <td style={{ width: '40ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{role.location || '-'}</td>
+                        <td style={{ width: '40ch' }}>
                           <span className={`status-badge ${role.status?.toLowerCase()}`}>
                             {role.status || '-'}
                           </span>
                         </td>
-                        <td>
+                        <td style={{ width: '40ch' }}>{role.posted_date || '-'}</td>
+                        <td style={{ width: '40ch' }}>{role.submit_cv_count || 0}</td>
+                        <td style={{ width: '40ch' }}>
                           {role.job_desc_link ? (
                             <button 
-                              type="button"
-                              className="action-button"
+                              className="cv-link"
                               onClick={() => window.open(role.job_desc_link, '_blank')}
                             >
                               View JD
-                            </button>
-                          ) : '-'}
-                        </td>
-                        <td>
-                          {role.test_doc ? (
-                            <button 
-                              type="button"
-                              className="action-button"
-                              onClick={() => {
-                                const content = `
-                                  <!DOCTYPE html>
-                                  <html>
-                                    <head>
-                                      <title>Test Document</title>
-                                      <style>
-                                        body { 
-                                          font-family: Arial, sans-serif; 
-                                          padding: 20px;
-                                        }
-                                      </style>
-                                    </head>
-                                    <body>
-                                      ${role.test_doc}
-                                    </body>
-                                  </html>
-                                `;
-                                const blob = new Blob([content], { type: 'text/html' });
-                                const url = URL.createObjectURL(blob);
-                                window.open(url, '_blank');
-                              }}
-                            >
-                              Download Test
                             </button>
                           ) : '-'}
                         </td>
@@ -642,16 +645,14 @@ export default function RayzeConsole() {
                 </div>
               </div>
               <div className="table-container">
-                <table>
+                <table style={{ width: '100%', tableLayout: 'fixed' }}>
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Current Role</th>
-                      <th>Location</th>
-                      <th>Status</th>
-                      <th>CV</th>
-                      <th>Hours Last Month</th>
-                      <th>Hire Date</th>
+                      <th style={{ width: '60px', textAlign: 'left' }}>Name</th>
+                      <th style={{ width: '60px', textAlign: 'left' }}>Current Role</th>
+                      <th style={{ width: '40px', textAlign: 'left' }}>Location</th>
+                      <th style={{ width: '40px', textAlign: 'left' }}>Status</th>
+                      <th style={{ width: '40px', textAlign: 'left' }}>CV</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -659,15 +660,15 @@ export default function RayzeConsole() {
                       .filter(candidate => candidate.status === 'Hired')
                       .map(candidate => (
                       <tr key={candidate.id}>
-                        <td>{candidate.name || '-'}</td>
-                        <td>{candidate.role || '-'}</td>
-                        <td>{candidate.location || '-'}</td>
-                        <td>
+                        <td style={{ width: '60px', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{candidate.name || '-'}</td>
+                        <td style={{ width: '60px', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{candidate.role || '-'}</td>
+                        <td style={{ width: '40px', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{candidate.location || '-'}</td>
+                        <td style={{ width: '40px', textAlign: 'left' }}>
                           <span className={`status-badge ${candidate.status?.toLowerCase()}`}>
                             {candidate.status || '-'}
                           </span>
                         </td>
-                        <td>
+                        <td style={{ width: '40px', textAlign: 'left' }}>
                           {candidate.cv_link && (
                             <button 
                               className="cv-link"
@@ -676,10 +677,6 @@ export default function RayzeConsole() {
                               View CV
                             </button>
                           )}
-                        </td>
-                        <td>{candidate.hours_last_month || '-'}</td>
-                        <td>
-                          {candidate.hire_date ? new Date(candidate.hire_date).toLocaleDateString() : '-'}
                         </td>
                       </tr>
                     ))}
