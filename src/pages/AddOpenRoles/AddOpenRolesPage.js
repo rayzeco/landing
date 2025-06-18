@@ -38,6 +38,43 @@ const AddOpenRolesPage = () => {
     });
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [isGeneratingJD, setIsGeneratingJD] = useState(false);
+    const [showJDGeneratorModal, setShowJDGeneratorModal] = useState(false);
+    const [jdInput, setJDInput] = useState({
+        responsibilities: `• Design and develop high-performance Java-based trading platform
+• Implement real-time market data processing using Kafka
+• Develop REST APIs for trading operations
+• Create automated test suites and CI/CD pipelines
+• Monitor and optimize system performance
+• Collaborate with trading team on new features
+• Maintain and enhance existing trading systems`,
+        candidateRequirements: `• 5+ years of Java development experience
+• Strong understanding of financial markets and trading concepts
+• Experience with high-performance, low-latency systems
+• Bachelor's degree in Computer Science or related field
+• Experience with Agile development methodologies
+• Strong problem-solving and analytical skills
+• Excellent communication and teamwork abilities`,
+        technicalSkills: `• Core Java (Java 8+)
+• Spring Framework and Spring Boot
+• Apache Kafka for event streaming
+• RESTful API development
+• SQL and NoSQL databases
+• JUnit, Mockito, and TestNG
+• CI/CD tools (Jenkins, GitLab CI)
+• Docker and Kubernetes
+• Microservices architecture
+• Performance optimization techniques`,
+        businessSkills: `• Understanding of financial markets and trading concepts
+• Ability to work with trading teams and business stakeholders
+• Experience with regulatory compliance in financial systems
+• Strong documentation and technical writing skills
+• Project management and time management
+• Risk assessment and mitigation
+• Stakeholder communication
+• Problem-solving in high-pressure situations`
+    });
+    const [generatedJD, setGeneratedJD] = useState('');
 
     useEffect(() => {
         const fetchClients = async () => {
@@ -315,7 +352,6 @@ const AddOpenRolesPage = () => {
                 formData,
                 {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
                         Authorization: `Bearer ${token}`,
                     },
                 }
@@ -338,7 +374,6 @@ const AddOpenRolesPage = () => {
                     jobDescriptionObj,
                     {
                         headers: {
-                            'Content-Type': 'application/json',
                             Authorization: `Bearer ${token}`,
                         }
                     }
@@ -443,6 +478,151 @@ const AddOpenRolesPage = () => {
         setCurrentJD('');
     };
 
+    const handleGenerateJD = () => {
+        setShowJDGeneratorModal(true);
+    };
+
+    const handleJDInputChange = (e) => {
+        const { name, value } = e.target;
+        setJDInput(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleGenerateJDContent = async () => {
+        setIsGeneratingJD(true);
+        try {
+            const token = sessionStorage.getItem('token');
+            
+            // Create a job description object
+            const jobDescObj = {
+                position: newOpenRole.role_desc,
+                client: newOpenRole.clientName,
+                location: newOpenRole.location,
+                workType: newOpenRole.remote,
+                responsibilities: jdInput.responsibilities,
+                candidateRequirements: jdInput.candidateRequirements,
+                technicalSkills: jdInput.technicalSkills,
+                businessSkills: jdInput.businessSkills
+            };
+
+            // Convert to JSON string
+            const jobDesc = JSON.stringify(jobDescObj);
+            // console.log('Sending job description:', jobDesc);
+            const formData = new FormData();
+            formData.append('job_desc', jobDesc);
+
+            const response = await axios.post(
+                `${process.env.REACT_APP_RYZ_SERVER}/generate_job_description_from_text`,
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+
+            if (response.data.status === 'success') {
+                console.log(response.data);
+                setGeneratedJD(response.data.text);
+            } else {
+                console.error('API Error Response:', response.data);
+                throw new Error(response.data.message || 'Failed to generate job description');
+            }
+        } catch (error) {
+            console.error('Error details:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            console.error('Error headers:', error.response?.headers);
+            alert('Error generating job description. Please check the console for details.');
+        } finally {
+            setIsGeneratingJD(false);
+        }
+    };
+
+    const handleSaveJD = () => {
+        setNewOpenRole(prev => ({
+            ...prev,
+            job_desc_link: generatedJD,
+            jd_doc: generatedJD
+        }));
+        setShowJDGeneratorModal(false);
+        setJDInput({
+            responsibilities: `• THIS IS AN EXAMPLE --> Design and develop high-performance Java-based trading platform
+• Implement real-time market data processing using Kafka
+• Develop REST APIs for trading operations
+• Create automated test suites and CI/CD pipelines
+• Monitor and optimize system performance
+• Collaborate with trading team on new features
+• Maintain and enhance existing trading systems`,
+            candidateRequirements: `• THIS IS AN EXAMPLE --> 5+ years of Java development experience
+• Strong understanding of financial markets and trading concepts
+• Experience with high-performance, low-latency systems
+• Bachelor's degree in Computer Science or related field
+• Experience with Agile development methodologies
+• Strong problem-solving and analytical skills
+• Excellent communication and teamwork abilities`,
+            technicalSkills: `• THIS IS AN EXAMPLE --> Core Java (Java 8+)
+• Spring Framework and Spring Boot
+• Apache Kafka for event streaming
+• RESTful API development
+• SQL and NoSQL databases
+• JUnit, Mockito, and TestNG
+• CI/CD tools (Jenkins, GitLab CI)
+• Docker and Kubernetes
+• Microservices architecture
+• Performance optimization techniques`,
+            businessSkills: `• THIS IS AN EXAMPLE --> Understanding of financial markets and trading concepts
+• Ability to work with trading teams and business stakeholders
+• Experience with regulatory compliance in financial systems
+• Strong documentation and technical writing skills
+• Project management and time management
+• Risk assessment and mitigation
+• Stakeholder communication
+• Problem-solving in high-pressure situations`
+        });
+        setGeneratedJD('');
+    };
+
+    const handleCloseJDGeneratorModal = () => {
+        setShowJDGeneratorModal(false);
+        setJDInput({
+            responsibilities: `• THIS IS AN EXAMPLE --> Design and develop high-performance Java-based trading platform
+• Implement real-time market data processing using Kafka
+• Develop REST APIs for trading operations
+• Create automated test suites and CI/CD pipelines
+• Monitor and optimize system performance
+• Collaborate with trading team on new features
+• Maintain and enhance existing trading systems`,
+            candidateRequirements: `• THIS IS AN EXAMPLE -->5+ years of Java development experience
+• Strong understanding of financial markets and trading concepts
+• Experience with high-performance, low-latency systems
+• Bachelor's degree in Computer Science or related field
+• Experience with Agile development methodologies
+• Strong problem-solving and analytical skills
+• Excellent communication and teamwork abilities`,
+            technicalSkills: `• THIS IS AN EXAMPLE --> Core Java (Java 8+)
+• Spring Framework and Spring Boot
+• Apache Kafka for event streaming
+• RESTful API development
+• SQL and NoSQL databases
+• JUnit, Mockito, and TestNG
+• CI/CD tools (Jenkins, GitLab CI)
+• Docker and Kubernetes
+• Microservices architecture
+• Performance optimization techniques`,
+            businessSkills: `• THIS IS AN EXAMPLE --> Understanding of financial markets and trading concepts
+• Ability to work with trading teams and business stakeholders
+• Experience with regulatory compliance in financial systems
+• Strong documentation and technical writing skills
+• Project management and time management
+• Risk assessment and mitigation
+• Stakeholder communication
+• Problem-solving in high-pressure situations`
+        });
+        setGeneratedJD('');
+    };
+
     return (
         <div className="add-open-roles-container">
             <div className="panel">
@@ -526,12 +706,18 @@ const AddOpenRolesPage = () => {
                             </div>
 
                             <div className="form-row button-row">
-                                <div className="form-group">
+                                <div className="form-group" style={{ width: '100%' }}>
                                     <label>Actions:</label>
-                                    <div className="action-buttons">
-                                        <label htmlFor="pdf-upload" className="upload-button">
+                                    <div className="action-buttons" style={{ 
+                                        display: 'flex', 
+                                        gap: '10px',
+                                        justifyContent: 'flex-start',
+                                        alignItems: 'center',
+                                        width: '100%'
+                                    }}>
+                                        <label htmlFor="pdf-upload" className="upload-button" style={{ flex: '1' }}>
                                             <FaFilePdf className="pdf-icon" style={{ color: '#000000' }} />
-                                            <span style={{ color: '#000000' }}>{isLoading ? 'Processing...' : 'Upload Job Description'}</span>
+                                            <span style={{ color: 'black' }}>{isLoading ? 'Processing...' : 'AI Upload JD'}</span>
                                             {isLoading && (
                                                 <div className="spinner">
                                                     <div className="spinner-inner"></div>
@@ -549,16 +735,32 @@ const AddOpenRolesPage = () => {
                                         <button 
                                             type="button" 
                                             className="download-button"
+                                            onClick={handleGenerateJD}
+                                            disabled={isGeneratingJD}
+                                            style={{ flex: '1' }}
+                                        >
+                                            {isGeneratingJD ? 'Generating...' : 'AI Generate JD'}
+                                            {isGeneratingJD && (
+                                                <div className="spinner">
+                                                    <div className="spinner-inner"></div>
+                                                </div>
+                                            )}
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            className="download-button"
                                             onClick={handleDownloadEvaluation}
                                             disabled={!newOpenRole.test_doc}
+                                            style={{ flex: '1' }}
                                         >
-                                            Download Candidate Evaluation
+                                            AI Generated Test
                                         </button>
                                         <button 
                                             type="button" 
                                             className="submit-button"
                                             onClick={handleSubmitOpenRole}
                                             disabled={!newOpenRole.test_doc}
+                                            style={{ flex: '1' }}
                                         >
                                             Add Open Role
                                         </button>
@@ -762,6 +964,87 @@ const AddOpenRolesPage = () => {
                                 onClick={() => window.open(currentJD, '_blank')}
                             >
                                 Open in New Tab
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* JD Generator Modal */}
+            {showJDGeneratorModal && (
+                <div className="modal-overlay" onClick={handleCloseJDGeneratorModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Generate Job Description</h2>
+                            <button className="close-button" onClick={handleCloseJDGeneratorModal}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="jd-input-section">
+                                <h3>Input Details</h3>
+                                <div className="input-group">
+                                    <label>Responsibilities:</label>
+                                    <textarea
+                                        name="responsibilities"
+                                        value={jdInput.responsibilities}
+                                        onChange={handleJDInputChange}
+                                        rows={4}
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label>Candidate Requirements:</label>
+                                    <textarea
+                                        name="candidateRequirements"
+                                        value={jdInput.candidateRequirements}
+                                        onChange={handleJDInputChange}
+                                        rows={4}
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label>Technical Skills:</label>
+                                    <textarea
+                                        name="technicalSkills"
+                                        value={jdInput.technicalSkills}
+                                        onChange={handleJDInputChange}
+                                        rows={4}
+                                    />
+                                </div>
+                                <div className="input-group">
+                                    <label>Business Skills:</label>
+                                    <textarea
+                                        name="businessSkills"
+                                        value={jdInput.businessSkills}
+                                        onChange={handleJDInputChange}
+                                        rows={4}
+                                    />
+                                </div>
+                            </div>
+                            <div className="jd-output-section">
+                                <h3>Generated Job Description</h3>
+                                <textarea
+                                    value={generatedJD}
+                                    onChange={(e) => setGeneratedJD(e.target.value)}
+                                    placeholder="Generated job description will appear here..."
+                                    rows={12}
+                                />
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-button" onClick={handleCloseJDGeneratorModal}>
+                                Cancel
+                            </button>
+                            <button 
+                                className="modal-button primary"
+                                onClick={handleGenerateJDContent}
+                                disabled={isGeneratingJD}
+                            >
+                                {isGeneratingJD ? 'Generating...' : 'Generate'}
+                            </button>
+                            <button 
+                                className="modal-button primary"
+                                onClick={handleSaveJD}
+                                disabled={!generatedJD}
+                            >
+                                Save
                             </button>
                         </div>
                     </div>
