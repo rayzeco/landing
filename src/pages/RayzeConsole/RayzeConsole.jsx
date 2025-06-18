@@ -55,6 +55,9 @@ export default function RayzeConsole() {
   });
   const [showMatchScoreModal, setShowMatchScoreModal] = useState(false);
   const [matchScoreResult, setMatchScoreResult] = useState(null);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [declineFeedback, setDeclineFeedback] = useState('');
   const navigate = useNavigate();
 
   // Check user role and redirect if unauthorized
@@ -344,6 +347,155 @@ export default function RayzeConsole() {
     setMatchScoreResult(null);
   };
 
+  const handleDeclineClick = (e, candidate) => {
+    e.stopPropagation();
+    setSelectedCandidate(candidate);
+    setShowDeclineModal(true);
+  };
+
+  const handleDeclineConfirm = async () => {
+    if (!declineFeedback) return;
+
+    try {
+      const token = sessionStorage.getItem('token');
+      const user_data = JSON.parse(sessionStorage.getItem('user'));
+      //const client_id = user_data.client_id;
+      const client_id = selectedClientId || user_data.client_id;
+
+      // Update candidate status
+      await axios.put(
+        `${process.env.REACT_APP_RYZ_SERVER}/update_candidate/${selectedCandidate.id}`,
+        {
+          status: 'Declined',
+          feedback: declineFeedback
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update submit CV status using the correct endpoint and parameter
+      const submitCVRoleData = {
+        status: 'Declined'
+      };
+      
+      console.log('Sending submit CV role data:', submitCVRoleData);
+      
+      try {
+        const response = await axios.put(
+          `${process.env.REACT_APP_RYZ_SERVER}/update_submit_cvrole/${selectedCandidate.submit_cvrole_id}`,
+          submitCVRoleData,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log('Submit CV role update response:', response.data);
+      } catch (error) {
+        console.error('Error details:', error.response?.data);
+        throw error;
+      }
+
+      // Refresh the candidates list
+      const responseCandidates = await axios.get(
+        `${process.env.REACT_APP_RYZ_SERVER}/get_console_candidates_by_client/${client_id}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setCandidates(responseCandidates.data);
+      setFilteredCandidates(responseCandidates.data);
+
+      // Close modal and reset state
+      setShowDeclineModal(false);
+      setSelectedCandidate(null);
+      setDeclineFeedback('');
+    } catch (error) {
+      console.error('Error declining candidate:', error);
+    }
+  };
+
+  const handleProceedClick = async (e, candidate) => {
+    e.stopPropagation();
+    
+    try {
+      const token = sessionStorage.getItem('token');
+      const user_data = JSON.parse(sessionStorage.getItem('user'));
+      //const client_id = user_data.client_id;
+      const client_id = selectedClientId || user_data.client_id;
+
+      
+      let newStatus;
+      if (candidate.status === 'Submitted') {
+        newStatus = 'Interview Scheduled';
+      } else if (candidate.status === 'Interview Scheduled') {
+        newStatus = 'Interview Completed';
+      } else if (candidate.status === 'Interview Completed') {
+        newStatus = 'Ready to Hire';
+      } else {
+        return; // Invalid status transition
+      }
+
+      // Update candidate status
+      await axios.put(
+        `${process.env.REACT_APP_RYZ_SERVER}/update_candidate/${candidate.id}`,
+        {
+          status: newStatus
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update submit CV status with all required fields
+      await axios.put(
+        `${process.env.REACT_APP_RYZ_SERVER}/update_submit_cvrole/${candidate.submit_cvrole_id}`,
+        {
+          status: newStatus
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Refresh the candidates list
+      const response = await axios.get(
+        `${process.env.REACT_APP_RYZ_SERVER}/get_console_candidates_by_client/${client_id}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log('client id response', client_id, response.data);
+      setCandidates(response.data);
+      setFilteredCandidates(response.data);
+    } catch (error) {
+      console.error('Error updating candidate status:', error);
+    }
+  };
+
+  const handleCloseDeclineModal = () => {
+    setShowDeclineModal(false);
+    setSelectedCandidate(null);
+    setDeclineFeedback('');
+  };
+
   const renderMainContent = () => {
     switch (activeTab) {
       case "home":
@@ -444,7 +596,7 @@ export default function RayzeConsole() {
                 <div className="card-trend positive">+{consoleData.submit_client_cvs_last30} this month</div>
               </div>
               <div className="dashboard-card">
-                <h3>Active Rayze Engineers</h3>
+                <h3>Rayze Engineers</h3>
                 <div className="card-value">{consoleData.total_active_eng}</div>
                 <div className="card-trend positive">+{consoleData.total_active_eng_last30} this month</div>
               </div>
@@ -493,22 +645,23 @@ export default function RayzeConsole() {
                       <th>Open Role</th>
                       <th>Candidate Location</th>
                       <th>Interview Status</th>
+                      <th>Days Old</th>
                       <th>CV</th>
                       <th>Match Score</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredInputRequiredCandidates
-                      .filter(candidate => candidate.status === 'Submitted')
+                      .filter(candidate => candidate.status === 'Submitted' || 
+                        candidate.status === 'Interview Scheduled' || 
+                        candidate.status === 'Interview Completed' || 
+                        candidate.status === 'Ready to Hire')
                       .map(candidate => (
                         <tr key={candidate.id}>
                           <td>
                             <button 
                               className="action-button proceed"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Add your proceed logic here
-                              }}
+                              onClick={(e) => handleProceedClick(e, candidate)}
                             >
                               ✓
                             </button>
@@ -516,10 +669,7 @@ export default function RayzeConsole() {
                           <td>
                             <button 
                               className="action-button decline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Add your decline logic here
-                              }}
+                              onClick={(e) => handleDeclineClick(e, candidate)}
                             >
                               X
                             </button>
@@ -531,6 +681,12 @@ export default function RayzeConsole() {
                             <span className={`status-badge ${candidate.status?.toLowerCase()}`}>
                               {candidate.status || '-'}
                             </span>
+                          </td>
+                          <td>
+                            {candidate.submitted_on ? 
+                              Math.floor((new Date() - new Date(candidate.submitted_on)) / (1000 * 60 * 60 * 24)) : 
+                              '-'
+                            }
                           </td>
                           <td>
                             {candidate.cv_link && (
@@ -549,7 +705,7 @@ export default function RayzeConsole() {
                                 className="view-match-score"
                                 onClick={(e) => handleMatchScoreClick(e, candidate.match_score)}
                               >
-                                View Match
+                                AI Match
                               </button>
                             ) : '-'}
                           </td>
@@ -578,12 +734,13 @@ export default function RayzeConsole() {
                 <table>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left', width: '120ch' }}>Role Description</th>
-                      <th style={{ textAlign: 'left',  width: '40ch' }}>Role Location</th>
-                      <th style={{ textAlign: 'left',  width: '40ch' }}>Role Status</th>
-                      <th style={{ textAlign: 'left' }}>Role Posted On</th>
+                      <th style={{ textAlign: 'left', width: '60ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Role Description</th>
+                      <th style={{ textAlign: 'left', width: '40ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Role Location</th>
                       <th style={{ textAlign: 'left', width: '40ch' }}># Candidates Submitted</th>
+                      <th style={{ textAlign: 'left', width: '40ch' }}>Days Old</th>
+                      <th style={{ textAlign: 'left', width: '40ch' }}>Role Posted On</th>
                       <th style={{ textAlign: 'left', width: '40ch' }}>JD Link</th>
+                      <th style={{ textAlign: 'left', width: '40ch' }}>Role Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -591,13 +748,14 @@ export default function RayzeConsole() {
                       <tr key={role.role_desc}>
                         <td style={{ textAlign: 'left', width: '60ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{role.role_desc || '-'}</td>
                         <td style={{ width: '40ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{role.location || '-'}</td>
+                        <td style={{ width: '40ch' }}>{role.num_applicants || 0}</td>
                         <td style={{ width: '40ch' }}>
-                          <span className={`status-badge ${role.status?.toLowerCase()}`}>
-                            {role.status || '-'}
-                          </span>
+                          {role.posted_date ? 
+                            Math.floor((new Date() - new Date(role.posted_date)) / (1000 * 60 * 60 * 24)) : 
+                            '-'
+                          }
                         </td>
                         <td style={{ width: '40ch' }}>{role.posted_date || '-'}</td>
-                        <td style={{ width: '40ch' }}>{role.submit_cv_count || 0}</td>
                         <td style={{ width: '40ch' }}>
                           {role.job_desc_link ? (
                             <button 
@@ -607,6 +765,11 @@ export default function RayzeConsole() {
                               View JD
                             </button>
                           ) : '-'}
+                        </td>
+                        <td style={{ width: '40ch' }}>
+                          <span className={`status-badge ${role.status?.toLowerCase()}`}>
+                            {role.status || '-'}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -810,6 +973,53 @@ export default function RayzeConsole() {
             </div>
             <div className="modal-footer">
               <button className="modal-button" onClick={handleCloseMatchScoreModal}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Decline Modal */}
+      {showDeclineModal && (
+        <div className="modal-overlay" onClick={handleCloseDeclineModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirm Decline</h2>
+              <button className="close-button" onClick={handleCloseDeclineModal}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Confirm  {selectedCandidate?.name} is declined from the hiring process.</p>
+              <div className="feedback-section">
+                <label htmlFor="declineFeedback">Reason for Decline:</label>
+                <select
+                  id="declineFeedback"
+                  value={declineFeedback}
+                  onChange={(e) => setDeclineFeedback(e.target.value)}
+                  className="feedback-select"
+                >
+                  <option value="">Select a reason</option>
+                  <option value="Skills mismatch">Skills mismatch</option>
+                  <option value="Not strong in technical skills">Not strong in technical skills</option>
+                  <option value="Not strong in communications">Not strong in communications</option>
+                  <option value="Location mismatch">Location mismatch</option>
+                  <option value="Culture mismatch">Culture mismatch</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="modal-button cancel" 
+                onClick={handleCloseDeclineModal}
+              >
+                Cancel
+              </button>
+              <button 
+                className="modal-button confirm" 
+                onClick={handleDeclineConfirm}
+                disabled={!declineFeedback}
+              >
+                Confirm
+              </button>
             </div>
           </div>
         </div>
