@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './add-open-roles-page.scss';
@@ -75,6 +75,9 @@ const AddOpenRolesPage = () => {
 • Problem-solving in high-pressure situations`
     });
     const [generatedJD, setGeneratedJD] = useState('');
+
+    // Add a ref for the file input
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const fetchClients = async () => {
@@ -244,8 +247,10 @@ const AddOpenRolesPage = () => {
         return encodeURIComponent(sanitized);
     };
 
-    const handleSubmitOpenRole = async (e) => {
-        e.preventDefault();
+    const handleSubmitOpenRole = async (e, is_text = false) => {
+        if (e) {
+            e.preventDefault();
+        }
         const token = sessionStorage.getItem('token');
 
         const selectedClient = clients.find(client => client.name === newOpenRole.clientName);
@@ -266,12 +271,35 @@ const AddOpenRolesPage = () => {
                 test_doc: newOpenRole.test_doc || "none",
                 jd_doc: newOpenRole.jd_doc || "none",
             };
-            //console.log('Payload being sent:', payload);
+            console.log('Payload1 being sent:', payload);
             //call store bucket to store JD
-            if (newOpenRole.job_desc_link) {
+            if (is_text && newOpenRole.jd_doc && newOpenRole.jd_doc !== "none") {
+                const token = sessionStorage.getItem('token');
+                const formData = new FormData();
+                formData.append('file_text', newOpenRole.jd_doc);
+                formData.append('filename', `${newOpenRole.role_desc}_${newOpenRole.clientName}_JD`);
+                formData.append('isText', is_text);
+
+                const response = await axios.post(
+                    `${process.env.REACT_APP_RYZ_SERVER}/store_bucket`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                payload.job_desc_link = response.data.filename;
+                console.log("print docs jd", payload.job_desc_link, response.data.filename, newOpenRole.jd_doc);
+            } else if (!is_text && newOpenRole.job_desc_link && newOpenRole.job_desc_link !== "none") {
                 const token = sessionStorage.getItem('token');
                 const formData = new FormData();
                 formData.append('file', newOpenRole.job_desc_link);
+                formData.append('filename', String(newOpenRole.id));
+                formData.append('file_text', newOpenRole.jd_doc);
+                formData.append('isText', is_text);
+
                 const response = await axios.post(
                     `${process.env.REACT_APP_RYZ_SERVER}/store_bucket`,
                     formData,
@@ -285,14 +313,14 @@ const AddOpenRolesPage = () => {
                 //console.log(response.data);
                 payload.job_desc_link = response.data.filename;
             }
-
+            console.log('Payload being sent:', payload);
             const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_open_role`, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 }
             });
-            //console.log('Response:', response.data);
+            console.log('Response:', response.data);
 
             setNewOpenRole({
                 clientName: '',
@@ -387,32 +415,6 @@ const AddOpenRolesPage = () => {
                     
                     // Try to parse as JSON if it's in JSON format
                     try {
-                        // const evaluation = JSON.parse(evaluationContent);
-                        // let textContent = '';
-
-                        // // Format Instructions
-                        // if (evaluation.instruction) {
-                        //     textContent += 'INSTRUCTIONS\n' + evaluation.instruction + '\n\n';
-                        // }
-
-                        // // Format Questions
-                        // if (evaluation.questions) {
-                        //     textContent += 'QUESTIONS\n';
-                        //     const questions = evaluation.questions.split('::::');
-                        //     questions.forEach((q, index) => {
-                        //         textContent += q.trim() + '\n';
-                        //     });
-                        //     textContent += '\n';
-                        // }
-
-                        // // Format Answers
-                        // if (evaluation.answers) {
-                        //     textContent += 'ANSWERS\n';
-                        //     const answers = evaluation.answers.split('::::');
-                        //     answers.forEach((a, index) => {
-                        //         textContent += a.trim() + '\n';
-                        //     });
-                        // }
 
                         setNewOpenRole(prev => ({
                             ...prev,
@@ -526,6 +528,39 @@ const AddOpenRolesPage = () => {
             if (response.data.status === 'success') {
                 console.log(response.data);
                 setGeneratedJD(response.data.text);
+                // Generate candidate evaluation from the saved JD
+                try {
+                    const jobDescriptionObj = {
+                        content: generatedJD
+                    };
+                    
+                    const token = sessionStorage.getItem('token');
+                    const evalResponse = await axios.post(
+                        `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate_evaluation`,
+                        jobDescriptionObj,
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
+                            }
+                        }
+                    );
+                    
+                    if (evalResponse.data.status === 'success') {
+                        let evaluationContent = evalResponse.data.evaluation;
+                        
+                        setNewOpenRole(prev => ({
+                            ...prev,
+                            test_doc: evaluationContent,
+                            jd_doc: generatedJD,
+                            job_desc_link: generatedJD
+                        }));
+                    }
+                } catch (error) {
+                    console.error('Error generating evaluation:', error);
+                    alert('Error generating candidate evaluation. Please try again.');
+                }
+
             } else {
                 console.error('API Error Response:', response.data);
                 throw new Error(response.data.message || 'Failed to generate job description');
@@ -540,13 +575,28 @@ const AddOpenRolesPage = () => {
         }
     };
 
-    const handleSaveJD = () => {
+    const handleSaveJD = async () => {
+        
         setNewOpenRole(prev => ({
             ...prev,
             job_desc_link: generatedJD,
             jd_doc: generatedJD
         }));
-        setShowJDGeneratorModal(false);
+        newOpenRole.job_desc_link = generatedJD;
+        newOpenRole.jd_doc = generatedJD;
+        console.log('newOpenRole jd_doc', newOpenRole.jd_doc, newOpenRole.job_desc_link, generatedJD);
+        try {
+            await handleSubmitOpenRole(null, true);
+        } catch (error) {
+            console.error('Error submitting open role:', error);
+            alert('Error creating open role. Please try again.');
+            return;
+        }
+        //setShowJDGeneratorModal(false);
+        // Generate candidate evaluation from the saved JD
+        
+        
+        
         setJDInput({
             responsibilities: `• THIS IS AN EXAMPLE --> Design and develop high-performance Java-based trading platform
 • Implement real-time market data processing using Kafka
@@ -622,6 +672,14 @@ const AddOpenRolesPage = () => {
         });
         setGeneratedJD('');
     };
+
+    // Update canUploadOrGenerateJD to check for non-default values
+    const canUploadOrGenerateJD =
+        newOpenRole.clientName.trim() !== '' &&
+        newOpenRole.role_desc.trim() !== '' &&
+        newOpenRole.location.trim() !== '' &&
+        newOpenRole.remote !== '' &&
+        newOpenRole.remote !== 'no';
 
     return (
         <div className="add-open-roles-container">
@@ -715,31 +773,37 @@ const AddOpenRolesPage = () => {
                                         alignItems: 'center',
                                         width: '100%'
                                     }}>
-                                        <label htmlFor="pdf-upload" className="upload-button" style={{ flex: '1' }}>
-                                            <FaFilePdf className="pdf-icon" style={{ color: '#000000' }} />
-                                            <span style={{ color: 'black' }}>{isLoading ? 'Processing...' : 'AI Upload JD'}</span>
+                                        <button
+                                            type="button"
+                                            className={`download-button${isLoading || !canUploadOrGenerateJD ? ' disabled' : ''}`}
+                                            onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                                            disabled={isLoading || !canUploadOrGenerateJD}
+                                            style={{ flex: '1' }}
+                                        >
+                                            {isLoading ? 'Processing...' : 'AI Upload JD'}
                                             {isLoading && (
                                                 <div className="spinner">
                                                     <div className="spinner-inner"></div>
                                                 </div>
                                             )}
-                                            <input
-                                                type="file"
-                                                id="pdf-upload"
-                                                accept=".pdf"
-                                                onChange={handleFileUpload}
-                                                style={{ display: 'none' }}
-                                                disabled={isLoading}
-                                            />
-                                        </label>
+                                        </button>
+                                        <input
+                                            type="file"
+                                            id="pdf-upload"
+                                            accept=".pdf"
+                                            ref={fileInputRef}
+                                            onChange={handleFileUpload}
+                                            style={{ display: 'none' }}
+                                            disabled={isLoading || !canUploadOrGenerateJD}
+                                        />
                                         <button 
                                             type="button" 
                                             className="download-button"
                                             onClick={handleGenerateJD}
-                                            disabled={isGeneratingJD}
+                                            disabled={isGeneratingJD || !canUploadOrGenerateJD}
                                             style={{ flex: '1' }}
                                         >
-                                            {isGeneratingJD ? 'Generating...' : 'AI Generate JD'}
+                                            AI Create JD
                                             {isGeneratingJD && (
                                                 <div className="spinner">
                                                     <div className="spinner-inner"></div>
@@ -758,7 +822,7 @@ const AddOpenRolesPage = () => {
                                         <button 
                                             type="button" 
                                             className="submit-button"
-                                            onClick={handleSubmitOpenRole}
+                                            onClick={() => handleSubmitOpenRole(null, true)}
                                             disabled={!newOpenRole.test_doc}
                                             style={{ flex: '1' }}
                                         >

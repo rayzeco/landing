@@ -596,7 +596,7 @@ export default function RayzeConsole() {
                 <div className="card-trend positive">+{consoleData.submit_client_cvs_last30} this month</div>
               </div>
               <div className="dashboard-card">
-                <h3>Rayze Engineers</h3>
+                <h3>Rayze on Payroll</h3>
                 <div className="card-value">{consoleData.total_active_eng}</div>
                 <div className="card-trend positive">+{consoleData.total_active_eng_last30} this month</div>
               </div>
