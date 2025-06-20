@@ -1131,10 +1131,10 @@ const AddCandidatePage = () => {
                                     <button 
                                         type="submit" 
                                         className="submit-button"
-                                        disabled={!isFormEnabled}
+                                        disabled={!isFormEnabled || isCVProcessing}
                                         style={{
-                                            opacity: isFormEnabled ? 1 : 0.5,
-                                            cursor: isFormEnabled ? 'pointer' : 'not-allowed',
+                                            opacity: (isFormEnabled && !isCVProcessing) ? 1 : 0.5,
+                                            cursor: (isFormEnabled && !isCVProcessing) ? 'pointer' : 'not-allowed',
                                             margin: 0,
                                             flex: 1,
                                             whiteSpace: 'nowrap',

@@ -78,7 +78,8 @@ export default function RayzeConsole() {
     
     // If user is Client, force them to Client Console
     if (role === 'Client') {
-      setActiveTab("home");
+      setSelectedClientId(user.client_id);
+      setActiveTab("client_console");
     }
   }, [navigate]);
 
