@@ -121,7 +121,7 @@ const AddCandidatePage = () => {
                 );
 
                 const allCandidates = candidatesResponse.data;
-                const allOpenRoles = openRolesResponse.data;
+                const allOpenRoles = openRolesResponse.data.filter(role => role.status === "Open");
                 const allSubmitCVRoles = submitCVRolesResponse.data;
                 const allClients = clientsResponse.data.filter(client => client.client_type === 'Client');
 
