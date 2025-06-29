@@ -78,6 +78,49 @@
     tr:hover {
       background-color: #222;
     }
+    
+    // Column width specifications
+    th:nth-child(1), td:nth-child(1) { // Client
+      width: 15%;
+      max-width: 80px;
+    }
+    th:nth-child(2), td:nth-child(2) { // Project
+      width: 15%;
+      max-width: 80px;
+    }
+    th:nth-child(3), td:nth-child(3) { // Candidate
+      width: 20%;
+      max-width: 80px;
+    }
+    th:nth-child(4), td:nth-child(4) { // Hours
+      width: 10%;
+      max-width: 80px;
+    }
+    th:nth-child(5), td:nth-child(5) { // Rate
+      width: 12%;
+      max-width: 80px;
+    }
+    th:nth-child(6), td:nth-child(6) { // Amount
+      width: 15%;
+      max-width: 80px;
+    }
+    th:nth-child(7), td:nth-child(7) { // Status
+      width: 13%;
+      max-width: 80px;
+    }
+    
+    // Ensure text doesn't overflow
+    td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    // Allow hours input to be smaller
+    td:nth-child(4) input {
+      width: 60px;
+      min-width: 60px;
+    }
   }
 
   button {
