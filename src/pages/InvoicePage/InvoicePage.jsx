@@ -84,7 +84,7 @@ const InvoicePage = () => {
           inv_status: 'NEW', // Default status
           client: item.client_name, // Adjust based on actual field names
           candidate: item.candidate_name, // Adjust based on actual field names
-          project_name: item.project_name, // Add project_name field
+          project_name: item.project_name === 'NULL' ? '' : item.project_name, // Add project_name field
           recruiter_price: item.recruiter_price, // Adjust based on actual field names
           client_price: item.client_price, // Adjust based on actual field names
           recruiter_total: item.recruiter_price, // Adjust based on actual field names
