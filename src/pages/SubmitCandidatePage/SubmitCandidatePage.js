@@ -51,9 +51,11 @@ const SubmitCandidatePage = () => {
 
         const fetchCandidates = async () => {
             const token = sessionStorage.getItem('token');
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const client_id = user.client_id;
             try {
                 const response = await axios.get(
-                    `${process.env.REACT_APP_RYZ_SERVER}/list_candidates`,
+                    `${process.env.REACT_APP_RYZ_SERVER}/list_candidates?inp_client_id=${client_id}`,
                     {
                         headers: {
                             'Content-Type': 'application/json',

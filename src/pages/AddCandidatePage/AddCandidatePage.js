@@ -76,11 +76,14 @@ const AddCandidatePage = () => {
             const token = sessionStorage.getItem('token');
             const user = JSON.parse(sessionStorage.getItem('user'));
             const id = JSON.parse(sessionStorage.getItem('id'));
+            const client_id = user.client_id
+            const recruiter_id = user.client_id;
+            const role = user.role
             //console.log('id is ',id);
             
             try {
                 // Fetch candidates
-                const candidatesResponse = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_candidates`, {
+                const candidatesResponse = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_candidates?inp_recruiter_id=${recruiter_id}`, {
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
@@ -313,7 +316,10 @@ const AddCandidatePage = () => {
 
             // Refresh candidate list
             const fetchCandidates = async () => {
-                const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_candidates`, {
+                const user = JSON.parse(sessionStorage.getItem('user'));
+                const client_id = user.client_id;
+                const recruiter_id = user.client_id;
+                const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_candidates?inp_recruiter_id=${recruiter_id}`, {
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
@@ -887,8 +893,11 @@ const AddCandidatePage = () => {
             setShowHireModal(false);
 
             // Refresh candidates list
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const client_id = user.client_id;
+            const recruiter_id = user.client_id;
             const candidatesResponse = await axios.get(
-                `${process.env.REACT_APP_RYZ_SERVER}/list_candidates`,
+                `${process.env.REACT_APP_RYZ_SERVER}/list_candidates?inp_recruiter_id=${recruiter_id}`,
                 {
                     headers: {
                         'Content-Type': 'application/json',

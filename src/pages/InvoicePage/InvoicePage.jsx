@@ -65,7 +65,11 @@ const InvoicePage = () => {
         //const jsvar = JSON.stringify(process.env.REACT_APP_RYZ_SERVER)
         //console.log('url is ', jsvar, `${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`);
         const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
-        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`,
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        const client_id = user.client_id;
+        const recruiter_id = user.client_id;
+
+        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/${recruiter_id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`, // Include the token in the request header
