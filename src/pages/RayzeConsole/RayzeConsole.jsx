@@ -28,6 +28,7 @@ export default function RayzeConsole() {
   const [selectedClientId, setSelectedClientId] = useState(() => {
     return localStorage.getItem('selectedClientId') || null;
   });
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [clientSearch, setClientSearch] = useState(() => {
     const savedClientId = localStorage.getItem('selectedClientId');
     if (savedClientId) {
@@ -166,10 +167,8 @@ export default function RayzeConsole() {
   // Fetch data for client_console tab
   useEffect(() => {
     const fetchClientConsoleData = async () => {
-      // Don't fetch if:
-      // 1. Not in client_console tab
-      // 2. User is a Client
-      if (activeTab !== "client_console" || userRole === 'Client') return;
+      // Don't fetch if not in client_console tab
+      if (activeTab !== "client_console") return;
 
       try {
         const token = sessionStorage.getItem('token');
@@ -225,7 +224,18 @@ export default function RayzeConsole() {
     };
 
     fetchClientConsoleData();
-  }, [activeTab, userRole, selectedClientId]);
+  }, [activeTab, selectedClientId, refreshTrigger]);
+
+  // Auto-refresh client console data every 30 seconds
+  useEffect(() => {
+    if (activeTab !== "client_console") return;
+
+    const interval = setInterval(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [activeTab]);
 
   // Add filter effect
   useEffect(() => {
@@ -419,6 +429,9 @@ export default function RayzeConsole() {
       setShowDeclineModal(false);
       setSelectedCandidate(null);
       setDeclineFeedback('');
+      
+      // Trigger refresh to update all data
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error declining candidate:', error);
     }
@@ -486,6 +499,9 @@ export default function RayzeConsole() {
       console.log('client id response', client_id, response.data);
       setCandidates(response.data);
       setFilteredCandidates(response.data);
+      
+      // Trigger refresh to update all data
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error updating candidate status:', error);
     }
@@ -495,6 +511,10 @@ export default function RayzeConsole() {
     setShowDeclineModal(false);
     setSelectedCandidate(null);
     setDeclineFeedback('');
+  };
+
+  const handleRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const renderMainContent = () => {
@@ -566,23 +586,28 @@ export default function RayzeConsole() {
           <>
             <div className="content-header">
               <h1>Rayze Overview</h1>
-              {userRole !== 'Client' && (
-                <div className="client-search">
-                  <input
-                    type="text"
-                    placeholder="Search client..."
-                    value={clientSearch}
-                    onChange={handleClientSearch}
-                    className="filter-input"
-                    list="client-list"
-                  />
-                  <datalist id="client-list">
-                    {clients.map(client => (
-                      <option key={client.id} value={client.name} />
-                    ))}
-                  </datalist>
-                </div>
-              )}
+              <div className="header-actions">
+                <button className="btn-primary" onClick={handleRefresh}>
+                  <i className="fas fa-sync-alt"></i> Refresh
+                </button>
+                {userRole !== 'Client' && (
+                  <div className="client-search">
+                    <input
+                      type="text"
+                      placeholder="Search client..."
+                      value={clientSearch}
+                      onChange={handleClientSearch}
+                      className="filter-input"
+                      list="client-list"
+                    />
+                    <datalist id="client-list">
+                      {clients.map(client => (
+                        <option key={client.id} value={client.name} />
+                      ))}
+                    </datalist>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="dashboard-grid">
@@ -644,7 +669,7 @@ export default function RayzeConsole() {
                       <th>Decline</th>
                       <th>Name</th>
                       <th>Open Role</th>
-                      <th>Candidate Location</th>
+                      <th>Role Location</th>
                       <th>Interview Status</th>
                       <th>Days Old</th>
                       <th>CV</th>
