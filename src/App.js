@@ -24,6 +24,7 @@ import Story5 from "./pages/Clients/Story5";
 import Story6 from "./pages/Clients/Story6";
 import SubmitCandidatePage from "./pages/SubmitCandidatePage/SubmitCandidatePage";
 import RayzeConsole from "./pages/RayzeConsole/RayzeConsole";
+import ConfirmInterviewPage from "./pages/ConfirmInterviewPage/ConfirmInterviewPage";
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
           <Route path="/submit_candidates" element={<SubmitCandidatePage />} />
           <Route path="/open_roles" element={<AddOpenRolesPage />} />
           <Route path="/console" element={<RayzeConsole />} />
+          <Route path="/confirm_timeslot/:interview_id/:slot?" element={<ConfirmInterviewPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>

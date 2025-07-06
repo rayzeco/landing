@@ -58,6 +58,60 @@ export default function RayzeConsole() {
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [declineFeedback, setDeclineFeedback] = useState('');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [interviewSlots, setInterviewSlots] = useState(() => {
+    // Calculate default dates (next 3 business days)
+    const today = new Date();
+    
+    // Function to get the nth business day from today
+    const getNthBusinessDay = (n) => {
+      const date = new Date(today);
+      let businessDaysFound = 0;
+      
+      while (businessDaysFound < n) {
+        date.setDate(date.getDate() + 1);
+        if (date.getDay() !== 0 && date.getDay() !== 6) {
+          businessDaysFound++;
+        }
+      }
+      
+      return date;
+    };
+
+    const prio1Date = getNthBusinessDay(1);
+    const prio2Date = getNthBusinessDay(2);
+    const prio3Date = getNthBusinessDay(3);
+
+    return {
+      prio1: { 
+        date: prio1Date.toISOString().split('T')[0], 
+        time: '09:00', 
+        timezone: 'America/Los_Angeles' 
+      },
+      prio2: { 
+        date: prio2Date.toISOString().split('T')[0], 
+        time: '08:00', 
+        timezone: 'America/Los_Angeles' 
+      },
+      prio3: { 
+        date: prio3Date.toISOString().split('T')[0], 
+        time: '09:00', 
+        timezone: 'America/Los_Angeles' 
+      }
+    };
+  });
+  const [convertedTimes, setConvertedTimes] = useState({
+    prio1: '',
+    prio2: '',
+    prio3: ''
+  });
+  const [convertingTimes, setConvertingTimes] = useState({
+    prio1: false,
+    prio2: false,
+    prio3: false
+  });
+  const [interviewEmails, setInterviewEmails] = useState('');
+  const [interviewPhone, setInterviewPhone] = useState('');
   const navigate = useNavigate();
 
   // Check user role and redirect if unauthorized
@@ -75,6 +129,11 @@ export default function RayzeConsole() {
     }
 
     setUserRole(role);
+    
+    // Initialize interview contact fields with user data
+    const user_data = JSON.parse(sessionStorage.getItem('user'));
+    setInterviewEmails(user_data?.email || '');
+    setInterviewPhone(user_data?.msg_id || '');
     
     // If user is Client, force them to Client Console
     if (role === 'Client') {
@@ -427,23 +486,236 @@ export default function RayzeConsole() {
   const handleProceedClick = async (e, candidate) => {
     e.stopPropagation();
     
+    if (candidate.status === 'Submitted') {
+      // Show the interview scheduling modal
+      setSelectedCandidate(candidate);
+      setShowScheduleModal(true);
+      return;
+    }
+    
+    let newStatus;
+    if (candidate.status === 'Interview Scheduled') {
+      newStatus = 'Interview Completed';
+    } else if (candidate.status === 'Interview Completed') {
+      newStatus = 'Ready to Hire';
+    } else {
+      return; // Invalid status transition
+    }
+
+    // Use the helper function for other status transitions
+    handleProceedWithStatus(candidate, newStatus);
+  };
+
+  const handleCloseDeclineModal = () => {
+    setShowDeclineModal(false);
+    setSelectedCandidate(null);
+    setDeclineFeedback('');
+  };
+
+  const handleCloseScheduleModal = () => {
+    setShowScheduleModal(false);
+    setSelectedCandidate(null);
+    
+    // Reset to default interview slots
+    const today = new Date();
+    
+    // Function to get the nth business day from today
+    const getNthBusinessDay = (n) => {
+      const date = new Date(today);
+      let businessDaysFound = 0;
+      
+      while (businessDaysFound < n) {
+        date.setDate(date.getDate() + 1);
+        if (date.getDay() !== 0 && date.getDay() !== 6) {
+          businessDaysFound++;
+        }
+      }
+      
+      return date;
+    };
+
+    const prio1Date = getNthBusinessDay(1);
+    const prio2Date = getNthBusinessDay(2);
+    const prio3Date = getNthBusinessDay(3);
+
+    // setInterviewSlots({
+    //   prio1: { 
+    //     date: prio1Date.toISOString().split('T')[0], 
+    //     time: '09:00', 
+    //     timezone: 'America/Los_Angeles'
+    //   },
+    //   prio2: { 
+    //     date: prio2Date.toISOString().split('T')[0], 
+    //     time: '08:00', 
+    //     timezone: 'America/Los_Angeles' 
+    //   },
+    //   prio3: { 
+    //     date: prio3Date.toISOString().split('T')[0], 
+    //     time: '09:00', 
+    //     timezone: 'America/Los_Angeles' 
+    //   }
+    // });
+    setConvertedTimes({
+      prio1: '',
+      prio2: '',
+      prio3: ''
+    });
+    setConvertingTimes({
+      prio1: false,
+      prio2: false,
+      prio3: false
+    });
+    
+    // Reset interview contact fields with user data
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    setInterviewEmails(user?.email || '');
+    setInterviewPhone(user?.msg_id || '');
+  };
+
+  const handleInterviewSlotChange = (priority, field, value) => {
+    setInterviewSlots(prev => ({
+      ...prev,
+      [priority]: {
+        ...prev[priority],
+        [field]: value
+      }
+    }));
+  };
+
+  const convertTimeForCandidate = async (priority, date, time, timezone) => {
+    if (!date || !time || !selectedCandidate?.location) return;
+    
+    setConvertingTimes(prev => ({ ...prev, [priority]: true }));
+    
+    try {
+      const token = sessionStorage.getItem('token');
+      const timeStr = `${date} ${time}`;
+      
+      const response = await axios.post(
+        `${process.env.REACT_APP_RYZ_SERVER}/convert_time`,
+        {
+          from_city: timezone,
+          to_city: selectedCandidate.location,
+          time_str: timeStr,
+          fmt: "%Y-%m-%d %H:%M"
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      if (response.data.status === 'success') {
+        setConvertedTimes(prev => ({
+          ...prev,
+          [priority]: response.data.converted_time
+        }));
+      }
+    } catch (error) {
+      console.error('Error converting time:', error);
+      setConvertedTimes(prev => ({
+        ...prev,
+        [priority]: 'Error converting time'
+      }));
+    } finally {
+      setConvertingTimes(prev => ({ ...prev, [priority]: false }));
+    }
+  };
+
+  // Update converted times when interview slots change
+  useEffect(() => {
+    if (!selectedCandidate?.location) return;
+    
+    Object.keys(interviewSlots).forEach(priority => {
+      const slot = interviewSlots[priority];
+      if (slot.date && slot.time && slot.timezone) {
+        convertTimeForCandidate(priority, slot.date, slot.time, slot.timezone);
+      }
+    });
+  }, [interviewSlots, selectedCandidate?.location]);
+
+  const isScheduleButtonEnabled = () => {
+    return interviewSlots.prio1.date && interviewSlots.prio1.time &&
+           interviewSlots.prio2.date && interviewSlots.prio2.time &&
+           interviewSlots.prio3.date && interviewSlots.prio3.time;
+  };
+
+  const handleScheduleInterview = async () => {
+    const scheduleData = {
+      timeslot1: `${interviewSlots.prio1.date}T${interviewSlots.prio1.time} ${interviewSlots.prio1.timezone}`,
+      timeslot2: `${interviewSlots.prio2.date}T${interviewSlots.prio2.time} ${interviewSlots.prio2.timezone}`,
+      timeslot3: `${interviewSlots.prio3.date}T${interviewSlots.prio3.time} ${interviewSlots.prio3.timezone}`,
+      invite_emails: interviewEmails,
+      candidate_name: selectedCandidate.name,
+      candidate_email: selectedCandidate.email,
+      candidate_phone: selectedCandidate.phone,
+      submit_cvrole_id: selectedCandidate.submit_cvrole_id,
+      interview_id: selectedCandidate.submit_cvrole_id,
+      client_phone: interviewPhone,
+      client_id: selectedClientId
+    };
+    console.log('Interview schedule data:', JSON.stringify(scheduleData));
+    const response =  await axios.post(
+      `${process.env.REACT_APP_RYZ_SERVER}/submit_interview_timeslot`,
+      scheduleData,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+        },
+      }
+    );
+    scheduleData.content = response.data.html;
+    scheduleData.interview_id = response.data.interview_id;
+    scheduleData.subject = "Rayze Interview Schedule - Please Confirm";
+    // console.log('Interview timeslot response:', response.data.html);
+    
+    // Send HTML email with interview details
+    try {
+      const emailPayload = {
+        to_email: selectedCandidate.email,
+        to_name: selectedCandidate.name,
+        cc_email: "ravi@rayze.xyz, jc@rayze.xyz",
+        subject: "Interview Schedule - Please Confirm",
+        content: response.data.html,
+        from_email: "jc@rayze.xyz"
+      };
+      if (process.env.REACT_APP_RYZ_SENDMAIL === "http://127.0.0.1:8888") {
+        emailPayload.to_email = "212cooperja@gmail.com";
+        emailPayload.cc_email = "212cooperja@gmail.com";
+        console.log('test email done')
+      }
+      emailPayload.to_email = "212cooperja@gmail.com";
+      console.log('Email payload:', emailPayload);
+      const emailResponse = await axios.post(
+        `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,
+        emailPayload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log('Email sent successfully:', emailResponse.data);
+    } catch (emailError) {
+      console.error('Error sending email:', emailError);
+      // Continue with the process even if email fails
+    }
+    
+    // Continue with the proceed logic
+    handleCloseScheduleModal();
+    // Continue with the proceed logic
+    // handleProceedWithStatus(selectedCandidate, 'Interview Scheduled');
+  };
+
+  const handleProceedWithStatus = async (candidate, newStatus) => {
     try {
       const token = sessionStorage.getItem('token');
       const user_data = JSON.parse(sessionStorage.getItem('user'));
-      //const client_id = user_data.client_id;
       const client_id = selectedClientId || user_data.client_id;
-
-      
-      let newStatus;
-      if (candidate.status === 'Submitted') {
-        newStatus = 'Interview Scheduled';
-      } else if (candidate.status === 'Interview Scheduled') {
-        newStatus = 'Interview Completed';
-      } else if (candidate.status === 'Interview Completed') {
-        newStatus = 'Ready to Hire';
-      } else {
-        return; // Invalid status transition
-      }
 
       // Update candidate status
       await axios.put(
@@ -459,7 +731,7 @@ export default function RayzeConsole() {
         }
       );
 
-      // Update submit CV status with all required fields
+      // Update submit CV status
       await axios.put(
         `${process.env.REACT_APP_RYZ_SERVER}/update_submit_cvrole/${candidate.submit_cvrole_id}`,
         {
@@ -483,7 +755,6 @@ export default function RayzeConsole() {
           },
         }
       );
-      console.log('client id response', client_id, response.data);
       setCandidates(response.data);
       setFilteredCandidates(response.data);
     } catch (error) {
@@ -491,10 +762,19 @@ export default function RayzeConsole() {
     }
   };
 
-  const handleCloseDeclineModal = () => {
-    setShowDeclineModal(false);
-    setSelectedCandidate(null);
-    setDeclineFeedback('');
+  // Function to get interview status for a candidate (stable across renders)
+  const getCandidateInterviewStatus = (candidate_status) => {
+    let scheduleStatus;
+    if (candidate_status === 'Submitted') {
+      scheduleStatus = 'Setup Interview';
+    } else if (candidate_status === 'Interview Scheduled') {
+      scheduleStatus = 'Jul 02, 2025';
+    } else if (candidate_status === 'Interview Completed') {
+      scheduleStatus = 'Hire';
+    } else {
+      scheduleStatus = 'Setup Interview';
+    }
+    return scheduleStatus;
   };
 
   const renderMainContent = () => {
@@ -642,6 +922,7 @@ export default function RayzeConsole() {
                     <tr>
                       <th>Proceed</th>
                       <th>Decline</th>
+                      <th style={{ width: '100px' }}>Schedule Status</th>
                       <th>Name</th>
                       <th>Open Role</th>
                       <th>Candidate Location</th>
@@ -673,6 +954,31 @@ export default function RayzeConsole() {
                               onClick={(e) => handleDeclineClick(e, candidate)}
                             >
                               X
+                            </button>
+                          </td>
+                          <td>
+                            <button 
+                              className="cv-link"
+                              style={{
+                                backgroundColor: getCandidateInterviewStatus(candidate.status) === 'Setup Interview' ? '#f59e0b' : 
+                                  getCandidateInterviewStatus(candidate.status) === 'Jul 02, 2025' ? '#9333ea' :
+                                  getCandidateInterviewStatus(candidate.status) === 'Hire' ? '#22c55e' : '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                width: '100px',
+                                minWidth: '100px',
+                                maxWidth: '100px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                              }}
+                              onClick={(e) => handleProceedClick(e, candidate)}
+                            >
+                              {getCandidateInterviewStatus(candidate.status)}
                             </button>
                           </td>
                           <td>{candidate.name || '-'}</td>
@@ -1020,6 +1326,165 @@ export default function RayzeConsole() {
                 disabled={!declineFeedback}
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Interview Modal */}
+      {showScheduleModal && (
+        <div className="modal-overlay" onClick={handleCloseScheduleModal}>
+          <div className="modal-content schedule-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Schedule Interview</h2>
+              <button className="close-button" onClick={handleCloseScheduleModal}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Please select 3 interview timeslots for the candidate {selectedCandidate?.name}</p>
+              <p style={{ color: '#0066ff' }}>Candidate Location: {selectedCandidate?.location}</p>
+              <p style={{ color: '#0066ff' }}>Please consider the timezone of the candidate</p>
+              
+              {/* Contact Information Section */}
+              <div className="contact-info-section">
+                <h3>Contact for Calender invite</h3>
+                <div className="contact-inputs">
+                  <div className="input-group">
+                    <label htmlFor="interview-emails">Email Addresses (comma separated):</label>
+                    <input
+                      type="text"
+                      id="interview-emails"
+                      value={interviewEmails}
+                      onChange={(e) => setInterviewEmails(e.target.value)}
+                      className="schedule-input"
+                      placeholder="email1@example.com, email2@example.com"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label htmlFor="interview-phone">Phone Number:</label>
+                    <input
+                      type="text"
+                      id="interview-phone"
+                      value={interviewPhone}
+                      onChange={(e) => setInterviewPhone(e.target.value)}
+                      className="schedule-input"
+                      placeholder="+1-555-123-4567"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="interview-slots">
+                {['prio1', 'prio2', 'prio3'].map((priority, index) => (
+                  <div key={priority} className="interview-slot">
+                    <h3>Priority {index + 1} Interview Time</h3>
+                    <div className="slot-inputs">
+                      <div className="input-group">
+                        <label htmlFor={`${priority}-date`}>Date:</label>
+                        <input
+                          type="date"
+                          id={`${priority}-date`}
+                          value={interviewSlots[priority].date}
+                          onChange={(e) => handleInterviewSlotChange(priority, 'date', e.target.value)}
+                          className="schedule-input"
+                        />
+                      </div>
+                      <div className="input-group">
+                        <label htmlFor={`${priority}-time`}>Time:</label>
+                        <input
+                          type="time"
+                          id={`${priority}-time`}
+                          value={interviewSlots[priority].time}
+                          onChange={(e) => handleInterviewSlotChange(priority, 'time', e.target.value)}
+                          className="schedule-input"
+                        />
+                      </div>
+                      <div className="input-group">
+                        <label htmlFor={`${priority}-timezone`}>Timezone:</label>
+                        <select
+                          id={`${priority}-timezone`}
+                          value={interviewSlots[priority].timezone}
+                          onChange={(e) => handleInterviewSlotChange(priority, 'timezone', e.target.value)}
+                          className="schedule-input"
+                        >
+                          <option value="America/New_York">Eastern Time (New York)</option>
+                          <option value="America/Chicago">Central Time (Chicago)</option>
+                          <option value="America/Denver">Mountain Time (Denver)</option>
+                          <option value="America/Los_Angeles">Pacific Time (Los Angeles)</option>
+                          <option value="America/Chicago">Central Time (Austin)</option>
+                          <option value="America/Phoenix">Mountain Time (Phoenix)</option>
+                          <option value="America/Los_Angeles">Pacific Time (Seattle)</option>
+                          <option value="America/Chicago">Central Time (Dallas)</option>
+                          <option value="America/Chicago">Central Time (Houston)</option>
+                          <option value="America/Los_Angeles">Pacific Time (San Francisco)</option>
+                          <option value="America/Los_Angeles">Pacific Time (San Diego)</option>
+                          <option value="America/New_York">Eastern Time (Boston)</option>
+                          <option value="America/Chicago">Central Time (New Orleans)</option>
+                          <option value="America/New_York">Eastern Time (Philadelphia)</option>
+                          <option value="America/Bogota">Bogota</option>
+                          <option value="America/Bogota">Medellin</option>
+                          <option value="America/Mexico_City">Mexico City</option>
+                          <option value="Europe/London">London</option>
+                          <option value="Europe/Paris">Paris</option>
+                          <option value="Asia/Tokyo">Tokyo</option>
+                          <option value="Asia/Shanghai">Shanghai</option>
+                          <option value="Asia/Singapore">Singapore</option>
+                          <option value="Asia/Kolkata">Mumbai</option>
+                          <option value="Asia/Kolkata">Hyderabad</option>
+                          <option value="Asia/Kolkata">Delhi</option>
+                          <option value="Asia/Kolkata">Kolkata</option>
+                          <option value="Asia/Kolkata">Chennai</option>
+                          <option value="Asia/Kolkata">Bengaluru</option>
+                          <option value="Asia/Kolkata">Jaipur</option>
+                          <option value="Asia/Kolkata">Ahmedabad</option>
+                          <option value="Asia/Kolkata">Pune</option>
+                          <option value="Australia/Sydney">Sydney</option>
+                          <option value="Australia/Melbourne">Melbourne</option>
+                          <option value="Australia/Perth">Perth</option>
+                        </select>
+                      </div>
+                    </div>
+                    {convertedTimes[priority] && (
+                      <div style={{ 
+                        marginTop: '8px', 
+                        padding: '8px', 
+                        backgroundColor: '#f0f8ff', 
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        color: '#0066cc'
+                      }}>
+                        <strong>Candidate Location Time:</strong> {convertedTimes[priority]} ({selectedCandidate?.location || selectedCandidate?.timezone || 'Unknown timezone'})
+                      </div>
+                    )}
+                    {convertingTimes[priority] && (
+                      <div style={{ 
+                        marginTop: '8px', 
+                        padding: '8px', 
+                        backgroundColor: '#fff3cd', 
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        color: '#856404'
+                      }}>
+                        <strong>Converting time...</strong>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="modal-button cancel" 
+                onClick={handleCloseScheduleModal}
+              >
+                Cancel
+              </button>
+              <button 
+                className="modal-button confirm" 
+                onClick={handleScheduleInterview}
+                disabled={!isScheduleButtonEnabled()}
+              >
+                Schedule Interview
               </button>
             </div>
           </div>

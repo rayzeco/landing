@@ -14,6 +14,7 @@
     "ethers": "^5.8.0",
     "framer-motion": "^7.10.3",
     "html2pdf.js": "^0.10.3",
+    "luxon": "^3.6.1",
     "nvm": "^0.0.4",
     "papaparse": "^5.5.2",
     "react": "^18.3.1",

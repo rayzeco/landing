@@ -45,6 +45,7 @@ const AddCandidatePage = () => {
         feedback: '',
         cv_link: '',
         client_id: '',
+        recruiter_id: '',
         status: ''
     });
     const [selectedCandidate, setSelectedCandidate] = useState('');
@@ -220,6 +221,7 @@ const AddCandidatePage = () => {
             candidate_cost: 'Candidate Cost',
             cv_link: 'CV Link',
             client_id: 'Client',
+            recruiter_id: 'Recruiter',
             // open_role_id: 'Open Role'
         };
 
@@ -242,6 +244,7 @@ const AddCandidatePage = () => {
             feedback: newCandidate.feedback,
             cv_link: newCandidate.cv_link,
             client_id: newCandidate.client_id,
+            recruiter_id: JSON.parse(sessionStorage.getItem('user'))?.client_id,
             status: 'Submitted'
         };
         //console.log(candidateData);
@@ -306,6 +309,7 @@ const AddCandidatePage = () => {
                 feedback: '',
                 cv_link: '',
                 client_id: '',
+                recruiter_id: '',
                 status: '',
             });
             // Reset match score
@@ -445,6 +449,7 @@ const AddCandidatePage = () => {
                 // Keep existing values for fields not provided by the API
                 candidate_cost: prev.candidate_cost,
                 client_id: prev.client_id,
+                recruiter_id: JSON.parse(sessionStorage.getItem('user'))?.client_id,
                 status: ''
                // open_role_id: prev.open_role_id
             }));
