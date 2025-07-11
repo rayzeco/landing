@@ -298,10 +298,18 @@
                 text-align: center;
               }
 
+              &:nth-child(2) {
+                width: 60px;
+                min-width: 60px;
+                max-width: 60px;
+                padding: 8px 4px;
+                text-align: center;
+              }
+
               &:nth-child(3) {
-                width: 120px;
-                min-width: 120px;
-                max-width: 120px;
+                width: 140px;
+                min-width: 140px;
+                max-width: 140px;
                 padding: 8px 4px;
                 text-align: center;
               }
@@ -431,6 +439,35 @@
               }
             }
 
+            .interview-status-button {
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 11px;
+              font-weight: 500;
+              background-color: var(--theme-color);
+              color: black;
+              border: none;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              width: 140px;
+              min-width: 140px;
+              max-width: 140px;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              text-align: center;
+              display: inline-block;
+
+              &:hover {
+                opacity: 0.9;
+              }
+
+              &:disabled {
+                cursor: not-allowed;
+                opacity: 0.6;
+              }
+            }
+
             .action-button {
               width: 24px;
               height: 24px;
@@ -456,6 +493,8 @@
               &.decline {
                 background-color: #dc3545;
                 color: white;
+                align-items: center;
+                text-align: center;
 
                 &:hover {
                   background-color: darken(#dc3545, 10%);

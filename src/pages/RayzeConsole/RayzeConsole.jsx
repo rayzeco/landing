@@ -494,9 +494,7 @@ export default function RayzeConsole() {
     }
     
     let newStatus;
-    if (candidate.status === 'Interview Scheduled') {
-      newStatus = 'Interview Completed';
-    } else if (candidate.status === 'Interview Completed') {
+    if (candidate.status.includes('Confirmed')) {
       newStatus = 'Ready to Hire';
     } else {
       return; // Invalid status transition
@@ -683,8 +681,8 @@ export default function RayzeConsole() {
         from_email: "jc@rayze.xyz"
       };
       if (process.env.REACT_APP_RYZ_SENDMAIL === "http://127.0.0.1:8888") {
-        emailPayload.to_email = "212cooperja@gmail.com";
-        emailPayload.cc_email = "212cooperja@gmail.com";
+        // emailPayload.to_email = "212cooperja@gmail.com";
+        // emailPayload.cc_email = "212cooperja@gmail.com";
         console.log('test email done')
       }
       emailPayload.to_email = "212cooperja@gmail.com";
@@ -708,7 +706,7 @@ export default function RayzeConsole() {
     // Continue with the proceed logic
     handleCloseScheduleModal();
     // Continue with the proceed logic
-    // handleProceedWithStatus(selectedCandidate, 'Interview Scheduled');
+    handleProceedWithStatus(selectedCandidate, 'Interview Requested');
   };
 
   const handleProceedWithStatus = async (candidate, newStatus) => {
@@ -763,19 +761,19 @@ export default function RayzeConsole() {
   };
 
   // Function to get interview status for a candidate (stable across renders)
-  const getCandidateInterviewStatus = (candidate_status) => {
-    let scheduleStatus;
-    if (candidate_status === 'Submitted') {
-      scheduleStatus = 'Setup Interview';
-    } else if (candidate_status === 'Interview Scheduled') {
-      scheduleStatus = 'Jul 02, 2025';
-    } else if (candidate_status === 'Interview Completed') {
-      scheduleStatus = 'Hire';
-    } else {
-      scheduleStatus = 'Setup Interview';
-    }
-    return scheduleStatus;
-  };
+  // const getCandidateInterviewStatus = (candidate_status) => {
+  //   let scheduleStatus;
+  //   if (candidate_status === 'Submitted') {
+  //     scheduleStatus = 'Submitted';
+  //   } else if (candidate_status === 'Interview Scheduled') {
+  //     scheduleStatus = 'Jul 02, 2025';
+  //   } else if (candidate_status === 'Interview Completed') {
+  //     scheduleStatus = 'Hire';
+  //   } else {
+  //     scheduleStatus = 'Submitted';
+  //   }
+  //   return scheduleStatus;
+  // };
 
   const renderMainContent = () => {
     switch (activeTab) {
@@ -920,13 +918,13 @@ export default function RayzeConsole() {
                 <table>
                   <thead>
                     <tr>
-                      <th>Proceed</th>
-                      <th>Decline</th>
-                      <th style={{ width: '100px' }}>Schedule Status</th>
+                      <th style={{ width: '140px' }}>Click to Proceed</th>
+                      <th style={{ width: '60px' }}>Decline</th>
                       <th>Name</th>
                       <th>Open Role</th>
                       <th>Candidate Location</th>
                       <th>Interview Status</th>
+                      <th>Confirmed Interview</th>
                       <th>Days Old</th>
                       <th>CV</th>
                       <th>Match Score</th>
@@ -935,17 +933,25 @@ export default function RayzeConsole() {
                   <tbody>
                     {filteredInputRequiredCandidates
                       .filter(candidate => candidate.status === 'Submitted' || 
-                        candidate.status === 'Interview Scheduled' || 
-                        candidate.status === 'Interview Completed' || 
+                        candidate.status === 'Interview Requested' || 
+                        candidate.status === 'Interview Confirmed' || 
                         candidate.status === 'Ready to Hire')
                       .map(candidate => (
                         <tr key={candidate.id}>
                           <td>
                             <button 
-                              className="action-button proceed"
+                              className="interview-status-button"
+                              style={{
+                                backgroundColor: candidate.status === 'Submitted' ? '#f59e0b' : 
+                                  candidate.status === 'Interview Requested' ? '#9333ea' :
+                                  candidate.status.includes('Confirmed') ? '#9333ea' :
+                                  candidate.status === 'Ready to Hire' ? '#22c55e' : '#3b82f6',
+                                color: 'white'
+                              }}
+                              disabled={candidate.status === 'Interview Requested'}
                               onClick={(e) => handleProceedClick(e, candidate)}
                             >
-                              ✓
+                              {candidate.status}
                             </button>
                           </td>
                           <td>
@@ -956,31 +962,6 @@ export default function RayzeConsole() {
                               X
                             </button>
                           </td>
-                          <td>
-                            <button 
-                              className="cv-link"
-                              style={{
-                                backgroundColor: getCandidateInterviewStatus(candidate.status) === 'Setup Interview' ? '#f59e0b' : 
-                                  getCandidateInterviewStatus(candidate.status) === 'Jul 02, 2025' ? '#9333ea' :
-                                  getCandidateInterviewStatus(candidate.status) === 'Hire' ? '#22c55e' : '#3b82f6',
-                                color: 'white',
-                                border: 'none',
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                width: '100px',
-                                minWidth: '100px',
-                                maxWidth: '100px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis'
-                              }}
-                              onClick={(e) => handleProceedClick(e, candidate)}
-                            >
-                              {getCandidateInterviewStatus(candidate.status)}
-                            </button>
-                          </td>
                           <td>{candidate.name || '-'}</td>
                           <td>{candidate.role || '-'}</td>
                           <td>{candidate.location || '-'}</td>
@@ -988,6 +969,15 @@ export default function RayzeConsole() {
                             <span className={`status-badge ${candidate.status?.toLowerCase()}`}>
                               {candidate.status || '-'}
                             </span>
+                          </td>
+                          <td>
+                            {candidate.interview_confirmed_on ? (
+                              <span style={{
+                                color: new Date(candidate.interview_confirmed_on) >= new Date() ? 'var(--theme-color)' : '#ef4444'
+                              }}>
+                                {new Date(candidate.interview_confirmed_on).toLocaleDateString()} {new Date(candidate.interview_confirmed_on).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', timeZone: 'America/New_York'})} EDT
+                              </span>
+                            ) : '-'}
                           </td>
                           <td>
                             {candidate.submitted_on ? 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 
 import axios from 'axios';
@@ -8,6 +8,7 @@ const ConfirmInterviewPage = () => {
   const [htmlString, setHtmlString] = useState('');
   const { interview_id } = useParams();
   const location = useLocation();
+  const hasConfirmed = useRef(false); // Track if confirmTimeslot has been called
   
   // Extract slot parameter from URL query string
   const useQuery = () => {
@@ -19,9 +20,17 @@ const ConfirmInterviewPage = () => {
 
   useEffect(() => {
     const confirmTimeslot = async () => {
+      // Prevent multiple calls
+      if (hasConfirmed.current) {
+        console.log('confirmTimeslot already called, skipping...');
+        return;
+      }
+      
+      hasConfirmed.current = true;
+      
       try {
-        console.log("interview_id is ", interview_id);
-        console.log("slot is ", slot);
+        //console.log("interview_id is ", interview_id);
+        //console.log("slot is ", slot);
         const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
         const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/confirm_timeslot/${interview_id}`,
         {
@@ -32,10 +41,17 @@ const ConfirmInterviewPage = () => {
            params: { slot }
         });
         setHtmlString(response.data.html);
+        console.log(response);
+        if (response.data.prior_status.includes("Confirmed")) {
+          console.log('Interview already confirmed, skipping...');
+          setHtmlString('<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;"><h2 style="color: #333;">Interview already confirmed, skipping...</h2></div>');
+          return;
+        }
+        
         if (response.data.status === "confirmed") {
           // Send calendar invite
-          console.log('Response data:', response.data);
-          console.log('interview_confirmed_on:', response.data.interview_confirmed_on);
+          //console.log('Response data:', response.data);
+          //console.log('interview_confirmed_on:', response.data.interview_confirmed_on);
           
           // Check if interview_confirmed_on exists and is valid
           if (!response.data.interview_confirmed_on) {
@@ -58,7 +74,7 @@ const ConfirmInterviewPage = () => {
           // const formattedTime = dateObj.toTimeString().slice(0, 8);
           // const formattedDateTime = `${formattedDate} ${formattedTime} ${timezonePart}`;
           const formattedDateTime = response.data.interview_confirmed_on;
-          console.log('Formatted datetime:', formattedDateTime);
+          console.log('Formatted datetime n confirm:', formattedDateTime, hasConfirmed.current);
           
           const invitePayload = {
             to_email: response.data.interview_options.invite_emails,
@@ -71,20 +87,44 @@ const ConfirmInterviewPage = () => {
           };
 
           if (process.env.REACT_APP_RYZ_SENDMAIL === "http://127.0.0.1:8888") {
-            invitePayload.to_email = "212cooperja@gmail.com";
-            invitePayload.cc_email = "212cooperja@gmail.com";
+            // invitePayload.to_email = "212cooperja@gmail.com";
+            // invitePayload.cc_email = "212cooperja@gmail.com";
             console.log('test calendar invite');
           }
-          console.log('Invite payload:', invitePayload);
+          //console.log('Invite payload:', invitePayload);
           const calendarResponse = await axios.post(
             `${process.env.REACT_APP_RYZ_SENDMAIL}/send_invite`,
             invitePayload,
             {
               headers: {
                 'Content-Type': 'application/json',
-              },
+              }
             }
           );
+          
+          if (calendarResponse.data.status === "success") {
+              console.log('calendar invite sent');
+              const interview_options = response.data.interview_options;
+              interview_options.event_id = calendarResponse.data.event_id;
+              interview_options.meet_link = calendarResponse.data.meet_link;
+              // Update just the interview_options field for this submit_cv_role_id
+              try {
+                await axios.put(
+                  `${process.env.REACT_APP_RYZ_SERVER}/update_interview_options/${response.data.interview_options.submit_cvrole_id}`,
+                  {
+                    interview_options: JSON.stringify(interview_options)
+                  },
+                  {
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                );
+                console.log('Updated interview options with calendar details');
+              } catch (error) {
+                console.error('Error updating interview options:', error);
+              }
+            }
           //setHtmlString(response.data.html);
         } else if (response.data.status === "requested") {
           const emailPayload = {
@@ -96,12 +136,12 @@ const ConfirmInterviewPage = () => {
             from_email: "jc@rayze.xyz"
           };
           if (process.env.REACT_APP_RYZ_SENDMAIL === "http://127.0.0.1:8888") {
-            emailPayload.to_email = "212cooperja@gmail.com";
-            emailPayload.cc_email = "212cooperja@gmail.com";
+            // emailPayload.to_email = "212cooperja@gmail.com";
+            // emailPayload.cc_email = "212cooperja@gmail.com";
             console.log('test email done')
           }
           emailPayload.to_email = "212cooperja@gmail.com";
-          console.log('Email payload:', emailPayload);
+          //console.log('Email payload:', emailPayload);
           const emailResponse = await axios.post(
             `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,
             emailPayload,
@@ -118,6 +158,8 @@ const ConfirmInterviewPage = () => {
     };
 
     confirmTimeslot();
+    hasConfirmed.current = true;
+
   }, [interview_id, slot]);
 
   return (
