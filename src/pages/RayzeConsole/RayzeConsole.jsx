@@ -641,11 +641,17 @@ export default function RayzeConsole() {
   };
 
   const handleScheduleInterview = async () => {
+    let invite_emails = interviewEmails;
+    if (invite_emails === '') {
+      invite_emails = selectedCandidate.email;
+    }
+    else invite_emails = invite_emails + " , " + selectedCandidate.email;
+
     const scheduleData = {
       timeslot1: `${interviewSlots.prio1.date}T${interviewSlots.prio1.time} ${interviewSlots.prio1.timezone}`,
       timeslot2: `${interviewSlots.prio2.date}T${interviewSlots.prio2.time} ${interviewSlots.prio2.timezone}`,
       timeslot3: `${interviewSlots.prio3.date}T${interviewSlots.prio3.time} ${interviewSlots.prio3.timezone}`,
-      invite_emails: interviewEmails,
+      invite_emails: invite_emails,
       candidate_name: selectedCandidate.name,
       candidate_email: selectedCandidate.email,
       candidate_phone: selectedCandidate.phone,
@@ -671,21 +677,20 @@ export default function RayzeConsole() {
     // console.log('Interview timeslot response:', response.data.html);
     
     // Send HTML email with interview details
+    console.log('process.env.REACT_APP_SENDMAIL_CC', process.env.REACT_APP_SENDMAIL_CC, `${process.env.REACT_APP_SENDMAIL_CC}`);
     try {
       const emailPayload = {
         to_email: selectedCandidate.email,
         to_name: selectedCandidate.name,
-        cc_email: "ravi@rayze.xyz, jc@rayze.xyz",
+        cc_email: process.env.REACT_APP_SENDMAIL_CC,
         subject: "Interview Schedule - Please Confirm",
         content: response.data.html,
-        from_email: "jc@rayze.xyz"
+        from_email: process.env.REACT_APP_SENDMAIL_FROM
       };
-      if (process.env.REACT_APP_RYZ_SENDMAIL === "http://127.0.0.1:8888") {
-        // emailPayload.to_email = "212cooperja@gmail.com";
-        // emailPayload.cc_email = "212cooperja@gmail.com";
+      if (process.env.REACT_APP_SENDMAIL_TEST) {
+        emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
         console.log('test email done')
       }
-      emailPayload.to_email = "212cooperja@gmail.com";
       console.log('Email payload:', emailPayload);
       const emailResponse = await axios.post(
         `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,

@@ -79,16 +79,15 @@ const ConfirmInterviewPage = () => {
           const invitePayload = {
             to_email: response.data.interview_options.invite_emails,
             to_name: response.data.interview_options.candidate_name,
-            cc_email: "ravi@rayze.xyz, jc@rayze.xyz",
+            cc_email: process.env.REACT_APP_SENDMAIL_CC,
             subject: "Interview Confirmed - " + response.data.interview_options.candidate_name,
             event_summary: "Interview with " + response.data.interview_options.candidate_name,
             event_datetime: formattedDateTime,
             event_duration_hours: 1
           };
 
-          if (process.env.REACT_APP_RYZ_SENDMAIL === "http://127.0.0.1:8888") {
-            // invitePayload.to_email = "212cooperja@gmail.com";
-            // invitePayload.cc_email = "212cooperja@gmail.com";
+          if (process.env.REACT_APP_SENDMAIL_TEST) {
+            invitePayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
             console.log('test calendar invite');
           }
           //console.log('Invite payload:', invitePayload);
@@ -128,20 +127,17 @@ const ConfirmInterviewPage = () => {
           //setHtmlString(response.data.html);
         } else if (response.data.status === "requested") {
           const emailPayload = {
-            to_email: "ravi@rayze.xyz",
-            to_name: "AI Ops",
-            cc_email: "ravi@rayze.xyz, jc@rayze.xyz",
+            to_email: response.data.interview_options.candidate_email,
+            to_name: response.data.interview_options.candidate_name,
+            cc_email: process.env.REACT_APP_SENDMAIL_CC,
             subject: "Please find mutually agreeable interview timeslot with candidate "+response.data.interview_options.candidate_name,
             content: "Please confirm mutually agreeable interview timeslot with candidate "+response.data.interview_options.candidate_name+" at the earliest.\n\nThanks,\nRayze AI",
-            from_email: "jc@rayze.xyz"
+            from_email: process.env.REACT_APP_SENDMAIL_FROM
           };
-          if (process.env.REACT_APP_RYZ_SENDMAIL === "http://127.0.0.1:8888") {
-            // emailPayload.to_email = "212cooperja@gmail.com";
-            // emailPayload.cc_email = "212cooperja@gmail.com";
+          if (process.env.REACT_APP_SENDMAIL_TEST) {
+            emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
             console.log('test email done')
           }
-          emailPayload.to_email = "212cooperja@gmail.com";
-          //console.log('Email payload:', emailPayload);
           const emailResponse = await axios.post(
             `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,
             emailPayload,
