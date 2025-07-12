@@ -236,7 +236,7 @@ export default function RayzeConsole() {
         const user_role = user_data.role;
         const user_id = user_data.id;
         const client_id = selectedClientId || user_data.client_id;
-        console.log('client_id', client_id);
+        // console.log('client_id', client_id);
 
         const [consoleResponse, activityResponse, candidatesResponse, openRolesResponse] = await Promise.all([
           axios.get(
@@ -271,7 +271,7 @@ export default function RayzeConsole() {
           })
         ]);
 
-        console.log('consoleResponse', consoleResponse.data);
+        // console.log('consoleResponse', consoleResponse.data);
         setConsoleData(consoleResponse.data);
         setActivityData(activityResponse.data);
         setCandidates(candidatesResponse.data);
@@ -442,7 +442,7 @@ export default function RayzeConsole() {
         status: 'Declined'
       };
       
-      console.log('Sending submit CV role data:', submitCVRoleData);
+      // console.log('Sending submit CV role data:', submitCVRoleData);
       
       try {
         const response = await axios.put(
@@ -455,7 +455,7 @@ export default function RayzeConsole() {
             },
           }
         );
-        console.log('Submit CV role update response:', response.data);
+        // console.log('Submit CV role update response:', response.data);
       } catch (error) {
         console.error('Error details:', error.response?.data);
         throw error;
@@ -660,7 +660,7 @@ export default function RayzeConsole() {
       client_phone: interviewPhone,
       client_id: selectedClientId
     };
-    console.log('Interview schedule data:', JSON.stringify(scheduleData));
+    // console.log('Interview schedule data:', JSON.stringify(scheduleData));
     const response =  await axios.post(
       `${process.env.REACT_APP_RYZ_SERVER}/submit_interview_timeslot`,
       scheduleData,
@@ -691,7 +691,7 @@ export default function RayzeConsole() {
         emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
         console.log('test email done')
       }
-      console.log('Email payload:', emailPayload);
+      // console.log('Email payload:', emailPayload);
       const emailResponse = await axios.post(
         `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,
         emailPayload,
@@ -702,7 +702,7 @@ export default function RayzeConsole() {
         }
       );
       
-      console.log('Email sent successfully:', emailResponse.data);
+      // console.log('Email sent successfully:', emailResponse.data);
     } catch (emailError) {
       console.error('Error sending email:', emailError);
       // Continue with the process even if email fails

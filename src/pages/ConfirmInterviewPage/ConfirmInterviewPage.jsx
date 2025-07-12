@@ -41,7 +41,7 @@ const ConfirmInterviewPage = () => {
            params: { slot }
         });
         setHtmlString(response.data.html);
-        console.log(response);
+        // console.log(response);
         if (response.data.prior_status.includes("Confirmed")) {
           console.log('Interview already confirmed, skipping...');
           setHtmlString('<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;"><h2 style="color: #333;">Interview already confirmed, skipping...</h2></div>');
@@ -74,7 +74,7 @@ const ConfirmInterviewPage = () => {
           // const formattedTime = dateObj.toTimeString().slice(0, 8);
           // const formattedDateTime = `${formattedDate} ${formattedTime} ${timezonePart}`;
           const formattedDateTime = response.data.interview_confirmed_on;
-          console.log('Formatted datetime n confirm:', formattedDateTime, hasConfirmed.current);
+          // console.log('Formatted datetime n confirm:', formattedDateTime, hasConfirmed.current);
           
           const invitePayload = {
             to_email: response.data.interview_options.invite_emails,
@@ -136,7 +136,7 @@ const ConfirmInterviewPage = () => {
           };
           if (process.env.REACT_APP_SENDMAIL_TEST) {
             emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
-            console.log('test email done')
+            // console.log('test email done')
           }
           const emailResponse = await axios.post(
             `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,
