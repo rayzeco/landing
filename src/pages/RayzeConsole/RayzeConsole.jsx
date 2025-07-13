@@ -591,10 +591,33 @@ export default function RayzeConsole() {
       const token = sessionStorage.getItem('token');
       const timeStr = `${date} ${time}`;
       
+      // Convert timezone string to city name for the API
+      const getCityFromTimezone = (tz) => {
+        const cityMap = {
+          'America/New_York': 'New York',
+          'America/Chicago': 'Chicago',
+          'America/Denver': 'Denver',
+          'America/Los_Angeles': 'Los Angeles',
+          'America/Phoenix': 'Phoenix',
+          'America/Bogota': 'Bogota',
+          'America/Mexico_City': 'Mexico City',
+          'Europe/London': 'London',
+          'Europe/Paris': 'Paris',
+          'Asia/Tokyo': 'Tokyo',
+          'Asia/Shanghai': 'Shanghai',
+          'Asia/Singapore': 'Singapore',
+          'Asia/Kolkata': 'Mumbai',
+          'Australia/Sydney': 'Sydney',
+          'Australia/Melbourne': 'Melbourne',
+          'Australia/Perth': 'Perth'
+        };
+        return cityMap[tz] || tz.split('/').pop().replace('_', ' ');
+      };
+      
       const response = await axios.post(
         `${process.env.REACT_APP_RYZ_SENDMAIL}/convert_time`,
         {
-          from_city: timezone,
+          from_city: getCityFromTimezone(timezone),
           to_city: selectedCandidate.location,
           time_str: timeStr,
           fmt: "%Y-%m-%d %H:%M"
