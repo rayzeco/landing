@@ -590,7 +590,7 @@ export default function RayzeConsole() {
       const timeStr = `${date} ${time}`;
       
       const response = await axios.post(
-        `${process.env.REACT_APP_RYZ_SERVER}/convert_time`,
+        `${process.env.REACT_APP_RYZ_SENDMAIL}/convert_time`,
         {
           from_city: timezone,
           to_city: selectedCandidate.location,
