@@ -9,6 +9,7 @@ import SelectInvoicePage from "../SelectInvoicePage/SelectInvoicePage";
 
 
 
+
 export default function RayzeConsole() {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('activeTab') || "home";
@@ -237,6 +238,7 @@ export default function RayzeConsole() {
         const user_id = user_data.id;
         const client_id = selectedClientId || user_data.client_id;
         // console.log('client_id', client_id);
+        console.log('process.env.REACT_APP_RYZ_SENDMAIL', process.env.REACT_APP_RYZ_SENDMAIL, `${process.env.REACT_APP_RYZ_SENDMAIL}`);
 
         const [consoleResponse, activityResponse, candidatesResponse, openRolesResponse] = await Promise.all([
           axios.get(
