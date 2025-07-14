@@ -46,6 +46,7 @@ const AddCandidatePage = () => {
         cv_link: '',
         client_id: '',
         recruiter_id: '',
+        project_name: '',
         status: ''
     });
     const [selectedCandidate, setSelectedCandidate] = useState('');
@@ -221,7 +222,7 @@ const AddCandidatePage = () => {
             candidate_cost: 'Candidate Cost',
             cv_link: 'CV Link',
             client_id: 'Client',
-            recruiter_id: 'Recruiter',
+            // recruiter_id: 'Recruiter', // Removed from required fields since it's not in the form
             // open_role_id: 'Open Role'
         };
 
@@ -233,18 +234,22 @@ const AddCandidatePage = () => {
             alert(`Please fill in the following required fields:\n${missingFields.join('\n')}`);
             return;
         }
+        // Get user info for default values
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        
         // Then create the submit_cvrole entry
         const candidateData = {
             name: newCandidate.name,
             role: newCandidate.role,
             location: newCandidate.location,
-            candidate_cost: newCandidate.candidate_cost,
+            candidate_cost: parseFloat(newCandidate.candidate_cost) || 0,
             phone: newCandidate.phone,
             email: newCandidate.email,
-            feedback: newCandidate.feedback,
-            cv_link: newCandidate.cv_link,
-            client_id: newCandidate.client_id,
-            recruiter_id: JSON.parse(sessionStorage.getItem('user'))?.client_id,
+            feedback: newCandidate.feedback || '',
+            cv_link: newCandidate.cv_link || '',
+            client_id: parseInt(newCandidate.client_id) || null,
+            recruiter_id: parseInt(newCandidate.recruiter_id) || user?.recruiter_id || 1, // Default to user ID or 1
+            project_name: newCandidate.project_name || null,
             status: 'Submitted'
         };
         //console.log(candidateData);
@@ -270,6 +275,9 @@ const AddCandidatePage = () => {
         }
 
         try {
+            // Debug: Log the candidate data being sent
+            console.log('DEBUG: Sending candidate data:', candidateData);
+            
             // First create the candidate
             const candidateResponse = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_candidate`, candidateData, {
                 headers: {
@@ -333,7 +341,8 @@ const AddCandidatePage = () => {
             window.location.reload(); // Refresh the page after successful creation
         } catch (error) {
             console.error('Error creating candidate:', error);
-            alert('Error creating candidate. Please try again.');
+            console.error('Error response:', error.response?.data);
+            alert(`Error creating candidate: ${error.response?.data?.detail || error.message}. Please try again.`);
         }
     };
 
