@@ -613,7 +613,12 @@ export default function RayzeConsole() {
         };
         return cityMap[tz] || tz.split('/').pop().replace('_', ' ');
       };
-      
+      console.log('Sending convert_time payload:', {
+        from_city: getCityFromTimezone(timezone),
+        to_city: selectedCandidate.location,
+        time_str: timeStr,
+        fmt: "%Y-%m-%d %H:%M"
+      });
       const response = await axios.post(
         `${process.env.REACT_APP_RYZ_SENDMAIL}/convert_time`,
         {
