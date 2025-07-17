@@ -717,6 +717,7 @@ export default function RayzeConsole() {
         content: response.data.html,
         from_email: process.env.REACT_APP_SENDMAIL_FROM
       };
+      console.log('emailPayload', emailPayload);
       if (process.env.REACT_APP_SENDMAIL_TEST) {
         emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
         console.log('test email done')
