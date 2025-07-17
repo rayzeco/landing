@@ -35,7 +35,7 @@ const ConfirmInterviewPage = () => {
         const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/confirm_timeslot/${interview_id}`,
         {
            headers: {
-             'Content-Type': 'application/json',
+             'Content-Type': 'application/html',
              Authorization: `Bearer ${token}`, // Include the token in the request header
            },
            params: { slot }

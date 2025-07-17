@@ -709,21 +709,15 @@ export default function RayzeConsole() {
     // Send HTML email with interview details
     console.log('process.env.REACT_APP_SENDMAIL_CC', process.env.REACT_APP_SENDMAIL_CC, `${process.env.REACT_APP_SENDMAIL_CC}`);
     try {
-      // Clean up email values by removing extra quotes
-      const cleanEmail = (email) => {
-        if (!email) return email;
-        return email.replace(/^['"]|['"]$/g, ''); // Remove leading/trailing quotes
-      };
-
       const emailPayload = {
         to_email: selectedCandidate.email,
         to_name: selectedCandidate.name,
-        cc_email: cleanEmail(process.env.REACT_APP_SENDMAIL_CC),
+        cc_email: process.env.REACT_APP_SENDMAIL_CC,
         subject: "Interview Schedule - Please Confirm",
         content: response.data.html,
-        from_email: cleanEmail(process.env.REACT_APP_SENDMAIL_FROM)
+        from_email: process.env.REACT_APP_SENDMAIL_FROM
       };
-      console.log('emailPayload is', emailPayload);
+      console.log('emailPayload', emailPayload);
       if (process.env.REACT_APP_SENDMAIL_TEST) {
         emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
         console.log('test email done')
