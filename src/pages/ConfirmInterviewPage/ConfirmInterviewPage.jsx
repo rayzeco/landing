@@ -40,9 +40,19 @@ const ConfirmInterviewPage = () => {
            },
            params: { slot }
         });
-        setHtmlString(response.data.html);
-        // console.log(response);
-        if (response.data.prior_status.includes("Confirmed")) {
+        // Parse the JSON string to extract the HTML content
+        //const htmlData = JSON.parse(response.data.html);
+        const htmlData = response.data;
+
+        console.log("htmlData is", htmlData);
+
+        // Decode the HTML string to handle escaped Unicode characters
+        // const decodedHtml = htmlData.html.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
+        //   return String.fromCharCode(parseInt(hex, 16));
+        // });
+        // console.log(decodedHtml, response.data.html, htmlData);
+        setHtmlString(htmlData);
+        if (htmlData.includes("already confirmed")) {
           console.log('Interview already confirmed, skipping...');
           setHtmlString('<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;"><h2 style="color: #333;">Interview already confirmed, skipping...</h2></div>');
           return;

@@ -353,9 +353,34 @@ const AddOpenRolesPage = () => {
         }
     };
 
-    const handleCVClick = (e, cvLink) => {
+    const handleCVClick = async (e, cvLink) => {
         e.stopPropagation();
-        window.open(cvLink, '_blank');
+        
+        // Check if the link is a Supabase storage URL (likely HTML content)
+        if (cvLink && cvLink.includes('supabase.co/storage')) {
+            try {
+                // Fetch the content from the URL
+                const response = await fetch(cvLink);
+                const content = await response.text();
+                
+                // Check if the content looks like HTML
+                if (content.trim().startsWith('<') || content.includes('<html') || content.includes('<body')) {
+                    // Display in modal like test documents
+                    setCurrentJD(content);
+                    setShowJDModal(true);
+                } else {
+                    // If not HTML, open in new tab as before
+                    window.open(cvLink, '_blank');
+                }
+            } catch (error) {
+                console.error('Error fetching JD content:', error);
+                // Fallback to opening in new tab
+                window.open(cvLink, '_blank');
+            }
+        } else {
+            // For non-Supabase URLs, open in new tab as before
+            window.open(cvLink, '_blank');
+        }
     };
 
     const handleFileUpload = async (event) => {
@@ -1010,24 +1035,67 @@ const AddOpenRolesPage = () => {
                             <button className="close-button" onClick={handleCloseJDModal}>×</button>
                         </div>
                         <div className="modal-body">
-                            <iframe 
-                                src={currentJD} 
+                            <div 
+                                dangerouslySetInnerHTML={{ __html: currentJD }}
                                 style={{ 
                                     width: '100%', 
                                     height: '80vh', 
-                                    border: 'none',
-                                    backgroundColor: '#ffffff'
+                                    overflow: 'auto',
+                                    backgroundColor: '#ffffff',
+                                    padding: '20px',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px'
                                 }}
-                                title="Job Description"
                             />
                         </div>
                         <div className="modal-footer">
                             <button className="modal-button" onClick={handleCloseJDModal}>Close</button>
                             <button 
                                 className="modal-button primary"
-                                onClick={() => window.open(currentJD, '_blank')}
+                                onClick={() => {
+                                    const content = `
+                                        <!DOCTYPE html>
+                                        <html>
+                                            <head>
+                                                <title>Job Description</title>
+                                                <style>
+                                                    body { 
+                                                        font-family: Arial, sans-serif; 
+                                                        padding: 20px;
+                                                        -webkit-print-color-adjust: exact;
+                                                        print-color-adjust: exact;
+                                                    }
+                                                    @media print {
+                                                        body { 
+                                                            -webkit-print-color-adjust: exact;
+                                                            print-color-adjust: exact;
+                                                        }
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                ${currentJD}
+                                            </body>
+                                        </html>
+                                    `;
+                                    const blob = new Blob([content], { type: 'text/html' });
+                                    const url = URL.createObjectURL(blob);
+                                    const printWindow = window.open(url, '_blank');
+                                    printWindow.onload = () => {
+                                        printWindow.document.close();
+                                        printWindow.focus();
+                                        const mediaQueryList = printWindow.matchMedia('print');
+                                        mediaQueryList.addListener(function(mql) {
+                                            if (!mql.matches) {
+                                                URL.revokeObjectURL(url);
+                                                printWindow.close();
+                                            }
+                                        });
+                                        printWindow.print();
+                                    };
+                                }}
                             >
-                                Open in New Tab
+                                Save as PDF
                             </button>
                         </div>
                     </div>
@@ -1084,12 +1152,35 @@ const AddOpenRolesPage = () => {
                             </div>
                             <div className="jd-output-section">
                                 <h3>Generated Job Description</h3>
-                                <textarea
-                                    value={generatedJD}
-                                    onChange={(e) => setGeneratedJD(e.target.value)}
-                                    placeholder="Generated job description will appear here..."
-                                    rows={12}
-                                />
+                                {generatedJD ? (
+                                    <div 
+                                        dangerouslySetInnerHTML={{ __html: generatedJD }}
+                                        style={{ 
+                                            width: '100%', 
+                                            height: '300px', 
+                                            overflow: 'auto',
+                                            backgroundColor: '#ffffff',
+                                            padding: '15px',
+                                            border: '1px solid #ddd',
+                                            borderRadius: '4px',
+                                            fontFamily: 'Arial, sans-serif',
+                                            fontSize: '14px',
+                                            lineHeight: '1.5'
+                                        }}
+                                    />
+                                ) : (
+                                    <textarea
+                                        value={generatedJD}
+                                        onChange={(e) => setGeneratedJD(e.target.value)}
+                                        placeholder="Generated job description will appear here..."
+                                        rows={12}
+                                        readOnly
+                                        style={{ 
+                                            backgroundColor: '#f5f5f5',
+                                            cursor: 'not-allowed'
+                                        }}
+                                    />
+                                )}
                             </div>
                         </div>
                         <div className="modal-footer">
