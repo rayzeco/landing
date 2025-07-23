@@ -58,22 +58,61 @@ const ConfirmInterviewPage = () => {
           return;
         }
         
-        // Extract response data from embedded script tag
-        const responseDataScript = htmlData.match(/<script id="response-data" type="application\/json" style="display: none;">(.*?)<\/script>/s);
-        //console.log('Response data script match:', responseDataScript);
+                // Extract response data from embedded div with individual attributes
+        const responseDataDiv = htmlData.match(/<div id="response-data" status="([^"]*)" interview_confirmed_on="([^"]*)" interview_options="([^"]*)"[^>]*>/);
+        console.log('Response data div match:', responseDataDiv);
         let parsedData = {};
-        if (responseDataScript && responseDataScript[1]) {
+        if (responseDataDiv && responseDataDiv.length >= 4) {
           try {
-            parsedData = JSON.parse(responseDataScript[1].trim());
+            // Extract individual attributes
+            const status = responseDataDiv[1];
+            const interview_confirmed_on = responseDataDiv[2];
+            const interview_options_str = responseDataDiv[3];
+            
+            console.log('Raw interview_options_str:', interview_options_str);
+            
+            // Decode HTML entities in interview_options
+            const decodedInterviewOptions = interview_options_str
+              .replace(/&quot;/g, '"')
+              .replace(/&amp;/g, '&')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>')
+              .replace(/&#39;/g, "'")
+              .replace(/&#x27;/g, "'")
+              .replace(/&#x2F;/g, '/');
+            
+            console.log('Decoded interview_options:', decodedInterviewOptions);
+            
+            // Try to parse the interview_options JSON
+            let interview_options;
+            try {
+              interview_options = JSON.parse(decodedInterviewOptions);
+            } catch (jsonErr) {
+              console.error('JSON parse error:', jsonErr);
+              console.error('Failed to parse:', decodedInterviewOptions);
+              // If JSON parsing fails, try to create a basic object
+              interview_options = {
+                candidate_name: "Unknown",
+                candidate_email: "unknown@example.com",
+                submit_cvrole_id: 0
+              };
+            }
+            
+            parsedData = {
+              status: status,
+              interview_confirmed_on: interview_confirmed_on,
+              interview_options: interview_options
+            };
+            
             console.log('Parsed response data:', parsedData);
             
             // Add the parsed values to the response data object
-           
+            
             
             //console.log('Updated response data:', response.data);
           } catch (err) {
             console.error('Error parsing embedded response data:', err);
-            console.error('Raw responseData script:', responseDataScript[1]);
+            console.error('Raw responseData div:', responseDataDiv);
           }
         } else {
           console.log('No embedded response data found in HTML');
