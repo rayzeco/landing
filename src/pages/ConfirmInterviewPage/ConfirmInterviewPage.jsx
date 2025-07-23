@@ -40,82 +40,66 @@ const ConfirmInterviewPage = () => {
            },
            params: { slot }
         });
-        // Parse the JSON string to extract the HTML content
-        //const htmlData = JSON.parse(response.data.html);
-        const htmlData = response.data;
+        // Parse the JSON response directly
+        const responseData = response.data;
+        console.log("responseData is", responseData);
 
-        //console.log("htmlData is", htmlData, response.headers['x-response-data']);
-        //console.log("response is", response.data);
-        // Decode the HTML string to handle escaped Unicode characters
-        // const decodedHtml = htmlData.html.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
-        //   return String.fromCharCode(parseInt(hex, 16));
-        // });
-        // console.log(decodedHtml, response.data.html, htmlData);
-        setHtmlString(htmlData);
-        if (htmlData.includes("already confirmed")) {
-          console.log('Interview already confirmed, skipping...');
-          setHtmlString('<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;"><h2 style="color: #333;">Interview already confirmed, skipping...</h2></div>');
-          return;
-        }
-        
-                // Extract response data from embedded div with individual attributes
-        const responseDataDiv = htmlData.match(/<div id="response-data" status="([^"]*)" interview_confirmed_on="([^"]*)" interview_options="([^"]*)"[^>]*>/);
-        console.log('Response data div match:', responseDataDiv);
         let parsedData = {};
-        if (responseDataDiv && responseDataDiv.length >= 4) {
-          try {
-            // Extract individual attributes
-            const status = responseDataDiv[1];
-            const interview_confirmed_on = responseDataDiv[2];
-            const interview_options_str = responseDataDiv[3];
-            
-            console.log('Raw interview_options_str:', interview_options_str);
-            
-            // Decode HTML entities in interview_options
-            const decodedInterviewOptions = interview_options_str
-              .replace(/&quot;/g, '"')
-              .replace(/&amp;/g, '&')
-              .replace(/&lt;/g, '<')
-              .replace(/&gt;/g, '>')
-              .replace(/&#39;/g, "'")
-              .replace(/&#x27;/g, "'")
-              .replace(/&#x2F;/g, '/');
-            
-            console.log('Decoded interview_options:', decodedInterviewOptions);
-            
-            // Try to parse the interview_options JSON
-            let interview_options;
-            try {
-              interview_options = JSON.parse(decodedInterviewOptions);
-            } catch (jsonErr) {
-              console.error('JSON parse error:', jsonErr);
-              console.error('Failed to parse:', decodedInterviewOptions);
-              // If JSON parsing fails, try to create a basic object
-              interview_options = {
-                candidate_name: "Unknown",
-                candidate_email: "unknown@example.com",
-                submit_cvrole_id: 0
-              };
-            }
-            
-            parsedData = {
-              status: status,
-              interview_confirmed_on: interview_confirmed_on,
-              interview_options: interview_options
-            };
-            
-            console.log('Parsed response data:', parsedData);
-            
-            // Add the parsed values to the response data object
-            
-            
-            //console.log('Updated response data:', response.data);
-          } catch (err) {
-            console.error('Error parsing embedded response data:', err);
-            console.error('Raw responseData div:', responseDataDiv);
-          }
+        let htmlContent = '';
+
+        // Handle different response statuses
+        if (responseData.status === "already_confirmed") {
+          console.log('Interview already confirmed, skipping...');
+          htmlContent = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;"><h2 style="color: #333;">Interview already confirmed, skipping...</h2></div>';
+          setHtmlString(htmlContent);
+          return;
+        } else if (responseData.status === "alternate_requested") {
+          console.log('Alternate timeslot requested');
+          htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #333; text-align: center;">Interview Timeslot Requested</h2>
+              <p style="font-size: 16px; line-height: 1.5; text-align: center;">
+                ${responseData.message}
+              </p>
+              <p style="font-size: 14px; color: #666; text-align: center;">
+                ${responseData.details}
+              </p>
+            </div>
+          `;
+          setHtmlString(htmlContent);
+          return;
+        } else if (responseData.status === "confirmed") {
+          // Extract data from the confirmed response
+          parsedData = {
+            status: responseData.status,
+            interview_confirmed_on: responseData.interview_confirmed_on,
+            interview_confirmed_on_date: responseData.interview_confirmed_on_date,
+            interview_confirmed_on_time: responseData.interview_confirmed_on_time,
+            interview_options: responseData.interview_options
+          };
+          
+          console.log('Parsed response data:', parsedData);
+          
+          // Generate HTML for confirmed interview
+          htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #333; text-align: center;">Interview Timeslot Confirmed</h2>
+              <p style="font-size: 16px; line-height: 1.5; text-align: center;">
+                Your interview has been scheduled for<br>
+                <strong style="text-align: left">Date: ${parsedData.interview_confirmed_on_date}</strong><br>
+                <strong style="text-align: left">Time: ${parsedData.interview_confirmed_on_time}</strong>
+              </p>
+              <p style="font-size: 14px; color: #666; text-align: center;">
+                We look forward to speaking with you at the scheduled time.
+              </p>
+            </div>
+          `;
+          setHtmlString(htmlContent);
         } else {
-          console.log('No embedded response data found in HTML');
+          console.log('Unknown response status:', responseData.status);
+          htmlContent = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;"><h2 style="color: #333;">Unknown response status</h2></div>';
+          setHtmlString(htmlContent);
+          return;
         }
         //console.log('status:', parsedData.status);
         if (parsedData.status === "confirmed") {
@@ -181,28 +165,32 @@ const ConfirmInterviewPage = () => {
               }
             }
           //setHtmlString(response.data.html);
-        } else if (parsedData.status === "requested") {
-          const emailPayload = {
-            to_email: parsedData.interview_options.candidate_email,
-            to_name: parsedData.interview_options.candidate_name,
-            cc_email: process.env.REACT_APP_SENDMAIL_CC,
-            subject: "Please find mutually agreeable interview timeslot with candidate "+parsedData.interview_options.candidate_name,
-            content: "Please confirm mutually agreeable interview timeslot with candidate "+parsedData.interview_options.candidate_name+" at the earliest.\n\nThanks,\nRayze AI",
-            from_email: process.env.REACT_APP_SENDMAIL_FROM
-          };
-          if (process.env.REACT_APP_SENDMAIL_TEST) {
-            emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
-            // console.log('test email done')
-          }
-          const emailResponse = await axios.post(
-            `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,
-            emailPayload,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
+        } else if (parsedData.status === "alternate_requested") {
+          // For alternate timeslot requests, we need to send an email to the team
+          // We'll need to get the candidate info from the interview_options if available
+          if (parsedData.interview_options && parsedData.interview_options.candidate_name) {
+            const emailPayload = {
+              to_email: parsedData.interview_options.candidate_email,
+              to_name: parsedData.interview_options.candidate_name,
+              cc_email: process.env.REACT_APP_SENDMAIL_CC,
+              subject: "Please find mutually agreeable interview timeslot with candidate "+parsedData.interview_options.candidate_name,
+              content: "Please confirm mutually agreeable interview timeslot with candidate "+parsedData.interview_options.candidate_name+" at the earliest.\n\nThanks,\nRayze AI",
+              from_email: process.env.REACT_APP_SENDMAIL_FROM
+            };
+            if (process.env.REACT_APP_SENDMAIL_TEST) {
+              emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
+              // console.log('test email done')
             }
-          );    
+            const emailResponse = await axios.post(
+              `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,
+              emailPayload,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              }
+            );    
+          }
         }
       } catch (error) {
         console.error('Error confirming timeslot:', error);
