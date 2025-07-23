@@ -65,7 +65,7 @@ const ConfirmInterviewPage = () => {
         if (responseDataScript && responseDataScript[1]) {
           try {
             parsedData = JSON.parse(responseDataScript[1].trim());
-            //console.log('Parsed response data:', parsedData);
+            console.log('Parsed response data:', parsedData);
             
             // Add the parsed values to the response data object
            
@@ -107,7 +107,7 @@ const ConfirmInterviewPage = () => {
             invitePayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
             console.log('test calendar invite');
           }
-          //console.log('Invite payload:', invitePayload);
+          console.log('Invite payload:', invitePayload);
           const calendarResponse = await axios.post(
             `${process.env.REACT_APP_RYZ_SENDMAIL}/send_invite`,
             invitePayload,
