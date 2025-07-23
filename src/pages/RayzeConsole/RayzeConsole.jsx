@@ -238,7 +238,7 @@ export default function RayzeConsole() {
         const user_id = user_data.id;
         const client_id = selectedClientId || user_data.client_id;
         // console.log('client_id', client_id);
-        console.log('process.env.REACT_APP_RYZ_SENDMAIL', process.env.REACT_APP_RYZ_SENDMAIL, `${process.env.REACT_APP_RYZ_SENDMAIL}`);
+        //console.log('process.env.REACT_APP_RYZ_SENDMAIL', process.env.REACT_APP_RYZ_SENDMAIL, `${process.env.REACT_APP_RYZ_SENDMAIL}`);
 
         const [consoleResponse, activityResponse, candidatesResponse, openRolesResponse] = await Promise.all([
           axios.get(
@@ -613,12 +613,12 @@ export default function RayzeConsole() {
         };
         return cityMap[tz] || tz.split('/').pop().replace('_', ' ');
       };
-      console.log('Sending convert_time payload:', {
-        from_city: getCityFromTimezone(timezone),
-        to_city: selectedCandidate.location,
-        time_str: timeStr,
-        fmt: "%Y-%m-%d %H:%M"
-      });
+      // //console.log('Sending convert_time payload:', {
+      //   from_city: getCityFromTimezone(timezone),
+      //   to_city: selectedCandidate.location,
+      //   time_str: timeStr,
+      //   fmt: "%Y-%m-%d %H:%M"
+      // });
       const response = await axios.post(
         `${process.env.REACT_APP_RYZ_SENDMAIL}/convert_time`,
         {
@@ -675,7 +675,17 @@ export default function RayzeConsole() {
     if (invite_emails === '') {
       invite_emails = selectedCandidate.email;
     }
-    else invite_emails = invite_emails + " , " + selectedCandidate.email;
+    else {
+      invite_emails = invite_emails + " , " + selectedCandidate.email;
+    }
+    
+    // Add session user's email if not already included
+    const userData = JSON.parse(sessionStorage.getItem('user'));
+    const userEmail = userData?.email;
+    if (userEmail && !invite_emails.includes(userEmail)) {
+      invite_emails = invite_emails + " , " + userEmail;
+    }
+    //console.log('invite_emails', invite_emails, userEmail, userData);
 
     const scheduleData = {
       timeslot1: `${interviewSlots.prio1.date}T${interviewSlots.prio1.time} ${interviewSlots.prio1.timezone}`,
@@ -707,17 +717,17 @@ export default function RayzeConsole() {
     // console.log('Interview timeslot response:', response.data.html);
     
     // Send HTML email with interview details
-    console.log('process.env.REACT_APP_SENDMAIL_CC', process.env.REACT_APP_SENDMAIL_CC, `${process.env.REACT_APP_SENDMAIL_CC}`);
+    //console.log('process.env.REACT_APP_SENDMAIL_CC', process.env.REACT_APP_SENDMAIL_CC, `${process.env.REACT_APP_SENDMAIL_CC}`);
     try {
       const emailPayload = {
-        to_email: selectedCandidate.email,
+        to_email: userEmail ? selectedCandidate.email + ", " + userEmail : selectedCandidate.email,
         to_name: selectedCandidate.name,
         cc_email: process.env.REACT_APP_SENDMAIL_CC,
         subject: "Interview Schedule - Please Confirm",
         content: response.data.html,
         from_email: process.env.REACT_APP_SENDMAIL_FROM
       };
-      console.log('emailPayload', emailPayload);
+      //console.log('emailPayload', emailPayload);
       if (process.env.REACT_APP_SENDMAIL_TEST) {
         emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
         console.log('test email done')

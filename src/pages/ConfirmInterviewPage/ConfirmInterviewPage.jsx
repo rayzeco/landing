@@ -44,8 +44,8 @@ const ConfirmInterviewPage = () => {
         //const htmlData = JSON.parse(response.data.html);
         const htmlData = response.data;
 
-        console.log("htmlData is", htmlData);
-
+        //console.log("htmlData is", htmlData, response.headers['x-response-data']);
+        //console.log("response is", response.data);
         // Decode the HTML string to handle escaped Unicode characters
         // const decodedHtml = htmlData.html.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
         //   return String.fromCharCode(parseInt(hex, 16));
@@ -58,40 +58,47 @@ const ConfirmInterviewPage = () => {
           return;
         }
         
-        if (response.data.status === "confirmed") {
+        // Extract response data from embedded script tag
+        const responseDataScript = htmlData.match(/<script id="response-data" type="application\/json" style="display: none;">(.*?)<\/script>/s);
+        //console.log('Response data script match:', responseDataScript);
+        let parsedData = {};
+        if (responseDataScript && responseDataScript[1]) {
+          try {
+            parsedData = JSON.parse(responseDataScript[1].trim());
+            //console.log('Parsed response data:', parsedData);
+            
+            // Add the parsed values to the response data object
+           
+            
+            //console.log('Updated response data:', response.data);
+          } catch (err) {
+            console.error('Error parsing embedded response data:', err);
+            console.error('Raw responseData script:', responseDataScript[1]);
+          }
+        } else {
+          console.log('No embedded response data found in HTML');
+        }
+        //console.log('status:', parsedData.status);
+        if (parsedData.status === "confirmed") {
           // Send calendar invite
           //console.log('Response data:', response.data);
-          //console.log('interview_confirmed_on:', response.data.interview_confirmed_on);
+          console.log('interview_confirmed_on:', parsedData.interview_confirmed_on);
           
           // Check if interview_confirmed_on exists and is valid
-          if (!response.data.interview_confirmed_on) {
+          if (!parsedData.interview_confirmed_on) {
             console.error('interview_confirmed_on is missing or null');
             return;
           }
           
-          // Parse the datetime string and timezone
-          // const [datePart, timezonePart] = response.data.interview_confirmed_on.split(' ');
-          // const dateObj = new Date(datePart);
-          
-          // // Check if the date is valid
-          // if (isNaN(dateObj.getTime())) {
-          //   console.error('Invalid date:', response.data.interview_confirmed_on);
-          //   return;
-          // }
-          
-          // // Format to YYYY-MM-DD HH:MM:SS TZ
-          // const formattedDate = dateObj.toISOString().slice(0, 10);
-          // const formattedTime = dateObj.toTimeString().slice(0, 8);
-          // const formattedDateTime = `${formattedDate} ${formattedTime} ${timezonePart}`;
-          const formattedDateTime = response.data.interview_confirmed_on;
-          // console.log('Formatted datetime n confirm:', formattedDateTime, hasConfirmed.current);
+          const formattedDateTime = parsedData.interview_confirmed_on;
+          console.log('Formatted datetime n confirm:', formattedDateTime, hasConfirmed.current);
           
           const invitePayload = {
-            to_email: response.data.interview_options.invite_emails,
-            to_name: response.data.interview_options.candidate_name,
+            to_email: parsedData.interview_options.invite_emails,
+            to_name: parsedData.interview_options.candidate_name,
             cc_email: process.env.REACT_APP_SENDMAIL_CC,
-            subject: "Interview Confirmed - " + response.data.interview_options.candidate_name,
-            event_summary: "Interview with " + response.data.interview_options.candidate_name,
+            subject: "Interview Confirmed - " + parsedData.interview_options.candidate_name,
+            event_summary: "Interview with " + parsedData.interview_options.candidate_name,
             event_datetime: formattedDateTime,
             event_duration_hours: 1
           };
@@ -110,16 +117,16 @@ const ConfirmInterviewPage = () => {
               }
             }
           );
-          
+          console.log('Calendar response:', calendarResponse);
           if (calendarResponse.data.status === "success") {
               console.log('calendar invite sent');
-              const interview_options = response.data.interview_options;
+              const interview_options = parsedData.interview_options;
               interview_options.event_id = calendarResponse.data.event_id;
               interview_options.meet_link = calendarResponse.data.meet_link;
               // Update just the interview_options field for this submit_cv_role_id
               try {
                 await axios.put(
-                  `${process.env.REACT_APP_RYZ_SERVER}/update_interview_options/${response.data.interview_options.submit_cvrole_id}`,
+                  `${process.env.REACT_APP_RYZ_SERVER}/update_interview_options/${parsedData.interview_options.submit_cvrole_id}`,
                   {
                     interview_options: JSON.stringify(interview_options)
                   },
@@ -135,13 +142,13 @@ const ConfirmInterviewPage = () => {
               }
             }
           //setHtmlString(response.data.html);
-        } else if (response.data.status === "requested") {
+        } else if (parsedData.status === "requested") {
           const emailPayload = {
-            to_email: response.data.interview_options.candidate_email,
-            to_name: response.data.interview_options.candidate_name,
+            to_email: parsedData.interview_options.candidate_email,
+            to_name: parsedData.interview_options.candidate_name,
             cc_email: process.env.REACT_APP_SENDMAIL_CC,
-            subject: "Please find mutually agreeable interview timeslot with candidate "+response.data.interview_options.candidate_name,
-            content: "Please confirm mutually agreeable interview timeslot with candidate "+response.data.interview_options.candidate_name+" at the earliest.\n\nThanks,\nRayze AI",
+            subject: "Please find mutually agreeable interview timeslot with candidate "+parsedData.interview_options.candidate_name,
+            content: "Please confirm mutually agreeable interview timeslot with candidate "+parsedData.interview_options.candidate_name+" at the earliest.\n\nThanks,\nRayze AI",
             from_email: process.env.REACT_APP_SENDMAIL_FROM
           };
           if (process.env.REACT_APP_SENDMAIL_TEST) {
