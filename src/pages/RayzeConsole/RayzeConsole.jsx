@@ -538,23 +538,6 @@ export default function RayzeConsole() {
     const prio2Date = getNthBusinessDay(2);
     const prio3Date = getNthBusinessDay(3);
 
-    // setInterviewSlots({
-    //   prio1: { 
-    //     date: prio1Date.toISOString().split('T')[0], 
-    //     time: '09:00', 
-    //     timezone: 'America/Los_Angeles'
-    //   },
-    //   prio2: { 
-    //     date: prio2Date.toISOString().split('T')[0], 
-    //     time: '08:00', 
-    //     timezone: 'America/Los_Angeles' 
-    //   },
-    //   prio3: { 
-    //     date: prio3Date.toISOString().split('T')[0], 
-    //     time: '09:00', 
-    //     timezone: 'America/Los_Angeles' 
-    //   }
-    // });
     setConvertedTimes({
       prio1: '',
       prio2: '',
@@ -613,12 +596,7 @@ export default function RayzeConsole() {
         };
         return cityMap[tz] || tz.split('/').pop().replace('_', ' ');
       };
-      // //console.log('Sending convert_time payload:', {
-      //   from_city: getCityFromTimezone(timezone),
-      //   to_city: selectedCandidate.location,
-      //   time_str: timeStr,
-      //   fmt: "%Y-%m-%d %H:%M"
-      // });
+
       const response = await axios.post(
         `${process.env.REACT_APP_RYZ_SENDMAIL}/convert_time`,
         {
@@ -806,20 +784,6 @@ export default function RayzeConsole() {
     }
   };
 
-  // Function to get interview status for a candidate (stable across renders)
-  // const getCandidateInterviewStatus = (candidate_status) => {
-  //   let scheduleStatus;
-  //   if (candidate_status === 'Submitted') {
-  //     scheduleStatus = 'Submitted';
-  //   } else if (candidate_status === 'Interview Scheduled') {
-  //     scheduleStatus = 'Jul 02, 2025';
-  //   } else if (candidate_status === 'Interview Completed') {
-  //     scheduleStatus = 'Hire';
-  //   } else {
-  //     scheduleStatus = 'Submitted';
-  //   }
-  //   return scheduleStatus;
-  // };
 
   const renderMainContent = () => {
     switch (activeTab) {
@@ -1377,6 +1341,27 @@ export default function RayzeConsole() {
               <button className="close-button" onClick={handleCloseScheduleModal}>×</button>
             </div>
             <div className="modal-body">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button 
+                style={{
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  marginBottom: '16px',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  selectedCandidate.status = "Confirmed Fast Track";
+                  handleProceedClick(new Event('click'), selectedCandidate);
+                  handleCloseScheduleModal();
+                  return;
+                }}
+              >
+                Skip Interviews....Fast Track to Hire
+              </button>
+              </div>
               <p>Please select 3 interview timeslots for the candidate {selectedCandidate?.name}</p>
               <p style={{ color: '#0066ff' }}>Candidate Location: {selectedCandidate?.location}</p>
               <p style={{ color: '#0066ff' }}>Please consider the timezone of the candidate</p>
@@ -1527,5 +1512,5 @@ export default function RayzeConsole() {
         </div>
       )}
     </div>
-  );
-} 
+  )
+}
