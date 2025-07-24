@@ -83,7 +83,7 @@ const ConfirmInterviewPage = () => {
           htmlContent = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;"><h2 style="color: #333;">Unknown response status</h2></div>';
         }
 
-        console.log('htmlContent:', htmlContent);
+        // console.log('htmlContent:', htmlContent);
         setHtmlString(htmlContent);
 
         // Handle calendar invite and other logic as in your original code
@@ -152,7 +152,7 @@ const ConfirmInterviewPage = () => {
 
     confirmTimeslot();
   }, [interview_id, slot]);
-  console.log('htmlString is', htmlString);
+  // console.log('htmlString is', htmlString);
   return (
     // <div>
     //   {htmlString ? (

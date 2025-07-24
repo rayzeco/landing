@@ -252,6 +252,20 @@ const AddCandidatePage = () => {
             project_name: newCandidate.project_name || null,
             status: 'Submitted'
         };
+        // Check if candidate name already exists
+            console.log('checking candidate name', newCandidate.name);
+            const checkResponse = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/find_candidate_by_name/${newCandidate.name}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            console.log('checkResponse is', checkResponse);
+            if (checkResponse.data.name === newCandidate.name) {
+                alert(`A candidate with the name "${newCandidate.name}" already exists in the system.\n\nPlease modify the name (e.g. add a number) if you want to add this as a new candidate.`);
+                return;
+            }
+            
+
         //console.log(candidateData);
         // Store the CV in the bucket
 
@@ -440,7 +454,8 @@ const AddCandidatePage = () => {
             );
 
             // Parse the candidate_info string into a JSON object
-            console.log(response.data.candidate_info);
+            //console.log(response.data.candidate_info);
+            console.log('response.data.candidate_info received');
             const candidateInfo = JSON.parse(response.data.candidate_info);
 
             // Update the newCandidate state with the parsed information
@@ -486,7 +501,7 @@ const AddCandidatePage = () => {
                 );
 
                 const matchScore = matchScoreResponse.data.evaluation;
-                console.log(matchScore);
+                console.log("got matchscore"); //console.log(matchScore);
                 setMatchScoreResult(matchScore);
                 setNewCandidate(prev => ({
                     ...prev,
@@ -1138,7 +1153,7 @@ const AddCandidatePage = () => {
                                     <input
                                         type="file"
                                         id="cv-upload"
-                                        accept=".pdf,.doc,.docx"
+                                        accept=".pdf"
                                         style={{ display: 'none' }}
                                         onChange={handleNewCV}
                                     />
@@ -1695,7 +1710,7 @@ const AddCandidatePage = () => {
                                     <p>Please upload the candidate's CV to generate a match score.</p>
                                     <input
                                         type="file"
-                                        accept=".pdf,.doc,.docx"
+                                        accept=".pdf"
                                         onChange={handleNewCV}
                                         style={{ marginTop: '10px' }}
                                     />
