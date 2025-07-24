@@ -152,17 +152,18 @@ const ConfirmInterviewPage = () => {
 
     confirmTimeslot();
   }, [interview_id, slot]);
-
+  console.log('htmlString is', htmlString);
   return (
-    <div>
-      {htmlString ? (
-        <div dangerouslySetInnerHTML={{ __html: htmlString }} />
-      ) : (
-        <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '600px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
-          <h2>Loading...</h2>
-        </div>
-      )}
-    </div>
+    // <div>
+    //   {htmlString ? (
+    //     <div dangerouslySetInnerHTML={{ __html: htmlString }} />
+    //   ) : (
+    //     <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '600px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
+    //       <h2>Loading...</h2>
+    //     </div>
+    //   )}
+    // </div>
+    <div dangerouslySetInnerHTML={{ __html: htmlString || '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; text-align: center;"><h2>Loading...</h2></div>' }} />
   );
 };
 

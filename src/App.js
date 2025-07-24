@@ -54,6 +54,7 @@ function App() {
           <Route path="/submit_candidates" element={<SubmitCandidatePage />} />
           <Route path="/open_roles" element={<AddOpenRolesPage />} />
           <Route path="/console" element={<RayzeConsole />} />
+          <Route path="/confirm/:interview_id" component={ConfirmInterviewPage} />
           <Route path="/confirm_timeslot/:interview_id/:slot?" element={<ConfirmInterviewPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
