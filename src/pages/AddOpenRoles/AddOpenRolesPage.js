@@ -8,6 +8,9 @@ const AddOpenRolesPage = () => {
     const [openRoles, setOpenRoles] = useState([]);
     const [filteredOpenRoles, setFilteredOpenRoles] = useState([]);
     const [clients, setClients] = useState([]);
+    const [projectsByClient, setProjectsByClient] = useState({});
+    const [showNewProjectInput, setShowNewProjectInput] = useState(false);
+    const [newProjectName, setNewProjectName] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [showTestModal, setShowTestModal] = useState(false);
@@ -26,6 +29,7 @@ const AddOpenRolesPage = () => {
 
     const [newOpenRole, setNewOpenRole] = useState({
         clientName: '',
+        projectName: '',
         role_desc: '',
         location: '',
         status: 'Open',
@@ -102,6 +106,8 @@ const AddOpenRolesPage = () => {
                 });
                 setClientMap(clientMapping);
 
+                // Project names will be fetched when open roles are loaded
+
                 // Fetch open roles after we have the client map
                 await fetchOpenRoles(clientMapping);
             } catch (error) {
@@ -130,6 +136,29 @@ const AddOpenRolesPage = () => {
                 }));
             setOpenRoles(allOpenRoles);
             setFilteredOpenRoles(allOpenRoles);
+            
+            // Group unique project names by client
+            const projectsByClientMap = {};
+            
+            response.data.forEach(role => {
+                if (role.project_name && role.project_name.trim() !== '') {
+                    const clientName = clientMapping[role.client_id]?.name || 'Unknown';
+                    const projectName = role.project_name.trim();
+                    
+                    if (!projectsByClientMap[clientName]) {
+                        projectsByClientMap[clientName] = new Set();
+                    }
+                    projectsByClientMap[clientName].add(projectName);
+                }
+            });
+            
+            // Convert Sets to sorted arrays
+            const finalProjectsByClient = {};
+            Object.keys(projectsByClientMap).forEach(clientName => {
+                finalProjectsByClient[clientName] = Array.from(projectsByClientMap[clientName]).sort();
+            });
+            
+            setProjectsByClient(finalProjectsByClient);
         } catch (error) {
             console.error('Error fetching open roles:', error);
         }
@@ -155,9 +184,35 @@ const AddOpenRolesPage = () => {
 
     const handleNewOpenRoleChange = (e) => {
         const { name, value } = e.target;
+        setNewOpenRole(prev => {
+            const updated = {
+                ...prev,
+                [name]: value
+            };
+            // Reset project name when client changes
+            if (name === 'clientName') {
+                updated.projectName = '';
+                setShowNewProjectInput(false);
+                setNewProjectName('');
+            }
+            // Handle 'Add New Project...' selection
+            if (name === 'projectName' && value === 'ADD_NEW_PROJECT') {
+                setShowNewProjectInput(true);
+                updated.projectName = '';
+            } else if (name === 'projectName' && value !== 'ADD_NEW_PROJECT') {
+                setShowNewProjectInput(false);
+                setNewProjectName('');
+            }
+            return updated;
+        });
+    };
+
+    const handleNewProjectNameChange = (e) => {
+        const value = e.target.value;
+        setNewProjectName(value);
         setNewOpenRole(prev => ({
             ...prev,
-            [name]: value
+            projectName: value
         }));
     };
 
@@ -270,6 +325,7 @@ const AddOpenRolesPage = () => {
                 job_desc_link: newOpenRole.job_desc_link || "none",
                 test_doc: newOpenRole.test_doc || "none",
                 jd_doc: newOpenRole.jd_doc || "none",
+                project_name: newOpenRole.projectName || null,
             };
             console.log('Payload1 being sent:', payload);
             //call store bucket to store JD
@@ -324,6 +380,7 @@ const AddOpenRolesPage = () => {
 
             setNewOpenRole({
                 clientName: '',
+                projectName: '',
                 role_desc: '',
                 location: '',
                 status: 'Open',
@@ -739,6 +796,63 @@ const AddOpenRolesPage = () => {
                                             </option>
                                         ))}
                                     </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="projectName">Project Name:</label>
+                                    {!showNewProjectInput ? (
+                                        <select
+                                            id="projectName"
+                                            name="projectName"
+                                            value={newOpenRole.projectName}
+                                            onChange={handleNewOpenRoleChange}
+                                            disabled={!newOpenRole.clientName}
+                                            required
+                                        >
+                                            <option value="">Select Project...</option>
+                                            {newOpenRole.clientName && projectsByClient[newOpenRole.clientName] && projectsByClient[newOpenRole.clientName].map((project, index) => (
+                                                <option key={index} value={project}>
+                                                    {project}
+                                                </option>
+                                            ))}
+                                            {newOpenRole.clientName && (
+                                                <option value="ADD_NEW_PROJECT">+ Add New Project...</option>
+                                            )}
+                                        </select>
+                                    ) : (
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <input
+                                                type="text"
+                                                id="projectName"
+                                                name="projectName"
+                                                placeholder="Enter new project name"
+                                                value={newProjectName}
+                                                onChange={handleNewProjectNameChange}
+                                                required
+                                                autoFocus
+                                                style={{ flex: 1 }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowNewProjectInput(false);
+                                                    setNewProjectName('');
+                                                    setNewOpenRole(prev => ({ ...prev, projectName: '' }));
+                                                }}
+                                                style={{
+                                                    padding: '8px 12px',
+                                                    backgroundColor: '#666',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '12px'
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="form-group">

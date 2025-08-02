@@ -120,7 +120,13 @@
           margin: 0;
         }
 
-        .client-search {
+        .search-container {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+        }
+
+        .client-search, .project-search {
           .filter-input {
             padding: 8px 12px;
             border-radius: 6px;
@@ -129,6 +135,12 @@
             color: #fff;
             font-size: 14px;
             min-width: 200px;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+            padding-right: 30px;
 
             &::placeholder {
               color: #666;
@@ -137,6 +149,24 @@
             &:focus {
               outline: none;
               border-color: var(--theme-color);
+            }
+
+            &:disabled {
+              background-color: #111;
+              color: #555;
+              cursor: not-allowed;
+              opacity: 0.6;
+              background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23555' d='M2 0L0 2h4z'/></svg>");
+              
+              &::placeholder {
+                color: #555;
+              }
+            }
+
+            option {
+              background-color: #222;
+              color: #fff;
+              padding: 8px;
             }
           }
         }

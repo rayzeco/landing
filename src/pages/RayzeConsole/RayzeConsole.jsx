@@ -37,6 +37,14 @@ export default function RayzeConsole() {
     }
     return '';
   });
+  
+  // Project-related state
+  const [projects, setProjects] = useState([]);
+  const [isProjectSearchEnabled, setIsProjectSearchEnabled] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(() => {
+    return localStorage.getItem('selectedProjectId') || null;
+  });
+  const [projectSearch, setProjectSearch] = useState('');
   const [filters, setFilters] = useState({
     name: '',
     role: '',
@@ -276,6 +284,7 @@ export default function RayzeConsole() {
         // console.log('consoleResponse', consoleResponse.data);
         setConsoleData(consoleResponse.data);
         setActivityData(activityResponse.data);
+        // Data loaded successfully
         setCandidates(candidatesResponse.data);
         setFilteredCandidates(candidatesResponse.data);
         setOpenRoles(openRolesResponse.data);
@@ -288,60 +297,116 @@ export default function RayzeConsole() {
     fetchClientConsoleData();
   }, [activeTab, userRole, selectedClientId]);
 
+  // Initialize project search if a client is already selected
+  useEffect(() => {
+    if (selectedClientId && clients.length > 0) {
+      fetchProjectsForClient(selectedClientId);
+      setIsProjectSearchEnabled(true);
+    }
+  }, [selectedClientId, clients]);
+
   // Add filter effect
   useEffect(() => {
-    let filtered = candidates.filter(candidate => {
+    let filtered = candidates;
+    
+    // Apply filters
+    filtered = filtered.filter(candidate => {
       return Object.keys(filters).every(key => {
         if (!filters[key]) return true;
         const value = candidate[key]?.toString().toLowerCase() || '';
         return value.includes(filters[key].toLowerCase());
       });
     });
+    
     setFilteredCandidates(filtered);
   }, [filters, candidates]);
 
   // Add input required filter effect
   useEffect(() => {
-    let filtered = candidates.filter(candidate => {
+    let filtered = candidates;
+    
+    // Apply input required filters
+    filtered = filtered.filter(candidate => {
       return Object.keys(inputRequiredFilters).every(key => {
         if (!inputRequiredFilters[key]) return true;
         const value = candidate[key]?.toString().toLowerCase() || '';
         return value.includes(inputRequiredFilters[key].toLowerCase());
       });
     });
+    
     setFilteredInputRequiredCandidates(filtered);
   }, [inputRequiredFilters, candidates]);
 
   // Add open roles filter effect
   useEffect(() => {
-    let filtered = openRoles.filter(role => {
+    let filtered = openRoles;
+    
+    // Apply filters
+    filtered = filtered.filter(role => {
       return Object.keys(openRolesFilters).every(key => {
         if (!openRolesFilters[key]) return true;
         const value = role[key]?.toString().toLowerCase() || '';
         return value.includes(openRolesFilters[key].toLowerCase());
       });
     });
+    
     setFilteredOpenRoles(filtered);
   }, [openRolesFilters, openRoles]);
 
-  // Add client search effect
-  useEffect(() => {
-    if (clientSearch) {
-      const matchingClient = clients.find(client => 
-        client.name.toLowerCase() === clientSearch.toLowerCase()
-      );
-      if (matchingClient) {
-        setSelectedClientId(matchingClient.id);
-        localStorage.setItem('selectedClientId', matchingClient.id);
-      } else {
-        setSelectedClientId(null);
-        localStorage.removeItem('selectedClientId');
-      }
-    } else {
-      setSelectedClientId(null);
-      localStorage.removeItem('selectedClientId');
+
+  // Client selection is now handled by handleClientChange
+
+  // Function to fetch projects for a selected client
+  const fetchProjectsForClient = async (clientId) => {
+    try {
+      // Fetch both candidates and open roles for this client to get project names
+      const token = sessionStorage.getItem('token');
+      const [candidatesResponse, openRolesResponse] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_console_candidates_by_client/${clientId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_console_open_roles_by_client/${clientId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      ]);
+
+      // Collect distinct project names
+      const projectNames = new Set();
+      
+      // Add project names from candidates
+      candidatesResponse.data.forEach(candidate => {
+        if (candidate.project_name && candidate.project_name.trim() !== '') {
+          projectNames.add(candidate.project_name.trim());
+        }
+      });
+      
+      // Add project names from open roles
+      openRolesResponse.data.forEach(role => {
+        if (role.project_name && role.project_name.trim() !== '') {
+          projectNames.add(role.project_name.trim());
+        }
+      });
+      
+      // Convert to array and create project objects
+      const projectsArray = Array.from(projectNames).sort().map((name, index) => ({
+        id: index + 1,
+        name: name
+      }));
+      
+      setProjects(projectsArray);
+    } catch (error) {
+      console.error('Error fetching projects for client:', error);
+      setProjects([]);
     }
-  }, [clientSearch, clients]);
+  };
+
+  // Project selection is now handled by handleProjectChange
 
   const handleFilterChange = (e, field) => {
     setFilters(prev => ({
@@ -364,20 +429,45 @@ export default function RayzeConsole() {
     }));
   };
 
-  const handleClientSearch = (e) => {
-    const value = e.target.value;
-    setClientSearch(value);
-
-    // Find matching client names for autocomplete
-    const matchingClients = clients.filter(client => 
-      client.name.toLowerCase().includes(value.toLowerCase())
-    );
-
-    // If there's an exact match, set the client ID immediately
-    if (matchingClients.length === 1 && matchingClients[0].name.toLowerCase() === value.toLowerCase()) {
-      setSelectedClientId(matchingClients[0].id);
+  const handleClientChange = (e) => {
+    const clientId = e.target.value;
+    setSelectedClientId(clientId);
+    
+    if (clientId) {
+      localStorage.setItem('selectedClientId', clientId);
+      // Find the client name for display
+      const selectedClient = clients.find(client => client.id === parseInt(clientId));
+      setClientSearch(selectedClient ? selectedClient.name : '');
+      // Enable project search and fetch projects for this client
+      fetchProjectsForClient(clientId);
+      setIsProjectSearchEnabled(true);
+      // Reset project selection
+      setSelectedProjectId(null);
+      setProjectSearch('');
+      localStorage.removeItem('selectedProjectId');
     } else {
-      setSelectedClientId(null);
+      localStorage.removeItem('selectedClientId');
+      setClientSearch('');
+      setProjects([]);
+      setIsProjectSearchEnabled(false);
+      setSelectedProjectId(null);
+      setProjectSearch('');
+      localStorage.removeItem('selectedProjectId');
+    }
+  };
+
+  const handleProjectChange = (e) => {
+    const projectId = e.target.value;
+    setSelectedProjectId(projectId);
+    
+    if (projectId) {
+      localStorage.setItem('selectedProjectId', projectId);
+      // Find the project name for display
+      const selectedProject = projects.find(project => project.id === parseInt(projectId));
+      setProjectSearch(selectedProject ? selectedProject.name : '');
+    } else {
+      localStorage.removeItem('selectedProjectId');
+      setProjectSearch('');
     }
   };
 
@@ -855,20 +945,38 @@ export default function RayzeConsole() {
             <div className="content-header">
               <h1>Rayze Overview</h1>
               {userRole !== 'Client' && (
-                <div className="client-search">
-                  <input
-                    type="text"
-                    placeholder="Search client..."
-                    value={clientSearch}
-                    onChange={handleClientSearch}
-                    className="filter-input"
-                    list="client-list"
-                  />
-                  <datalist id="client-list">
-                    {clients.map(client => (
-                      <option key={client.id} value={client.name} />
-                    ))}
-                  </datalist>
+                <div className="search-container">
+                  <div className="client-search">
+                    <select
+                      value={selectedClientId || ''}
+                      onChange={handleClientChange}
+                      className="filter-input"
+                    >
+                      <option value="">Select client...</option>
+                      {clients.map(client => (
+                        <option key={client.id} value={client.id}>
+                          {client.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="project-search">
+                    <select
+                      value={selectedProjectId || ''}
+                      onChange={handleProjectChange}
+                      className="filter-input"
+                      disabled={!isProjectSearchEnabled}
+                    >
+                      <option value="">{isProjectSearchEnabled ? "Select project..." : "Select a client first..."}</option>
+                      {projects.length > 0 ? projects.map(project => (
+                        <option key={project.id} value={project.id}>
+                          {project.name}
+                        </option>
+                      )) : (
+                        <option value="" disabled>No projects found</option>
+                      )}
+                    </select>
+                  </div>
                 </div>
               )}
             </div>
@@ -876,23 +984,39 @@ export default function RayzeConsole() {
             <div className="dashboard-grid">
               <div className="dashboard-card">
                 <h3>Active Open Roles</h3>
-                <div className="card-value">{consoleData.active_client_roles}</div>
-                <div className="card-trend positive">+{consoleData.active_client_roles_last30} this month</div>
+                <div className="card-value">
+                  {consoleData.active_client_roles || 0}
+                </div>
+                <div className="card-trend positive">
+                  +{consoleData.active_client_roles_last30 || 0} this month
+                </div>
               </div>
               <div className="dashboard-card">
                 <h3>CVs submitted</h3>
-                <div className="card-value">{consoleData.submit_client_cvs}</div>
-                <div className="card-trend positive">+{consoleData.submit_client_cvs_last30} this month</div>
+                <div className="card-value">
+                  {consoleData.submit_client_cvs || 0}
+                </div>
+                <div className="card-trend positive">
+                  +{consoleData.submit_client_cvs_last30 || 0} this month
+                </div>
               </div>
               <div className="dashboard-card">
                 <h3>Rayze on Payroll</h3>
-                <div className="card-value">{consoleData.total_active_eng}</div>
-                <div className="card-trend positive">+{consoleData.total_active_eng_last30} this month</div>
+                <div className="card-value">
+                  {consoleData.total_active_eng || 0}
+                </div>
+                <div className="card-trend positive">
+                  +{consoleData.total_active_eng_last30 || 0} this month
+                </div>
               </div>
               <div className="dashboard-card">
                 <h3>Hired last 30 days</h3>
-                <div className="card-value">{consoleData.hired_client_cvs}</div>
-                <div className="card-trend positive">+{consoleData.hired_client_cvs_last30} this month</div>
+                <div className="card-value">
+                  {consoleData.hired_client_cvs || 0}
+                </div>
+                <div className="card-trend positive">
+                  +{consoleData.hired_client_cvs_last30 || 0} this month
+                </div>
               </div>
             </div>
 

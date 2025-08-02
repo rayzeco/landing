@@ -187,7 +187,9 @@ const AddCandidatePage = () => {
                     ...prev,
                     client_id: value,
                     // Reset open_role_id if it's not valid for the new client
-                    open_role_id: filteredRoles.some(role => role.id === prev.open_role_id) ? prev.open_role_id : ''
+                    open_role_id: filteredRoles.some(role => role.id === prev.open_role_id) ? prev.open_role_id : '',
+                    // Reset project_name when client changes
+                    project_name: ''
                 }));
             } else {
                 setIsOpenRolesEnabled(false);
@@ -195,9 +197,23 @@ const AddCandidatePage = () => {
                 setNewCandidate(prev => ({
                     ...prev,
                     client_id: value,
-                    open_role_id: ''
+                    open_role_id: '',
+                    project_name: ''
                 }));
             }
+            return;
+        }
+
+        // Special handling for open_role_id to update project_name
+        if (name === 'open_role_id') {
+            const selectedRole = openRoles.find(role => role.id === parseInt(value));
+            const projectName = selectedRole ? selectedRole.project_name || '' : '';
+            
+            setNewCandidate(prev => ({
+                ...prev,
+                open_role_id: value,
+                project_name: projectName
+            }));
             return;
         }
 
@@ -332,10 +348,14 @@ const AddCandidatePage = () => {
                 cv_link: '',
                 client_id: '',
                 recruiter_id: '',
+                project_name: '',
+                open_role_id: '',
                 status: '',
             });
-            // Reset match score
+            // Reset match score and UI states
             setMatchScoreResult('');
+            setIsOpenRolesEnabled(false);
+            setFilteredOpenRoles([]);
 
             // Refresh candidate list
             const fetchCandidates = async () => {
