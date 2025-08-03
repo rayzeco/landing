@@ -41,10 +41,12 @@ export default function RayzeConsole() {
   // Project-related state
   const [projects, setProjects] = useState([]);
   const [isProjectSearchEnabled, setIsProjectSearchEnabled] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState(() => {
-    return localStorage.getItem('selectedProjectId') || null;
+  const [selectedProjectIds, setSelectedProjectIds] = useState(() => {
+    const saved = localStorage.getItem('selectedProjectIds');
+    return saved ? JSON.parse(saved) : [];
   });
   const [projectSearch, setProjectSearch] = useState('');
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const [filters, setFilters] = useState({
     name: '',
     role: '',
@@ -156,6 +158,35 @@ export default function RayzeConsole() {
     localStorage.setItem('activeTab', activeTab);
   }, [activeTab]);
 
+  // Function to fetch projects for a selected client
+  const fetchProjectsForClient = async (clientId) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      
+      // Use the dedicated find_project_names endpoint
+      const response = await axios.get(
+        `${process.env.REACT_APP_RYZ_SERVER}/find_project_names/${clientId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Convert the array of project names to project objects with IDs
+      const projectsArray = response.data.map((name, index) => ({
+        id: index + 1,
+        name: name
+      }));
+      
+      setProjects(projectsArray);
+    } catch (error) {
+      console.error('Error fetching projects for client:', error);
+      setProjects([]);
+    }
+  };
+
   useEffect(() => {
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
@@ -173,6 +204,16 @@ export default function RayzeConsole() {
         const client_id = user_data.client_id;
         const user_id = user_data.id;
 
+        // Load projects for the user's client if not already loaded
+        if (projects.length === 0 && client_id) {
+          await fetchProjectsForClient(client_id);
+        }
+
+        // Get selected project names
+        const selectedProjectNames = projects
+          .filter(project => selectedProjectIds.includes(project.id))
+          .map(project => project.name);
+
         const [consoleResponse, activityResponse] = await Promise.all([
           axios.get(
             `${process.env.REACT_APP_RYZ_SERVER}/get_console_data`,
@@ -181,6 +222,9 @@ export default function RayzeConsole() {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
               },
+              params: selectedProjectNames.length > 0 ? {
+                'project_list[]': selectedProjectNames
+              } : {}
             }
           ),
           axios.get(
@@ -201,7 +245,7 @@ export default function RayzeConsole() {
     };
 
     fetchHomeData();
-  }, [activeTab]); // Only re-run when activeTab changes
+  }, [activeTab, selectedProjectIds, projects]); // Re-run when activeTab, selectedProjectIds, or projects change
 
   // Fetch clients first - only for non-client users and client_console tab
   useEffect(() => {
@@ -248,6 +292,11 @@ export default function RayzeConsole() {
         // console.log('client_id', client_id);
         //console.log('process.env.REACT_APP_RYZ_SENDMAIL', process.env.REACT_APP_RYZ_SENDMAIL, `${process.env.REACT_APP_RYZ_SENDMAIL}`);
 
+        // Get selected project names
+        const selectedProjectNames = projects
+          .filter(project => selectedProjectIds.includes(project.id))
+          .map(project => project.name);
+
         const [consoleResponse, activityResponse, candidatesResponse, openRolesResponse] = await Promise.all([
           axios.get(
             `${process.env.REACT_APP_RYZ_SERVER}/get_console_data_by_client/${client_id}`,
@@ -256,6 +305,9 @@ export default function RayzeConsole() {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
               },
+              params: selectedProjectNames.length > 0 ? {
+                'project_list[]': selectedProjectNames
+              } : {}
             }
           ),
           axios.get(
@@ -272,16 +324,24 @@ export default function RayzeConsole() {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
+            params: selectedProjectNames.length > 0 ? {
+              'project_list[]': selectedProjectNames
+            } : {}
           }),
           axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_console_open_roles_by_client/${client_id}`, {
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
+            params: selectedProjectNames.length > 0 ? {
+              'project_list[]': selectedProjectNames
+            } : {}
           })
         ]);
 
-        // console.log('consoleResponse', consoleResponse.data);
+
+
+
         setConsoleData(consoleResponse.data);
         setActivityData(activityResponse.data);
         // Data loaded successfully
@@ -295,7 +355,7 @@ export default function RayzeConsole() {
     };
 
     fetchClientConsoleData();
-  }, [activeTab, userRole, selectedClientId]);
+  }, [activeTab, userRole, selectedClientId, selectedProjectIds, projects]);
 
   // Initialize project search if a client is already selected
   useEffect(() => {
@@ -304,6 +364,42 @@ export default function RayzeConsole() {
       setIsProjectSearchEnabled(true);
     }
   }, [selectedClientId, clients]);
+
+  // Handle initial project selection from localStorage when projects are loaded
+  useEffect(() => {
+    const savedProjectIds = localStorage.getItem('selectedProjectIds');
+    if (savedProjectIds && projects.length > 0) {
+      const parsedIds = JSON.parse(savedProjectIds);
+      const validIds = parsedIds.filter(id => 
+        projects.some(project => project.id === id)
+      );
+      if (validIds.length > 0) {
+        setSelectedProjectIds(validIds);
+        const selectedProjectNames = projects
+          .filter(project => validIds.includes(project.id))
+          .map(project => project.name);
+        setProjectSearch(selectedProjectNames.join(', '));
+      }
+    }
+  }, [projects]);
+
+  // Close project dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const projectSearchElement = document.querySelector('.project-search');
+      if (projectSearchElement && !projectSearchElement.contains(event.target)) {
+        closeProjectDropdown();
+      }
+    };
+
+    if (isProjectDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProjectDropdownOpen]);
 
   // Add filter effect
   useEffect(() => {
@@ -318,8 +414,12 @@ export default function RayzeConsole() {
       });
     });
     
+    // Project filtering is handled by the backend API
+    // No additional frontend filtering needed
+    
+
     setFilteredCandidates(filtered);
-  }, [filters, candidates]);
+  }, [filters, candidates, selectedProjectIds, projects]);
 
   // Add input required filter effect
   useEffect(() => {
@@ -334,8 +434,12 @@ export default function RayzeConsole() {
       });
     });
     
+    // Project filtering is handled by the backend API
+    // No additional frontend filtering needed
+    
+
     setFilteredInputRequiredCandidates(filtered);
-  }, [inputRequiredFilters, candidates]);
+  }, [inputRequiredFilters, candidates, selectedProjectIds, projects]);
 
   // Add open roles filter effect
   useEffect(() => {
@@ -350,61 +454,15 @@ export default function RayzeConsole() {
       });
     });
     
+    // Project filtering is handled by the backend API
+    // No additional frontend filtering needed
+    
+
     setFilteredOpenRoles(filtered);
-  }, [openRolesFilters, openRoles]);
+  }, [openRolesFilters, openRoles, selectedProjectIds, projects]);
 
 
   // Client selection is now handled by handleClientChange
-
-  // Function to fetch projects for a selected client
-  const fetchProjectsForClient = async (clientId) => {
-    try {
-      // Fetch both candidates and open roles for this client to get project names
-      const token = sessionStorage.getItem('token');
-      const [candidatesResponse, openRolesResponse] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_console_candidates_by_client/${clientId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }),
-        axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_console_open_roles_by_client/${clientId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        })
-      ]);
-
-      // Collect distinct project names
-      const projectNames = new Set();
-      
-      // Add project names from candidates
-      candidatesResponse.data.forEach(candidate => {
-        if (candidate.project_name && candidate.project_name.trim() !== '') {
-          projectNames.add(candidate.project_name.trim());
-        }
-      });
-      
-      // Add project names from open roles
-      openRolesResponse.data.forEach(role => {
-        if (role.project_name && role.project_name.trim() !== '') {
-          projectNames.add(role.project_name.trim());
-        }
-      });
-      
-      // Convert to array and create project objects
-      const projectsArray = Array.from(projectNames).sort().map((name, index) => ({
-        id: index + 1,
-        name: name
-      }));
-      
-      setProjects(projectsArray);
-    } catch (error) {
-      console.error('Error fetching projects for client:', error);
-      setProjects([]);
-    }
-  };
 
   // Project selection is now handled by handleProjectChange
 
@@ -442,33 +500,57 @@ export default function RayzeConsole() {
       fetchProjectsForClient(clientId);
       setIsProjectSearchEnabled(true);
       // Reset project selection
-      setSelectedProjectId(null);
+      setSelectedProjectIds([]);
       setProjectSearch('');
-      localStorage.removeItem('selectedProjectId');
+      setIsProjectDropdownOpen(false);
+      localStorage.removeItem('selectedProjectIds');
     } else {
       localStorage.removeItem('selectedClientId');
       setClientSearch('');
       setProjects([]);
       setIsProjectSearchEnabled(false);
-      setSelectedProjectId(null);
+      setSelectedProjectIds([]);
       setProjectSearch('');
-      localStorage.removeItem('selectedProjectId');
+      setIsProjectDropdownOpen(false);
+      localStorage.removeItem('selectedProjectIds');
     }
   };
 
   const handleProjectChange = (e) => {
-    const projectId = e.target.value;
-    setSelectedProjectId(projectId);
+    const projectId = parseInt(e.target.value);
+    const isChecked = e.target.checked;
     
-    if (projectId) {
-      localStorage.setItem('selectedProjectId', projectId);
-      // Find the project name for display
-      const selectedProject = projects.find(project => project.id === parseInt(projectId));
-      setProjectSearch(selectedProject ? selectedProject.name : '');
+    let newSelectedProjectIds;
+    if (isChecked) {
+      // Add project to selection
+      newSelectedProjectIds = [...selectedProjectIds, projectId];
     } else {
-      localStorage.removeItem('selectedProjectId');
+      // Remove project from selection
+      newSelectedProjectIds = selectedProjectIds.filter(id => id !== projectId);
+    }
+    
+    setSelectedProjectIds(newSelectedProjectIds);
+    localStorage.setItem('selectedProjectIds', JSON.stringify(newSelectedProjectIds));
+    
+    // Update project search display
+    if (newSelectedProjectIds.length > 0) {
+      const selectedProjectNames = projects
+        .filter(project => newSelectedProjectIds.includes(project.id))
+        .map(project => project.name);
+      setProjectSearch(selectedProjectNames.join(', '));
+    } else {
       setProjectSearch('');
     }
+  };
+
+  const toggleProjectDropdown = () => {
+    if (isProjectSearchEnabled) {
+      setIsProjectDropdownOpen(!isProjectDropdownOpen);
+    }
+  };
+
+  const closeProjectDropdown = () => {
+    setIsProjectDropdownOpen(false);
   };
 
   const getActivityIcon = (title) => {
@@ -553,6 +635,11 @@ export default function RayzeConsole() {
         throw error;
       }
 
+      // Get selected project names
+      const selectedProjectNames = projects
+        .filter(project => selectedProjectIds.includes(project.id))
+        .map(project => project.name);
+
       // Refresh the candidates list
       const responseCandidates = await axios.get(
         `${process.env.REACT_APP_RYZ_SERVER}/get_console_candidates_by_client/${client_id}`,
@@ -561,6 +648,9 @@ export default function RayzeConsole() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
+          params: selectedProjectNames.length > 0 ? {
+            'project_list[]': selectedProjectNames
+          } : {}
         }
       );
       setCandidates(responseCandidates.data);
@@ -857,6 +947,11 @@ export default function RayzeConsole() {
         }
       );
 
+      // Get selected project names
+      const selectedProjectNames = projects
+        .filter(project => selectedProjectIds.includes(project.id))
+        .map(project => project.name);
+
       // Refresh the candidates list
       const response = await axios.get(
         `${process.env.REACT_APP_RYZ_SERVER}/get_console_candidates_by_client/${client_id}`,
@@ -865,6 +960,9 @@ export default function RayzeConsole() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
+          params: selectedProjectNames.length > 0 ? {
+            'project_list[]': selectedProjectNames
+          } : {}
         }
       );
       setCandidates(response.data);
@@ -961,21 +1059,41 @@ export default function RayzeConsole() {
                     </select>
                   </div>
                   <div className="project-search">
-                    <select
-                      value={selectedProjectId || ''}
-                      onChange={handleProjectChange}
-                      className="filter-input"
-                      disabled={!isProjectSearchEnabled}
-                    >
-                      <option value="">{isProjectSearchEnabled ? "Select project..." : "Select a client first..."}</option>
-                      {projects.length > 0 ? projects.map(project => (
-                        <option key={project.id} value={project.id}>
-                          {project.name}
-                        </option>
-                      )) : (
-                        <option value="" disabled>No projects found</option>
+                    <div className="multi-select-container">
+                      <div 
+                        className={`multi-select-header ${isProjectDropdownOpen ? 'open' : ''}`}
+                        onClick={toggleProjectDropdown}
+                      >
+                        <span className="multi-select-label">
+                          {isProjectSearchEnabled ? "Select projects..." : "Select a client first..."}
+                        </span>
+                        {selectedProjectIds.length > 0 && (
+                          <span className="selected-count">({selectedProjectIds.length} selected)</span>
+                        )}
+                      </div>
+                      {isProjectDropdownOpen && (
+                        <div className="multi-select-dropdown">
+                          {isProjectSearchEnabled && projects.length > 0 ? (
+                            <div className="project-checkboxes">
+                              {projects.map(project => (
+                                <label key={project.id} className="project-checkbox">
+                                  <input
+                                    type="checkbox"
+                                    value={project.id}
+                                    checked={selectedProjectIds.includes(project.id)}
+                                    onChange={handleProjectChange}
+                                    className="project-checkbox-input"
+                                  />
+                                  <span className="project-checkbox-label">{project.name}</span>
+                                </label>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="no-projects">No projects found</div>
+                          )}
+                        </div>
                       )}
-                    </select>
+                    </div>
                   </div>
                 </div>
               )}

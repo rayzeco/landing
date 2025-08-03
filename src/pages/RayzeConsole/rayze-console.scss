@@ -171,6 +171,106 @@
           }
         }
 
+        .project-search {
+          .multi-select-container {
+            position: relative;
+            min-width: 200px;
+            
+            .multi-select-header {
+              padding: 8px 12px;
+              border-radius: 6px;
+              border: 1px solid #333;
+              background-color: #222;
+              color: #fff;
+              font-size: 14px;
+              cursor: pointer;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              min-height: 20px;
+              position: relative;
+              
+              &:hover {
+                border-color: #444;
+              }
+              
+              .multi-select-label {
+                color: #ccc;
+              }
+              
+              .selected-count {
+                color: var(--theme-color);
+                font-size: 12px;
+                font-weight: 500;
+              }
+              
+              &::after {
+                content: '';
+                width: 0;
+                height: 0;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 4px solid #666;
+                margin-left: 8px;
+                transition: transform 0.2s ease;
+              }
+              
+              &.open::after {
+                transform: rotate(180deg);
+              }
+            }
+            
+            .multi-select-dropdown {
+              position: absolute;
+              top: 100%;
+              left: 0;
+              right: 0;
+              background-color: #222;
+              border: 1px solid #333;
+              border-radius: 6px;
+              margin-top: 4px;
+              max-height: 200px;
+              overflow-y: auto;
+              z-index: 1000;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+              
+              .project-checkboxes {
+                padding: 8px 0;
+                
+                .project-checkbox {
+                  display: flex;
+                  align-items: center;
+                  padding: 8px 12px;
+                  cursor: pointer;
+                  transition: background-color 0.2s ease;
+                  
+                  &:hover {
+                    background-color: #333;
+                  }
+                  
+                  .project-checkbox-input {
+                    margin-right: 8px;
+                    cursor: pointer;
+                  }
+                  
+                  .project-checkbox-label {
+                    color: #fff;
+                    font-size: 14px;
+                    cursor: pointer;
+                  }
+                }
+              }
+              
+              .no-projects {
+                padding: 12px;
+                color: #666;
+                font-size: 14px;
+                text-align: center;
+              }
+            }
+          }
+        }
+
         .header-actions {
           display: flex;
           gap: 12px;
