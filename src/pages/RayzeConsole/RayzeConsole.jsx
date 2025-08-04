@@ -150,6 +150,8 @@ export default function RayzeConsole() {
     if (role === 'Client') {
       setSelectedClientId(user.client_id);
       setActiveTab("client_console");
+      // Enable project search for Client users
+      setIsProjectSearchEnabled(true);
     }
   }, [navigate]);
 
@@ -238,6 +240,7 @@ export default function RayzeConsole() {
           )
         ]);
         setConsoleData(consoleResponse.data);
+        //console.log('consoleResponse.data', consoleResponse.data);
         setActivityData(activityResponse.data);
       } catch (error) {
         console.error('Error fetching home data:', error);
@@ -280,8 +283,7 @@ export default function RayzeConsole() {
     const fetchClientConsoleData = async () => {
       // Don't fetch if:
       // 1. Not in client_console tab
-      // 2. User is a Client
-      if (activeTab !== "client_console" || userRole === 'Client') return;
+      if (activeTab !== "client_console") return;
 
       try {
         const token = sessionStorage.getItem('token');
@@ -341,7 +343,7 @@ export default function RayzeConsole() {
 
 
 
-
+        //console.log('consoleResponse.data', consoleResponse.data);
         setConsoleData(consoleResponse.data);
         setActivityData(activityResponse.data);
         // Data loaded successfully
@@ -359,11 +361,11 @@ export default function RayzeConsole() {
 
   // Initialize project search if a client is already selected
   useEffect(() => {
-    if (selectedClientId && clients.length > 0) {
+    if (selectedClientId) {
       fetchProjectsForClient(selectedClientId);
       setIsProjectSearchEnabled(true);
     }
-  }, [selectedClientId, clients]);
+  }, [selectedClientId]);
 
   // Handle initial project selection from localStorage when projects are loaded
   useEffect(() => {
@@ -544,7 +546,7 @@ export default function RayzeConsole() {
   };
 
   const toggleProjectDropdown = () => {
-    if (isProjectSearchEnabled) {
+    if (isProjectSearchEnabled || userRole === 'Client') {
       setIsProjectDropdownOpen(!isProjectDropdownOpen);
     }
   };
@@ -1042,8 +1044,8 @@ export default function RayzeConsole() {
           <>
             <div className="content-header">
               <h1>Rayze Overview</h1>
-              {userRole !== 'Client' && (
-                <div className="search-container">
+              <div className="search-container">
+                {userRole !== 'Client' && (
                   <div className="client-search">
                     <select
                       value={selectedClientId || ''}
@@ -1058,45 +1060,47 @@ export default function RayzeConsole() {
                       ))}
                     </select>
                   </div>
-                  <div className="project-search">
-                    <div className="multi-select-container">
-                      <div 
-                        className={`multi-select-header ${isProjectDropdownOpen ? 'open' : ''}`}
-                        onClick={toggleProjectDropdown}
-                      >
-                        <span className="multi-select-label">
-                          {isProjectSearchEnabled ? "Select projects..." : "Select a client first..."}
+                )}
+                <div className="project-search">
+                  <div className="multi-select-container">
+                    <div 
+                      className={`multi-select-header ${isProjectDropdownOpen ? 'open' : ''}`}
+                      onClick={toggleProjectDropdown}
+                    >
+                                              <span className="multi-select-label">
+                          {isProjectSearchEnabled ? "Select projects..." : (userRole === 'Client' ? "Loading projects..." : "Select a client first...")}
                         </span>
-                        {selectedProjectIds.length > 0 && (
-                          <span className="selected-count">({selectedProjectIds.length} selected)</span>
-                        )}
-                      </div>
-                      {isProjectDropdownOpen && (
-                        <div className="multi-select-dropdown">
-                          {isProjectSearchEnabled && projects.length > 0 ? (
-                            <div className="project-checkboxes">
-                              {projects.map(project => (
-                                <label key={project.id} className="project-checkbox">
-                                  <input
-                                    type="checkbox"
-                                    value={project.id}
-                                    checked={selectedProjectIds.includes(project.id)}
-                                    onChange={handleProjectChange}
-                                    className="project-checkbox-input"
-                                  />
-                                  <span className="project-checkbox-label">{project.name}</span>
-                                </label>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="no-projects">No projects found</div>
-                          )}
-                        </div>
+                      {selectedProjectIds.length > 0 && (
+                        <span className="selected-count">({selectedProjectIds.length} selected)</span>
                       )}
                     </div>
+                    {isProjectDropdownOpen && (
+                      <div className="multi-select-dropdown">
+                        {((isProjectSearchEnabled || userRole === 'Client') && projects.length > 0) ? (
+                          <div className="project-checkboxes">
+                            {projects.map(project => (
+                              <label key={project.id} className="project-checkbox">
+                                <input
+                                  type="checkbox"
+                                  value={project.id}
+                                  checked={selectedProjectIds.includes(project.id)}
+                                  onChange={handleProjectChange}
+                                  className="project-checkbox-input"
+                                />
+                                <span className="project-checkbox-label">{project.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="no-projects">
+                            {userRole === 'Client' ? "Loading projects..." : "No projects found"}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="dashboard-grid">
@@ -1110,7 +1114,7 @@ export default function RayzeConsole() {
                 </div>
               </div>
               <div className="dashboard-card">
-                <h3>CVs submitted</h3>
+                <h3>Active CVs</h3>
                 <div className="card-value">
                   {consoleData.submit_client_cvs || 0}
                 </div>
@@ -1130,10 +1134,10 @@ export default function RayzeConsole() {
               <div className="dashboard-card">
                 <h3>Hired last 30 days</h3>
                 <div className="card-value">
-                  {consoleData.hired_client_cvs || 0}
+                  {consoleData.total_active_eng_last30 || 0}
                 </div>
                 <div className="card-trend positive">
-                  +{consoleData.hired_client_cvs_last30 || 0} this month
+                  +{consoleData.total_active_eng_last30 || 0} this month
                 </div>
               </div>
             </div>
