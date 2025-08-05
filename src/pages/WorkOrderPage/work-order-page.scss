@@ -1,0 +1,144 @@
+.work-order-page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #000000;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+
+  .work-order-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    color: #000000;
+    
+    // Ensure all content uses proper styling
+    * {
+      color: #000000;
+    }
+    
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 20px 0;
+      
+      th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        color: #000000;
+      }
+      
+      th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+      }
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      color: #000000;
+      margin: 20px 0 10px 0;
+    }
+    
+    p {
+      color: #000000;
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+    
+    .panel {
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #e0e0e0;
+    }
+  }
+}
+
+.work-order-error, .work-order-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+
+  .error-container, .loading-container {
+    text-align: center;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 20px;
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    p {
+      color: #666;
+      font-size: 16px;
+      line-height: 1.5;
+      margin: 10px 0;
+    }
+  }
+
+  .error-container {
+    border-left: 4px solid #dc3545;
+  }
+
+  .loading-container {
+    border-left: 4px solid #007bff;
+  }
+}
+
+// Print styles
+@media print {
+  .work-order-page {
+    padding: 0;
+    
+    .work-order-content {
+      max-width: none;
+      box-shadow: none;
+      
+      table {
+        th, td {
+          border: 1px solid #000 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        
+        th {
+          background-color: #f2f2f2 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    }
+  }
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  .work-order-page {
+    padding: 10px;
+    
+    .work-order-content {
+      padding: 10px;
+      
+      table {
+        font-size: 12px;
+        
+        th, td {
+          padding: 6px;
+        }
+      }
+    }
+  }
+}

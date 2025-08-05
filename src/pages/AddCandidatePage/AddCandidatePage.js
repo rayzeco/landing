@@ -67,6 +67,8 @@ const AddCandidatePage = () => {
     const [isCVProcessing, setIsCVProcessing] = useState(false);
     const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
     const [workOrderHtml, setWorkOrderHtml] = useState('');
+    const [workOrderEmailAddress, setWorkOrderEmailAddress] = useState('');
+    const [isSendingWorkOrderEmail, setIsSendingWorkOrderEmail] = useState(false);
     const [isHiring, setIsHiring] = useState(false);
     const [candidateSearch, setCandidateSearch] = useState('');
     const [showCandidateSuggestions, setShowCandidateSuggestions] = useState(false);
@@ -833,6 +835,81 @@ const AddCandidatePage = () => {
         }
     };
 
+    const handleSendWorkOrderEmail = async () => {
+        if (!workOrderEmailAddress.trim()) {
+            alert('Please enter an email address');
+            return;
+        }
+
+        setIsSendingWorkOrderEmail(true);
+        
+        try {
+            // Get candidate and submission data
+            const candidate = unfilteredCandidates.find(c => c.id === parseInt(selectedAnswerCandidate));
+            const submission = submitCVRoles.find(sub => sub.candidates_id === parseInt(selectedAnswerCandidate));
+            const client = clients.find(c => c.id === submission?.client_id);
+            
+            // Create a unique work order link
+            const workOrderId = `${submission.id}_${Date.now()}`;
+            const workOrderLink = `${window.location.origin}/work_order/${workOrderId}`;
+            
+            // Store the work order HTML in sessionStorage with the ID
+            sessionStorage.setItem(`workOrder_${workOrderId}`, workOrderHtml);
+            
+            // Add the link to the email content
+            const emailContentWithLink = `
+                ${workOrderHtml}
+                <div style="margin-top: 30px; padding: 20px; border-top: 2px solid #e0e0e0; background-color: #f8f9fa;">
+                    <p style="margin: 0; font-size: 14px; color: #666;">
+                        <strong>Not displaying correctly?</strong> 
+                        <a href="${workOrderLink}" target="_blank" style="color: #007bff; text-decoration: none;">
+                            Click here to view in browser
+                        </a>
+                    </p>
+                </div>
+            `;
+
+            const emailPayload = {
+                to_email: workOrderEmailAddress,
+                to_name: client?.name || 'Client',
+                subject: `Work Order - ${candidate?.name || 'Candidate'}`,
+                content: emailContentWithLink,
+                from_email: process.env.REACT_APP_SENDMAIL_FROM || 'noreply@rayze.com',
+                cc_email: process.env.REACT_APP_SENDMAIL_CC || ''
+            };
+
+            // Check for test email override
+            if (process.env.REACT_APP_SENDMAIL_TEST) {
+                emailPayload.to_email = process.env.REACT_APP_SENDMAIL_TEST;
+                console.log('test email done');
+            }
+
+            console.log('Work Order email payload:', {
+                ...emailPayload,
+                content: emailPayload.content ? `[HTML content - ${emailPayload.content.length} chars]` : 'No content'
+            });
+            console.log('Work Order link generated:', workOrderLink);
+
+            const emailResponse = await axios.post(
+                `${process.env.REACT_APP_RYZ_SENDMAIL}/send_html_email`,
+                emailPayload,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            console.log('Work Order email sent successfully:', emailResponse.data);
+            alert('Work Order email sent successfully!');
+        } catch (error) {
+            console.error('Error sending work order email:', error);
+            alert('Failed to send work order email. Please try again.');
+        } finally {
+            setIsSendingWorkOrderEmail(false);
+        }
+    };
+
     const handleHireConfirm = async () => {
         const token = sessionStorage.getItem('token');
         setIsHiring(true);
@@ -921,6 +998,11 @@ const AddCandidatePage = () => {
 
             if (workOrderResponse.data && workOrderResponse.data.html) {
                 setWorkOrderHtml(workOrderResponse.data.html);
+                
+                // Set client email as default
+                const client = clients.find(c => c.id === submission.client_id);
+                setWorkOrderEmailAddress(client?.client_email || '');
+                
                 setShowWorkOrderModal(true);
             } else {
                 throw new Error('Invalid response format from server');
@@ -1907,15 +1989,15 @@ const AddCandidatePage = () => {
                             <button 
                                 className="modal-button primary"
                                 onClick={handleHireConfirm}
-                                disabled={isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price}
+                                disabled={isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price || parseFloat(hireForm.client_price) < parseFloat(hireForm.recruiter_price)}
                                 style={{
                                     padding: '8px 16px',
                                     borderRadius: '4px',
                                     border: 'none',
                                     backgroundColor: '#00A389',
                                     color: '#fff',
-                                    cursor: isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price ? 'not-allowed' : 'pointer',
-                                    opacity: isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price ? 0.5 : 1,
+                                    cursor: isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price || parseFloat(hireForm.client_price) < parseFloat(hireForm.recruiter_price) ? 'not-allowed' : 'pointer',
+                                    opacity: isHiring || !hireForm.start_date || !hireForm.end_date || !hireForm.client_price || !hireForm.recruiter_price || parseFloat(hireForm.client_price) < parseFloat(hireForm.recruiter_price) ? 0.5 : 1,
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '8px'
@@ -1956,10 +2038,50 @@ const AddCandidatePage = () => {
                         <div className="modal-header" style={{ 
                             borderBottom: '1px solid #e0e0e0',
                             backgroundColor: '#ffffff',
-                            color: '#000000'
+                            color: '#000000',
+                            flexDirection: 'column',
+                            gap: '15px'
                         }}>
-                            <h2 style={{ color: '#000000' }}>Work Order</h2>
-                            <button className="close-button" onClick={() => setShowWorkOrderModal(false)}>×</button>
+                            <div style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                width: '100%'
+                            }}>
+                                <h2 style={{ color: '#000000', margin: 0 }}>Work Order</h2>
+                                <button className="close-button" onClick={() => setShowWorkOrderModal(false)}>×</button>
+                            </div>
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '10px',
+                                width: '100%'
+                            }}>
+                                <label style={{ 
+                                    color: '#000000', 
+                                    fontSize: '14px', 
+                                    fontWeight: '500',
+                                    minWidth: '80px'
+                                }}>
+                                    Email To:
+                                </label>
+                                <input
+                                    type="email"
+                                    value={workOrderEmailAddress}
+                                    onChange={(e) => setWorkOrderEmailAddress(e.target.value)}
+                                    placeholder="Enter email addresses (comma separated)"
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px 12px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        fontSize: '14px',
+                                        color: '#000000',
+                                        backgroundColor: '#ffffff'
+                                    }}
+                                    disabled={isSendingWorkOrderEmail}
+                                />
+                            </div>
                         </div>
                         <div className="modal-body" style={{ 
                             maxHeight: 'calc(90vh - 120px)', 
@@ -2059,128 +2181,23 @@ const AddCandidatePage = () => {
                                 Print
                             </button>
                             <button 
-                                className="modal-button"
-                                onClick={() => {
-                                    // Create a complete HTML document with proper styling
-                                    const content = `
-                                        <!DOCTYPE html>
-                                        <html>
-                                            <head>
-                                                <title>Work Order</title>
-                                                <meta charset="UTF-8">
-                                                <style>
-                                                    body { 
-                                                        font-family: Arial, sans-serif; 
-                                                        padding: 20px;
-                                                        background-color: #ffffff;
-                                                        color: #000000;
-                                                        -webkit-print-color-adjust: exact;
-                                                        print-color-adjust: exact;
-                                                    }
-                                                    img {
-                                                        max-width: 100%;
-                                                        height: auto;
-                                                    }
-                                                    .panel {
-                                                        margin-bottom: 20px;
-                                                    }
-                                                    h1, h2, h3, h4, h5 {
-                                                        color: #000000;
-                                                    }
-                                                </style>
-                                            </head>
-                                            <body>
-                                                ${workOrderHtml}
-                                            </body>
-                                        </html>
-                                    `;
-                                    
-                                    // Create a blob with the HTML content
-                                    const blob = new Blob([content], { type: 'text/html' });
-                                    
-                                    // Create a download link
-                                    const downloadLink = document.createElement('a');
-                                    downloadLink.href = URL.createObjectURL(blob);
-                                    downloadLink.download = 'work_order.html';
-                                    
-                                    // Append to body, click, and remove
-                                    document.body.appendChild(downloadLink);
-                                    downloadLink.click();
-                                    document.body.removeChild(downloadLink);
-                                    
-                                    // Clean up the URL object
-                                    URL.revokeObjectURL(downloadLink.href);
-                                }}
-                                style={{
-                                    padding: '8px 16px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: '#ffffff',
-                                    color: '#000000',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                Download HTML
-                            </button>
-                            <button 
                                 className="modal-button primary"
-                                onClick={() => {
-                                    const element = document.getElementById('workOrderContent');
-                                    const opt = {
-                                        margin: 1,
-                                        filename: 'work_order.pdf',
-                                        image: { type: 'jpeg', quality: 0.98 },
-                                        html2canvas: { 
-                                            scale: 2,
-                                            useCORS: true,
-                                            logging: true,
-                                            backgroundColor: '#ffffff'
-                                        },
-                                        jsPDF: { 
-                                            unit: 'in', 
-                                            format: 'letter', 
-                                            orientation: 'portrait' 
-                                        }
-                                    };
-
-                                    // Create a clone of the element to modify for PDF
-                                    const clone = element.cloneNode(true);
-                                    const images = clone.getElementsByTagName('img');
-                                    for (let img of images) {
-                                        img.crossOrigin = 'anonymous';
-                                    }
-
-                                    // Add styles to ensure proper rendering
-                                    const style = document.createElement('style');
-                                    style.textContent = `
-                                        body { 
-                                            font-family: Arial, sans-serif; 
-                                            padding: 20px;
-                                            background-color: #ffffff;
-                                            color: #000000;
-                                            -webkit-print-color-adjust: exact;
-                                            print-color-adjust: exact;
-                                        }
-                                        img { 
-                                            max-width: 100%;
-                                            height: auto;
-                                        }
-                                    `;
-                                    clone.appendChild(style);
-
-                                    // Generate PDF
-                                    html2pdf().set(opt).from(clone).save();
-                                }}
+                                onClick={handleSendWorkOrderEmail}
+                                disabled={isSendingWorkOrderEmail || !workOrderEmailAddress.trim()}
                                 style={{
                                     padding: '8px 16px',
                                     borderRadius: '4px',
                                     border: 'none',
-                                    backgroundColor: '#00A389',
+                                    backgroundColor: isSendingWorkOrderEmail || !workOrderEmailAddress.trim() ? '#6c757d' : '#007bff',
                                     color: '#ffffff',
-                                    cursor: 'pointer'
+                                    cursor: isSendingWorkOrderEmail || !workOrderEmailAddress.trim() ? 'not-allowed' : 'pointer',
+                                    opacity: isSendingWorkOrderEmail || !workOrderEmailAddress.trim() ? 0.6 : 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
                                 }}
                             >
-                                Download PDF
+                                {isSendingWorkOrderEmail ? 'Sending...' : 'Send Email'}
                             </button>
                         </div>
                     </div>
