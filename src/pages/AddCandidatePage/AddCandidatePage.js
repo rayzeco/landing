@@ -875,7 +875,7 @@ const AddCandidatePage = () => {
                 subject: `Work Order - ${candidate?.name || 'Candidate'}`,
                 content: emailContentWithLink,
                 from_email: process.env.REACT_APP_SENDMAIL_FROM || 'noreply@rayze.com',
-                cc_email: process.env.REACT_APP_SENDMAIL_CC || ''
+                cc_email: process.env.REACT_APP_SENDMAIL_CC_CLIENT || 'jc@rayze.xyz'
             };
 
             // Check for test email override
