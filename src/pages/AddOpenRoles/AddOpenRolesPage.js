@@ -392,6 +392,10 @@ const AddOpenRolesPage = () => {
                 jd_doc: ''
             });
 
+            // Reset new project input state
+            setShowNewProjectInput(false);
+            setNewProjectName('');
+
             // Refresh open roles list
             await fetchOpenRoles(clientMap);
 

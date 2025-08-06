@@ -2,19 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-##Plan & Review
+## Plan & Review
 
-###Before starting work
-- Always in plan mode to make a plan
-- After get the plan, make sure you write the plan to .claude/tasks/TASK_NAME.md
-- The plan should be a detailed implementation plan and the rationale behind it as well as taks brokend down
-- if the tasks require external knowledge or certainpackages, also research to get latest knowledge (Use TAsk Took for research)
-- Dont over plan. Always think MVP
-- Once you write the plan, first ask me to review it. Do not conintue until I approve the plan.
+### Before starting work
+- Always use plan mode to make a plan
+- After getting the plan, make sure you write the plan to .claude/tasks/TASK_NAME.md
+- The plan should be a detailed implementation plan and the rationale behind it as well as tasks broken down
+- If the tasks require external knowledge or certain packages, also research to get latest knowledge (Use Task Tool for research)
+- Don't over plan. Always think MVP
+- Once you write the plan, first ask me to review it. Do not continue until I approve the plan.
 
-###While implementing
-- You hsould update plan as you work
-- After completing tasks in plan you should update and ammend detaild descriptions of the changes you made so following tasks can be easily handed over to engineers
+### While implementing
+- You should update plan as you work
+- After completing tasks in plan you should update and amend detailed descriptions of the changes you made so following tasks can be easily handed over to engineers
+
+## Important Instruction Reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
 
 
 ## Project Overview
@@ -39,10 +45,10 @@ Rayze operates as an AI-powered recruiting engine and talent marketplace focused
 ## Development Commands
 
 ### Frontend (React)
-- **Start development server**: `npm start` (uses legacy OpenSSL provider)
+- **Start development server**: `npm start` (uses legacy OpenSSL provider due to dependency requirements)
 - **Build for production**: `npm run build`
-- **Run tests**: `npm test`
-- **Eject configuration**: `npm run eject` (one-way operation)
+- **Run tests**: `npm test` (interactive watch mode)
+- **Eject configuration**: `npm run eject` (one-way operation - not recommended)
 
 ### Backend Services
 - **Main API Server**: Located in `~/py/genAi/recruitBot/main_techops.py` (FastAPI)
@@ -82,18 +88,12 @@ This is a **React frontend + Python FastAPI backend** system supporting the Rayz
 
 ### Key Frontend Directories
 - `src/pages/` - Page components organized by feature (LandingPage, Dashboard, Clients, etc.)
-- `src/components/` - Reusable UI components (CollectionTable, WalletModal, etc.)
+- `src/components/` - Reusable UI components (CollectionTable, Document, etc.)
 - `src/layouts/` - Layout components (Header, Footer, Layout wrapper)
-- `src/config/` - Configuration files (network settings, API endpoints)
+- `src/config/` - Configuration files (API endpoints, app configuration)
 - `src/utils/` - Utility functions
 - `src/assets/styles/` - Global styles and SCSS files
 
-### Legacy Blockchain Integration (Deprecated)
-- **Ethers.js v5** and **Web3.js** for blockchain interactions
-- **UseDApp** core for DApp functionality
-- **WalletConnect** for wallet connectivity
-- **MetaMask** integration with support for multiple networks
-- Note: Blockchain features appear to be legacy - focus should be on recruiting platform APIs
 
 ### Key Features
 - **AI Agent Management**: Platform manages multiple specialized AI agents for end-to-end recruiting
@@ -109,13 +109,6 @@ This is a **React frontend + Python FastAPI backend** system supporting the Rayz
 - Global styles in `src/assets/styles/`
 - Responsive design patterns
 
-### Network Configuration
-The app supports multiple blockchain networks configured in `src/config/networks.js`:
-- Ethereum Mainnet and Rinkeby testnet
-- Binance Smart Chain and testnet
-- Polygon and Mumbai testnet
-- Fantom Opera and testnet
-- Avalanche Mainnet
 
 ### Route Structure
 The application has extensive routing supporting the AI recruiting platform:
@@ -125,6 +118,7 @@ The application has extensive routing supporting the AI recruiting platform:
 - **Invoice system**: `/invoice`, `/select_invoice`, `/render_invoice/:id_str`
 - **Client stories**: `/story1` through `/story6` (showcase recruiting success stories)
 - **Interview management**: `/confirm/:interview_id`, `/confirm_timeslot/:interview_id/:slot?`
+- **Work orders**: `/work_order/:workOrderId` (work order management)
 - **Candidate workflow**: `/submit_candidates` (submit candidates to the platform)
 
 ### Platform Architecture Notes
@@ -135,7 +129,6 @@ The application has extensive routing supporting the AI recruiting platform:
 - **Authentication**: JWT-based auth system with token expiration management
 - **File processing**: PDF resume parsing and cloud storage integration
 - **CORS configuration**: Both backend services configured to accept requests from React frontend
-- **Legacy blockchain features**: Should be deprioritized in favor of core recruiting platform functionality
 
 ### Environment Variables Required
 - `RAYZE_HOST`, `RAYZE_LOCALHOST` - Frontend/backend coordination
@@ -143,4 +136,5 @@ The application has extensive routing supporting the AI recruiting platform:
 - `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROK_API_KEY` - LLM API keys
 - `RAYZE_KEY` - JWT secret key
 - `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET` - Google OAuth credentials
+- `REACT_APP_SENDMAIL_FROM`, `REACT_APP_SENDMAIL_CC_CLIENT`, `REACT_APP_SENDMAIL_CC` - Email configuration
 - Database connection strings for SQLAlchemy
