@@ -159,16 +159,28 @@ const InvoicePage = () => {
 
         const due_date = new Date(new Date(clientProjectInvoices[0].period_end).setMonth(new Date(clientProjectInvoices[0].period_end).getMonth() + 1)).toISOString().split('T')[0];
         let totalClientPrice = 0;
+        let totalRecruiterPrice = 0;
         let explainStr = "";
+        let invoiceIds = []; // Array to collect invoice IDs
+        
         for (let i = 0; i < clientProjectInvoices.length; i++) {
           totalClientPrice += clientProjectInvoices[i].client_price * clientProjectInvoices[i].hours_worked;
+          totalRecruiterPrice += clientProjectInvoices[i].recruiter_price * clientProjectInvoices[i].hours_worked;
           //explainStr += clientProjectInvoices[i].candidate + " ($" + clientProjectInvoices[i].client_price + "/hr x " + clientProjectInvoices[i].hours_worked + " =  $" + clientProjectInvoices[i].client_price * clientProjectInvoices[i].hours_worked + " <br>";
           if (clientProjectInvoices[i].hours_worked > 0) {
             explainStr += `<tr><td>${clientProjectInvoices[i].candidate}</td><td>${clientProjectInvoices[i].project_name || 'Technology Services'}</td><td>${clientProjectInvoices[i].hours_worked}</td><td>${formatNumber(clientProjectInvoices[i].client_price)}</td><td>${formatNumber(clientProjectInvoices[i].client_price * clientProjectInvoices[i].hours_worked)}</td></tr>`;
+            
+            // Add the transaction ID to the invoiceIds array for comma-separated string
+            if (clientProjectInvoices[i].invoice_id) {
+              invoiceIds.push(clientProjectInvoices[i].invoice_id);
+            }
           }
           //console.log('debug: totalprice ', totalClientPrice, explainStr);
         }
         //console.log('final explain : ',explainStr);
+
+        // Create comma-separated invoice IDs string for invoice_link field
+        const invoiceLink = invoiceIds.join(',');
 
         const invoicesData = {
           inv_date: invoiceDate,
@@ -185,7 +197,9 @@ const InvoicePage = () => {
           inv_html: '',
           inv_hash: '',
           inv_value: totalClientPrice,
-          inv_status: "SUBMITTED"
+          pay_recruiter: totalRecruiterPrice,
+          inv_status: "READY",
+          invoice_link: invoiceLink // Add the comma-separated invoice IDs
         }
         //console.log("invoice data ", invoicesData);
         // Call the REST API function to submit the invoice for this client-project combination
@@ -198,7 +212,7 @@ const InvoicePage = () => {
         });
 
         if (response.status === 200) {
-          setInvoiceStatus('SUBMITTED');
+          setInvoiceStatus('READY');
           console.log(`Invoice(s) submitted successfully for client: ${clientProjectInvoices[0].client}, project: ${clientProjectInvoices[0].project_name || 'No Project'}`);
           //console.log(response.data);
           // Optionally, you can add further actions here, such as showing a success message to the user
@@ -239,6 +253,10 @@ const InvoicePage = () => {
           hours_worked: invoice.hours_worked,
           inv_value: invoice.inv_value,  // Provide a default value if inv_value is not available
           inv_status: "SAVED",
+          recruiter_price: invoice.recruiter_price,
+          recruiter_total: invoice.recruiter_price * invoice.hours_worked,
+          client_price: invoice.client_price,
+          client_total: invoice.client_price * invoice.hours_worked
         };
         //console.log('newInvoice ', newInvoice);
         const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
@@ -248,7 +266,7 @@ const InvoicePage = () => {
             Authorization: `Bearer ${token}`, // Include the token in the request header
           },
         });
-  
+        invoice.invoice_id = response.data.id;
       }
   
       console.log('Invoices saved successfully! ', { recruiterTotal, clientTotal });

@@ -9,6 +9,8 @@ import AddCandidatePage from "./pages/AddCandidatePage/AddCandidatePage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import OGLandingPage from "./pages/OGLanding/OGLandingPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+// Initialize axios interceptor for token expiration handling
+import './utils/axiosConfig';
 import Guidelines from './pages/Guidelines/Guidelines'
 import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy'
 import NotFound from "./pages/NotFound/NotFound";

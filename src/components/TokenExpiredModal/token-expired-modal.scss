@@ -1,0 +1,214 @@
+/* Token Expired Modal Styles */
+.token-expired-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.token-expired-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 450px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+.token-expired-header {
+  padding: 24px 24px 16px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+  
+  h2 {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .security-icon {
+    display: inline-block;
+  }
+}
+
+.token-expired-body {
+  padding: 24px;
+  
+  .token-expired-message {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #4b5563;
+    margin: 0 0 20px 0;
+    text-align: center;
+  }
+
+  .countdown-section {
+    background-color: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 16px;
+
+    .countdown-text {
+      margin: 0;
+      font-size: 14px;
+      color: #92400e;
+      font-weight: 500;
+    }
+
+    .countdown-number {
+      font-weight: 700;
+      color: #b45309;
+      font-size: 16px;
+      background-color: #fcd34d;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin: 0 2px;
+    }
+  }
+
+  .security-note {
+    text-align: center;
+    margin-top: 16px;
+
+    p {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+      font-style: italic;
+    }
+  }
+}
+
+.token-expired-footer {
+  padding: 16px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  .btn-primary, .btn-secondary {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    text-align: center;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .relogin-btn {
+    background-color: #2563eb;
+    color: white;
+    
+    &:hover {
+      background-color: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .stay-out-btn {
+    background-color: #f9fafb;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    
+    &:hover {
+      background-color: #f3f4f6;
+      color: #4b5563;
+      border-color: #9ca3af;
+    }
+
+    &:active {
+      background-color: #e5e7eb;
+    }
+  }
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+
+    .btn-primary, .btn-secondary {
+      flex: 1;
+      max-width: 160px;
+    }
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .token-expired-modal {
+    margin: 16px;
+    width: calc(100% - 32px);
+  }
+
+  .token-expired-header {
+    padding: 20px 16px 12px;
+    
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  .token-expired-body {
+    padding: 16px;
+
+    .token-expired-message {
+      font-size: 15px;
+    }
+
+    .countdown-section {
+      padding: 12px;
+    }
+  }
+
+  .token-expired-footer {
+    padding: 12px 16px 20px;
+  }
+}

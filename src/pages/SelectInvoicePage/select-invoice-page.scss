@@ -6,6 +6,16 @@
   display: flex;
   flex-direction: column;
   
+  // Prevent swipe navigation
+  touch-action: pan-y pinch-zoom;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overscroll-behavior-x: none;
+  
   .content-header {
     display: flex;
     justify-content: space-between;
@@ -27,6 +37,104 @@
     .header-actions {
       display: flex;
       gap: 12px;
+
+      .payment-form {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        
+        .client-dropdown {
+          padding: 8px 12px;
+          border-radius: 6px;
+          border: 1px solid #333;
+          background-color: #222;
+          color: #fff;
+          font-size: 14px;
+          min-width: 150px;
+          cursor: pointer;
+          
+          &:focus {
+            outline: none;
+            border-color: var(--theme-color);
+          }
+          
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+          
+          option {
+            background-color: #222;
+            color: #fff;
+          }
+        }
+        
+        .amount-input {
+          padding: 8px 12px;
+          border-radius: 6px;
+          border: 1px solid #333;
+          background-color: #222;
+          color: #fff;
+          font-size: 14px;
+          width: 120px;
+          
+          &:focus {
+            outline: none;
+            border-color: var(--theme-color);
+          }
+          
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+          
+          &::placeholder {
+            color: #666;
+          }
+        }
+        
+        .btn-received {
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          background-color: #28a745;
+          color: white;
+          border: none;
+          
+          &:hover:not(:disabled) {
+            background-color: #218838;
+          }
+          
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+        
+        .btn-paid {
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          background-color: #dc3545;
+          color: white;
+          border: none;
+          
+          &:hover:not(:disabled) {
+            background-color: #c82333;
+          }
+          
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+      }
 
       button {
         padding: 8px 16px;
@@ -131,6 +239,27 @@
         white-space: nowrap;
       }
 
+      // Reduce spacing for specific columns
+      th:nth-child(4), td:nth-child(4) { // Period Start
+        padding-right: 6px;
+      }
+
+      th:nth-child(5), td:nth-child(5) { // Period End  
+        padding-left: 6px;
+        padding-right: 6px;
+      }
+
+      th:nth-child(6), td:nth-child(6) { // Invoice Value
+        padding-left: 6px;
+        text-align: right;
+      }
+
+      th:nth-child(7), td:nth-child(7) { // Pay Recruiter
+        text-align: right;
+        color: #dc3545;
+        font-weight: 500;
+      }
+
       th {
         font-size: 11px;
         text-transform: uppercase;
@@ -156,25 +285,54 @@
 
       .status-badge {
         display: inline-block;
-        padding: 3px 6px;
+        padding: 4px 8px;
         border-radius: 4px;
         font-size: 11px;
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
 
+        &.ready {
+          background-color: rgba(220, 53, 69, 0.2);
+          color: #dc3545;
+          border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        &.sent {
+          background-color: rgba(255, 193, 7, 0.2);
+          color: #f57c00;
+          border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        &.paid {
+          background-color: rgba(40, 167, 69, 0.2);
+          color: #28a745;
+          border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        &.closed {
+          background-color: rgba(108, 117, 125, 0.2);
+          color: #6c757d;
+          border: 1px solid rgba(108, 117, 125, 0.3);
+        }
+
+        // Legacy classes for backward compatibility
         &.active {
           background-color: rgba(40, 167, 69, 0.2);
           color: #28a745;
+          border: 1px solid rgba(40, 167, 69, 0.3);
         }
 
         &.pending {
           background-color: rgba(255, 193, 7, 0.2);
-          color: #ffc107;
+          color: #f57c00;
+          border: 1px solid rgba(255, 193, 7, 0.3);
         }
 
         &.inactive {
           background-color: rgba(108, 117, 125, 0.2);
           color: #6c757d;
+          border: 1px solid rgba(108, 117, 125, 0.3);
         }
       }
 
@@ -224,6 +382,234 @@
         cursor: pointer;
         accent-color: var(--theme-color);
       }
+    }
+    
+    // Expandable row styling
+    .invoice-row {
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #222 !important;
+      }
+      
+      &.expanded {
+        background-color: #1a1a1a !important;
+        
+        &:hover {
+          background-color: #1a1a1a !important;
+        }
+      }
+      
+      .expand-indicator {
+        margin-left: 8px;
+        font-size: 10px;
+        color: var(--theme-color);
+        transition: transform 0.2s ease;
+      }
+    }
+    
+    // Breakdown row styling
+    .breakdown-row {
+      background-color: #0a0a0a !important;
+      
+      &:hover {
+        background-color: #0a0a0a !important;
+      }
+      
+      .breakdown-cell {
+        padding: 0 !important;
+        border: none !important;
+        
+        .breakdown-container {
+          background: linear-gradient(135deg, #111 0%, #0a0a0a 100%);
+          border: 1px solid #333;
+          border-radius: 8px;
+          margin: 8px 12px;
+          padding: 16px;
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+          
+          .breakdown-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #333;
+            
+            h3 {
+              margin: 0;
+              font-size: 16px;
+              font-weight: 600;
+              color: var(--theme-color);
+              display: flex;
+              align-items: center;
+              
+              &::before {
+                content: '📊';
+                margin-right: 8px;
+                font-size: 14px;
+              }
+            }
+          }
+          
+          .breakdown-table-wrapper {
+            .breakdown-table {
+              width: 100%;
+              border-collapse: collapse;
+              background-color: #111 !important;
+              border-radius: 6px;
+              overflow: hidden;
+              font-size: 11px;
+              table-layout: fixed;
+              
+              th, td {
+                padding: 8px 10px !important;
+                border: 1px solid #333 !important;
+                text-align: left;
+                color: #fff !important;
+                background-color: transparent !important;
+                font-size: 11px !important;
+                line-height: 1.3 !important;
+                white-space: nowrap !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
+              
+              // Column width assignments
+              th:nth-child(1), td:nth-child(1) { // Candidate
+                width: 18%;
+              }
+              
+              th:nth-child(2), td:nth-child(2) { // Recruiter
+                width: 15%;
+              }
+              
+              th:nth-child(3), td:nth-child(3) { // Start Period
+                width: 10%;
+                font-family: monospace;
+                font-size: 10px !important;
+              }
+              
+              th:nth-child(4), td:nth-child(4) { // End Period
+                width: 10%;
+                font-family: monospace;
+                font-size: 10px !important;
+              }
+              
+              th:nth-child(5), td:nth-child(5) { // Hours
+                width: 8%;
+                text-align: center !important;
+              }
+              
+              th:nth-child(6), td:nth-child(6) { // Client Rate
+                width: 12%;
+                text-align: right !important;
+              }
+              
+              th:nth-child(7), td:nth-child(7) { // Recruiter Rate
+                width: 12%;
+                text-align: right !important;
+              }
+              
+              th:nth-child(8), td:nth-child(8) { // Margin
+                width: 10%;
+                text-align: right !important;
+              }
+              
+              th:nth-child(9), td:nth-child(9) { // Margin/Hr
+                width: 10%;
+                text-align: right !important;
+              }
+              
+              th {
+                background-color: #1a1a1a !important;
+                font-weight: 600 !important;
+                color: #ccc !important;
+                font-size: 10px !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+              }
+              
+              tbody tr {
+                &:nth-child(even) {
+                  background-color: #0f0f0f !important;
+                  
+                  td {
+                    background-color: #0f0f0f !important;
+                  }
+                }
+                
+                &:hover {
+                  background-color: #1a1a1a !important;
+                  
+                  td {
+                    background-color: #1a1a1a !important;
+                  }
+                }
+              }
+              
+              .margin-cell {
+                font-weight: 600 !important;
+                color: var(--theme-color) !important;
+              }
+              
+              // Status-based header and cell colors
+              th.status-red, td.status-red {
+                color: #ff4444 !important;
+              }
+              
+              th.status-green, td.status-green {
+                color: #28a745 !important;
+              }
+              
+              th.status-default, td.status-default {
+                color: #ccc !important;
+              }
+            }
+            
+            .breakdown-loading {
+              text-align: center;
+              padding: 24px;
+              color: #666;
+              font-style: italic;
+              
+              span {
+                display: inline-flex;
+                align-items: center;
+                
+                &::before {
+                  content: '';
+                  width: 16px;
+                  height: 16px;
+                  margin-right: 8px;
+                  border: 2px solid #333;
+                  border-top: 2px solid var(--theme-color);
+                  border-radius: 50%;
+                  animation: spin 1s linear infinite;
+                }
+              }
+            }
+            
+            .breakdown-empty {
+              text-align: center;
+              padding: 24px;
+              color: #666;
+              font-style: italic;
+              
+              span {
+                &::before {
+                  content: '📋';
+                  margin-right: 8px;
+                  opacity: 0.5;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   }
 
@@ -377,7 +763,8 @@
 
 /* Email Modal Specific Styles */
 .email-modal {
-  max-width: 900px;
+  max-width: 1200px;
+  width: 95vw;
   
   .modal-body {
     .email-form {
@@ -418,34 +805,464 @@
       }
       
       .invoice-content {
-        border: 1px solid #333;
-        border-radius: 6px;
-        padding: 20px;
-        background-color: #222;
-        max-height: 400px;
-        overflow-y: auto;
-        
-        // Override styles for the rendered invoice content
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 16px;
         background-color: white !important;
-        color: black !important;
+        max-height: 450px;
+        overflow-y: auto;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         
-        * {
-          color: black !important;
+        // Comprehensive color overrides for the rendered invoice content
+        color: #333 !important;
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+        
+        *, 
+        *::before, 
+        *::after {
+          color: #333 !important;
+          background-color: transparent !important;
+          font-family: inherit !important;
+        }
+        
+        h1 {
+          color: #222 !important;
+          font-size: 24px !important;
+          font-weight: 700 !important;
+          margin: 0 0 16px 0 !important;
+          text-align: center !important;
+        }
+        
+        h2, h3, h4, h5, h6 {
+          color: #222 !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          margin: 12px 0 8px 0 !important;
+        }
+        
+        p, span, div {
+          color: #333 !important;
+          font-size: 13px !important;
+          margin: 4px 0 !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+        
+        // Remove borders from Bill To section
+        div[style*="border"], 
+        div[style*="box-shadow"],
+        .bill-to,
+        [class*="bill"] {
+          border: none !important;
+          box-shadow: none !important;
+          background-color: transparent !important;
         }
         
         table {
           width: 100%;
           border-collapse: collapse;
+          background-color: white !important;
+          font-size: 12px !important;
+          margin: 8px 0 !important;
+          table-layout: auto !important;
           
           th, td {
-            padding: 8px;
-            border: 1px solid #ddd;
+            padding: 8px 12px !important;
+            border: 1px solid #ccc !important;
             text-align: left;
+            color: #333 !important;
+            background-color: white !important;
+            vertical-align: top !important;
+            font-size: 12px !important;
+            line-height: 1.3 !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+          }
+          
+          // Line items table (5 columns: NAME, DESCRIPTION, HOURS, RATE, AMOUNT)
+          &:has(th:nth-child(5):not(:nth-child(6))) {
+            th:nth-child(1), td:nth-child(1) { // NAME
+              width: 25% !important;
+              min-width: 180px !important;
+              white-space: normal !important;
+              word-break: break-word !important;
+            }
+            
+            th:nth-child(2), td:nth-child(2) { // DESCRIPTION
+              width: 25% !important;
+              min-width: 150px !important;
+              white-space: normal !important;
+            }
+            
+            th:nth-child(3), td:nth-child(3) { // HOURS
+              width: 15% !important;
+              min-width: 80px !important;
+              text-align: center !important;
+            }
+            
+            th:nth-child(4), td:nth-child(4) { // RATE
+              width: 15% !important;
+              min-width: 80px !important;
+              text-align: right !important;
+            }
+            
+            th:nth-child(5), td:nth-child(5) { // AMOUNT
+              width: 20% !important;
+              min-width: 120px !important;
+              text-align: right !important;
+              font-weight: 600 !important;
+            }
+          }
+          
+          // Invoice header table (6 columns: Invoice #, Invoice Date, Due Date, Start Date, End Date, Amount Due)
+          &:has(th:nth-child(6):not(:nth-child(7))) {
+            th:nth-child(1), td:nth-child(1) { // Invoice #
+              width: 10% !important;
+              min-width: 80px !important;
+            }
+            
+            th:nth-child(2), td:nth-child(2) { // Invoice Date
+              width: 15% !important;
+              min-width: 110px !important;
+            }
+            
+            th:nth-child(3), td:nth-child(3) { // Due Date
+              width: 15% !important;
+              min-width: 110px !important;
+            }
+            
+            th:nth-child(4), td:nth-child(4) { // Start Date
+              width: 15% !important;
+              min-width: 110px !important;
+            }
+            
+            th:nth-child(5), td:nth-child(5) { // End Date
+              width: 15% !important;
+              min-width: 110px !important;
+            }
+            
+            th:nth-child(6), td:nth-child(6) { // Amount Due
+              width: 20% !important;
+              min-width: 140px !important;
+              text-align: right !important;
+              font-weight: 600 !important;
+            }
+          }
+
+          // Invoice breakdown table (14 columns)
+          &:has(th:nth-child(14)) {
+            table-layout: fixed !important;
+            font-size: 11px !important;
+            
+            th, td {
+              font-size: 10px !important;
+              padding: 6px 8px !important;
+              white-space: nowrap !important;
+            }
+            
+            th:nth-child(1), td:nth-child(1) { // Invoice Date
+              width: 8% !important;
+              min-width: 85px !important;
+            }
+            
+            th:nth-child(2), td:nth-child(2) { // Client Name
+              width: 10% !important;
+              min-width: 100px !important;
+            }
+            
+            th:nth-child(3), td:nth-child(3) { // Recruiter Name
+              width: 9% !important;
+              min-width: 90px !important;
+            }
+            
+            th:nth-child(4), td:nth-child(4) { // Client Invoice Id
+              width: 6% !important;
+              min-width: 60px !important;
+            }
+            
+            th:nth-child(5), td:nth-child(5) { // Candidate Name
+              width: 10% !important;
+              min-width: 100px !important;
+            }
+            
+            th:nth-child(6), td:nth-child(6) { // Start Period
+              width: 7% !important;
+              min-width: 75px !important;
+            }
+            
+            th:nth-child(7), td:nth-child(7) { // End Period
+              width: 7% !important;
+              min-width: 75px !important;
+            }
+            
+            th:nth-child(8), td:nth-child(8) { // Hours
+              width: 5% !important;
+              min-width: 50px !important;
+              text-align: center !important;
+            }
+            
+            th:nth-child(9), td:nth-child(9) { // Client In
+              width: 6% !important;
+              min-width: 70px !important;
+              text-align: right !important;
+            }
+            
+            th:nth-child(10), td:nth-child(10) { // Recruiter Out
+              width: 6% !important;
+              min-width: 70px !important;
+              text-align: right !important;
+            }
+            
+            th:nth-child(11), td:nth-child(11) { // Client Received
+              width: 6% !important;
+              min-width: 70px !important;
+              text-align: right !important;
+            }
+            
+            th:nth-child(12), td:nth-child(12) { // Recruiter Paid
+              width: 6% !important;
+              min-width: 70px !important;
+              text-align: right !important;
+            }
+            
+            th:nth-child(13), td:nth-child(13) { // Margin
+              width: 6% !important;
+              min-width: 70px !important;
+              text-align: right !important;
+              font-weight: 600 !important;
+            }
+            
+            th:nth-child(14), td:nth-child(14) { // Margin/Hr
+              width: 6% !important;
+              min-width: 70px !important;
+              text-align: right !important;
+              font-weight: 600 !important;
+            }
           }
           
           th {
-            background-color: #f5f5f5;
-            font-weight: bold;
+            background-color: #f8f9fa !important;
+            font-weight: 600 !important;
+            color: #222 !important;
+            font-size: 11px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            padding: 10px 12px !important;
+          }
+          
+          tbody tr:nth-child(even) td {
+            background-color: #fafafa !important;
+          }
+          
+          tbody tr:hover td {
+            background-color: #f5f5f5 !important;
+          }
+        }
+        
+        // Print-friendly styles
+        @media print {
+          border: none !important;
+          border-radius: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          background-color: white !important;
+          color: #000 !important;
+          font-size: 11px !important;
+          box-shadow: none !important;
+          max-height: none !important;
+          overflow: visible !important;
+          page-break-inside: avoid;
+          
+          *, 
+          *::before, 
+          *::after {
+            color: #000 !important;
+            background-color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-size: inherit !important;
+          }
+          
+          h1 {
+            font-size: 20px !important;
+            margin-bottom: 12px !important;
+          }
+          
+          h2, h3, h4, h5, h6 {
+            font-size: 14px !important;
+            margin: 8px 0 6px 0 !important;
+          }
+          
+          p, span, div {
+            font-size: 11px !important;
+          }
+          
+          table {
+            width: 100% !important;
+            margin: 6px 0 12px 0 !important;
+            font-size: 10px !important;
+            page-break-inside: avoid;
+            table-layout: auto !important;
+            
+            th, td {
+              border: 1px solid #333 !important;
+              color: #000 !important;
+              padding: 4px 8px !important;
+              font-size: 10px !important;
+              line-height: 1.2 !important;
+              white-space: nowrap !important;
+              overflow: visible !important;
+            }
+            
+            // Line items table print styles (5 columns)
+            &:has(th:nth-child(5):not(:nth-child(6))) {
+              th:nth-child(1), td:nth-child(1) { // NAME
+                width: 25% !important;
+                white-space: normal !important;
+                word-break: break-word !important;
+              }
+              
+              th:nth-child(2), td:nth-child(2) { // DESCRIPTION
+                width: 25% !important;
+                white-space: normal !important;
+              }
+              
+              th:nth-child(3), td:nth-child(3) { // HOURS
+                width: 15% !important;
+                text-align: center !important;
+              }
+              
+              th:nth-child(4), td:nth-child(4) { // RATE
+                width: 15% !important;
+                text-align: right !important;
+              }
+              
+              th:nth-child(5), td:nth-child(5) { // AMOUNT
+                width: 20% !important;
+                text-align: right !important;
+                font-weight: 700 !important;
+              }
+            }
+            
+            // Invoice header table print styles (6 columns)
+            &:has(th:nth-child(6):not(:nth-child(7))) {
+              th:nth-child(1), td:nth-child(1) { // Invoice #
+                width: 10% !important;
+              }
+              
+              th:nth-child(2), td:nth-child(2) { // Invoice Date
+                width: 15% !important;
+              }
+              
+              th:nth-child(3), td:nth-child(3) { // Due Date
+                width: 15% !important;
+              }
+              
+              th:nth-child(4), td:nth-child(4) { // Start Date
+                width: 15% !important;
+              }
+              
+              th:nth-child(5), td:nth-child(5) { // End Date
+                width: 15% !important;
+              }
+              
+              th:nth-child(6), td:nth-child(6) { // Amount Due
+                width: 20% !important;
+                text-align: right !important;
+                font-weight: 700 !important;
+              }
+            }
+
+            // Invoice breakdown table print styles (14 columns)
+            &:has(th:nth-child(14)) {
+              table-layout: fixed !important;
+              font-size: 8px !important;
+              
+              th, td {
+                font-size: 7px !important;
+                padding: 2px 4px !important;
+                white-space: nowrap !important;
+              }
+              
+              th:nth-child(1), td:nth-child(1) { // Invoice Date
+                width: 8% !important;
+              }
+              
+              th:nth-child(2), td:nth-child(2) { // Client Name
+                width: 10% !important;
+              }
+              
+              th:nth-child(3), td:nth-child(3) { // Recruiter Name
+                width: 9% !important;
+              }
+              
+              th:nth-child(4), td:nth-child(4) { // Client Invoice Id
+                width: 6% !important;
+              }
+              
+              th:nth-child(5), td:nth-child(5) { // Candidate Name
+                width: 10% !important;
+              }
+              
+              th:nth-child(6), td:nth-child(6) { // Start Period
+                width: 7% !important;
+              }
+              
+              th:nth-child(7), td:nth-child(7) { // End Period
+                width: 7% !important;
+              }
+              
+              th:nth-child(8), td:nth-child(8) { // Hours
+                width: 5% !important;
+                text-align: center !important;
+              }
+              
+              th:nth-child(9), td:nth-child(9) { // Client In
+                width: 6% !important;
+                text-align: right !important;
+              }
+              
+              th:nth-child(10), td:nth-child(10) { // Recruiter Out
+                width: 6% !important;
+                text-align: right !important;
+              }
+              
+              th:nth-child(11), td:nth-child(11) { // Client Received
+                width: 6% !important;
+                text-align: right !important;
+              }
+              
+              th:nth-child(12), td:nth-child(12) { // Recruiter Paid
+                width: 6% !important;
+                text-align: right !important;
+              }
+              
+              th:nth-child(13), td:nth-child(13) { // Margin
+                width: 6% !important;
+                text-align: right !important;
+                font-weight: 700 !important;
+              }
+              
+              th:nth-child(14), td:nth-child(14) { // Margin/Hr
+                width: 6% !important;
+                text-align: right !important;
+                font-weight: 700 !important;
+              }
+            }
+            
+            th {
+              background-color: #f0f0f0 !important;
+              font-size: 9px !important;
+              font-weight: 700 !important;
+              padding: 6px 8px !important;
+            }
+            
+            tbody tr:nth-child(even) td {
+              background-color: #f8f8f8 !important;
+            }
           }
         }
       }
