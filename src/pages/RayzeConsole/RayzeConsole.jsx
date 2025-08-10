@@ -870,22 +870,22 @@ export default function RayzeConsole() {
   const handleProceedClick = async (e, candidate) => {
     e.stopPropagation();
     
-    if (candidate.status === 'Submitted') {
+    if (candidate.status === 'Submitted' || candidate.status === 'Interview Requested' || candidate.status === 'Interview Confirmed') {
       // Show the interview scheduling modal
       setSelectedCandidate(candidate);
       setShowScheduleModal(true);
       return;
     }
     
-    let newStatus;
-    if (candidate.status.includes('Confirmed')) {
-      newStatus = 'Ready to Hire';
-    } else {
-      return; // Invalid status transition
-    }
+    // let newStatus;
+    // if (candidate.status.includes('Confirmed')) {
+    //   newStatus = 'Ready to Hire';
+    // } else {
+    //   return; // Invalid status transition
+    // }
 
-    // Use the helper function for other status transitions
-    handleProceedWithStatus(candidate, newStatus);
+    // // Use the helper function for other status transitions
+    // handleProceedWithStatus(candidate, newStatus);
   };
 
   const handleCloseDeclineModal = () => {
@@ -1674,7 +1674,7 @@ export default function RayzeConsole() {
                     <i className="fas fa-project-diagram"></i>
                     Invoice
                   </li>
-                  <li className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>
+                  <li onClick={() => navigate('/admin')}>
                     <i className="fas fa-book"></i>
                     Admin
                   </li>
@@ -1822,7 +1822,7 @@ export default function RayzeConsole() {
               
               {/* Contact Information Section */}
               <div className="contact-info-section">
-                <h3>Contact for Calender invite</h3>
+                <h3>Invitees to Interview meeting</h3>
                 <div className="contact-inputs">
                   <div className="input-group">
                     <label htmlFor="interview-emails">Email Addresses (comma separated):</label>

@@ -28,6 +28,7 @@ import SubmitCandidatePage from "./pages/SubmitCandidatePage/SubmitCandidatePage
 import RayzeConsole from "./pages/RayzeConsole/RayzeConsole";
 import ConfirmInterviewPage from "./pages/ConfirmInterviewPage/ConfirmInterviewPage";
 import WorkOrderPage from "./pages/WorkOrderPage/WorkOrderPage";
+import AdminPage from "./pages/AdminPage/AdminCRUD";
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
           <Route path="/submit_candidates" element={<SubmitCandidatePage />} />
           <Route path="/open_roles" element={<AddOpenRolesPage />} />
           <Route path="/console" element={<RayzeConsole />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/confirm/:interview_id" element={<ConfirmInterviewPage />} />
           <Route path="/confirm_timeslot/:interview_id/:slot?" element={<ConfirmInterviewPage />} />
           <Route path="/work_order/:workOrderId" element={<WorkOrderPage />} />
