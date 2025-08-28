@@ -963,7 +963,7 @@ const AddCandidatePage = () => {
             );
             
             // Update transactionData with the returned transaction (including ID)
-            transactionData = transactionResponse.data;
+            //transactionData = transactionResponse.data;
             
             // Update candidate status
             await axios.put(
