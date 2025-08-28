@@ -324,6 +324,7 @@ const InvoicePage = () => {
       <div className="panel panel-2">
         <h2>Enter Candidate Hours</h2>
         <h3>Total: {recTotal} USD</h3>
+        <h3>Candidates: {filteredInvoiceTableData.length}</h3>
         <table>
           <thead>
             <tr>

@@ -951,7 +951,7 @@ const AddCandidatePage = () => {
                 total_referral_paid: 0
             };
 
-            await axios.post(
+            const transactionResponse = await axios.post(
                 `${process.env.REACT_APP_RYZ_SERVER}/new_transaction`,
                 transactionData,
                 {
@@ -961,6 +961,10 @@ const AddCandidatePage = () => {
                     }
                 }
             );
+            
+            // Update transactionData with the returned transaction (including ID)
+            transactionData = transactionResponse.data;
+            
             // Update candidate status
             await axios.put(
                 `${process.env.REACT_APP_RYZ_SERVER}/update_candidate/${selectedAnswerCandidate}`,
