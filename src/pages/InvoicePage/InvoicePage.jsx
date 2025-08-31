@@ -16,6 +16,8 @@ const InvoicePage = () => {
   const [submitDisabled, setSubmitDisabled] = useState(true); // State to control Submit button disablement
   const [recTotal, setRecTotal] = useState(0);
   const [invoiceStatus, setInvoiceStatus] = useState('INITIALIZED');
+  const [isSaving, setIsSaving] = useState(false); // Loading state for Save button
+  const [isSubmitting, setIsSubmitting] = useState(false); // Loading state for Submit button
 
 
 
@@ -62,10 +64,25 @@ const InvoicePage = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        //const jsvar = JSON.stringify(process.env.REACT_APP_RYZ_SERVER)
-        //console.log('url is ', jsvar, `${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`);
-        const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
-        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/2`,
+        // Get user info from session storage
+        const token = sessionStorage.getItem('token'); 
+        const userStr = sessionStorage.getItem('user');
+        
+        if (!userStr) {
+          console.error('No user found in session storage');
+          return;
+        }
+        
+        const user = JSON.parse(userStr);
+        const clientId = user?.client_id;
+        
+        if (!clientId) {
+          console.error('No client_id found for user:', user);
+          return;
+        }
+        
+        // Use dynamic client ID from session instead of hardcoded 2
+        const response = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_client_transactions/${clientId}?period_start=${startPeriod}&period_end=${endPeriod}`,
           {
             headers: {
               Authorization: `Bearer ${token}`, // Include the token in the request header
@@ -79,7 +96,7 @@ const InvoicePage = () => {
           period_start: startPeriod,
           period_end: endPeriod,
           txn_id: parseInt(item.txn_id, 10), // Adjust based on actual field names
-          hours_worked: 160, // Default value, adjust as needed
+          hours_worked: item.hours_worked || 0, // Default to 0 if no value
           inv_value: 0,    // Default value, adjust as needed
           inv_status: 'NEW', // Default status
           client: item.client_name, // Adjust based on actual field names
@@ -97,6 +114,14 @@ const InvoicePage = () => {
         }));
         //console.log('formatClientTran:\n', formattedData)
         setInvoiceTableData(formattedData);
+        
+        // Calculate initial total after loading data
+        let rTotal = 0;
+        for (const invoice of formattedData) {
+          rTotal += invoice.recruiter_price * invoice.hours_worked;
+        }
+        const rTotal_str = formatNumber(rTotal);
+        setRecTotal(rTotal_str);
 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -105,6 +130,12 @@ const InvoicePage = () => {
 
     fetchData();
   }, []);
+
+  // Effect to manage Submit button state based on save button click
+  useEffect(() => {
+    // Enable "Create Final Invoice" button only when Save button has been clicked
+    setSubmitDisabled(!saveClicked);
+  }, [saveClicked]);
 
   // Function to handle changes in the invoice date
   const handleInvoiceDateChange = (e) => {
@@ -141,6 +172,7 @@ const InvoicePage = () => {
   };
 
   const submitInvoice = async () => {
+    setIsSubmitting(true); // Show spinner
     try {
       // Step 1: Group the invoice table data by client and project_name combination
       const clientProjectGroups = {};
@@ -189,6 +221,7 @@ const InvoicePage = () => {
           period_end: endPeriod,
           client_id: clientProjectInvoices[0].client_id,
           client_name: clientProjectInvoices[0].client,
+          project_name: clientProjectInvoices[0].project_name,
           client_contact: clientProjectInvoices[0].client_contact,
           client_email: clientProjectInvoices[0].client_email,
           client_addr: clientProjectInvoices[0].client_addr,
@@ -204,7 +237,7 @@ const InvoicePage = () => {
         //console.log("invoice data ", invoicesData);
         // Call the REST API function to submit the invoice for this client-project combination
         const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
-        const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/submit_client_invoice`, invoicesData, {
+        const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/submit_client_invoice?update_inv=1`, invoicesData, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Include the token in the request header
@@ -212,7 +245,7 @@ const InvoicePage = () => {
         });
 
         if (response.status === 200) {
-          setInvoiceStatus('READY');
+          setInvoiceStatus('SUBMITTED');
           console.log(`Invoice(s) submitted successfully for client: ${clientProjectInvoices[0].client}, project: ${clientProjectInvoices[0].project_name || 'No Project'}`);
           //console.log(response.data);
           // Optionally, you can add further actions here, such as showing a success message to the user
@@ -223,6 +256,8 @@ const InvoicePage = () => {
       }
     } catch (error) {
       console.error('Error submitting invoice(s):', error);
+    } finally {
+      setIsSubmitting(false); // Hide spinner
     }
   };
 
@@ -230,6 +265,7 @@ const InvoicePage = () => {
   // Function to save invoice changes
   // Implement the saveInvoice function
   const saveInvoice = async () => {
+    setIsSaving(true); // Show spinner
     try {
       let recruiterTotal = 0;
       let clientTotal = 0;
@@ -260,7 +296,7 @@ const InvoicePage = () => {
         };
         //console.log('newInvoice ', newInvoice);
         const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
-        const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_invoice`, newInvoice, {
+        const response = await axios.post(`${process.env.REACT_APP_RYZ_SERVER}/new_invoice?update_inv=1`, newInvoice, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Include the token in the request header
@@ -271,10 +307,12 @@ const InvoicePage = () => {
   
       console.log('Invoices saved successfully! ', { recruiterTotal, clientTotal });
       setInvoiceStatus('SAVED')
-      setSubmitDisabled(false);
+      setSaveClicked(true); // Enable the Create Final Invoice button
       return [recruiterTotal, clientTotal];
     } catch (error) {
       console.error('Error saving invoices:', error);
+    } finally {
+      setIsSaving(false); // Hide spinner
     }
   };
   
@@ -339,7 +377,7 @@ const InvoicePage = () => {
           </thead>
           <tbody>
             {filteredInvoiceTableData.map((invoice, index) => (
-              <tr key={index}>
+              <tr key={index} className={(!invoice.hours_worked || invoice.hours_worked == 0 || invoice.hours_worked === '0') ? 'zero-hours' : ''}>
                 <td>{invoice.client}</td>
                 <td>{invoice.project_name && invoice.project_name !== 'NULL' ? invoice.project_name : ''}</td>
                 <td>{invoice.candidate}</td>
@@ -348,6 +386,9 @@ const InvoicePage = () => {
                     type="number"
                     value={invoice.hours_worked}
                     onChange={(e) => handleHoursChange(index, e)}
+                    style={{
+                      color: (!invoice.hours_worked || invoice.hours_worked === 0 || invoice.hours_worked === 0.0) ? 'red' : 'black'
+                    }}
                   />
                 </td>
                 <td>{formatNumber(invoice.recruiter_price)}</td>
@@ -360,9 +401,26 @@ const InvoicePage = () => {
       </div>
       <div className="panel panel-3">
         <div>
-          <button onClick={saveInvoice}>Save</button>
-          <button onClick={submitInvoice} disabled={submitDisabled} className={submitDisabled ? "submit-button-disabled" : "submit-button-enabled"}>Submit</button>
-          <button>Cancel</button>
+          <button onClick={saveInvoice} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <span className="spinner"></span>
+                Saving...
+              </>
+            ) : (
+              'Save'
+            )}
+          </button>
+          <button onClick={submitInvoice} disabled={submitDisabled || isSubmitting} className={submitDisabled ? "submit-button-disabled" : "submit-button-enabled"}>
+            {isSubmitting ? (
+              <>
+                <span className="spinner"></span>
+                Creating Invoice...
+              </>
+            ) : (
+              'Create Final Invoice'
+            )}
+          </button>
           <h2>  </h2>
           <h3> {invoiceStatus}</h3>
           

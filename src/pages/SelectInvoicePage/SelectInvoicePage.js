@@ -38,13 +38,19 @@ const SelectInvoicePage = () => {
                 setInvoices(response.data);
                 
                 // Get unique clients from invoices array after invoices are loaded
-                const uniqueClients = Array.from(new Set(response.data.map(invoice => invoice.client_name)))
-                    .map(name => {
-                        // Find first invoice for this client
-                        const invoice = response.data.find(inv => inv.client_name === name);
+                const uniqueClients = Array.from(new Set(response.data.map(invoice => 
+                    `${invoice.client_name}_${invoice.project_name}`)))
+                    .map(combinedKey => {
+                        const [clientName, projectName] = combinedKey.split('_');
+                        // Find first invoice for this client+project combination
+                        const invoice = response.data.find(inv => 
+                            inv.client_name === clientName && 
+                            inv.project_name === projectName
+                        );
                         return {
                             id: invoice.client_id || invoice.id, // fallback to invoice id if client_id doesn't exist
-                            name: invoice.client_name
+                            name: invoice.client_name,
+                            project: invoice.project_name
                         };
                     });
                 setClients(uniqueClients);
@@ -559,10 +565,12 @@ const SelectInvoicePage = () => {
                     <h2 style={{ color: 'var(--theme-color)' }}>Client Invoices</h2>
                 </div>
                 <div className="table-container">
-                    <table>
+                    <div className="table-scroll-wrapper">
+                        <table>
                         <thead>
                             <tr>
                                 <th>Client Name</th>
+                                <th>Project Name</th>
                                 <th>ID</th>
                                 <th>Invoice Date</th>
                                 <th>Period Start</th>
@@ -601,6 +609,7 @@ const SelectInvoicePage = () => {
                                     className={`invoice-row ${expandedInvoiceId === invoice.id ? 'expanded' : ''}`}
                                 >
                                     <td>{invoice.client_name}</td>
+                                    <td>{invoice.project_name || ''}</td>
                                     <td>{invoice.id}</td>
                                     <td>{invoice.inv_date}</td>
                                     <td>{invoice.period_start}</td>
@@ -634,6 +643,7 @@ const SelectInvoicePage = () => {
                             ]).flat()}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 

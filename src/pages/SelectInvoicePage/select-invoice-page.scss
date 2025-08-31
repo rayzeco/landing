@@ -223,9 +223,36 @@
   }
 
   .table-container {
-    overflow-x: auto;
     margin: 0 -24px;
     padding: 0 24px;
+    
+    .table-scroll-wrapper {
+      overflow-x: auto;
+      border-radius: 8px;
+      
+      // Custom scrollbar styling
+      &::-webkit-scrollbar {
+        height: 8px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: #333;
+        border-radius: 4px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: #666;
+        border-radius: 4px;
+        
+        &:hover {
+          background: #888;
+        }
+      }
+      
+      &::-webkit-scrollbar-corner {
+        background: #333;
+      }
+    }
 
     table {
       width: 100%;
