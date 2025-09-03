@@ -19,16 +19,14 @@ export default function LandingPage() {
             <img src="/images/logo-text-black.svg" alt="logo" />
           </div>
           <div className="right">
-            <div className="title">Strategy. Engineering.  Data & AI. </div>
+            <div className="title">AI.<br/>Data.<br/>Engineering.</div>
             <div className="description">
-              By integrating these disciplines, you acquire a competitive advantage that <strong>propels your
-              business to new heights...</strong>{" "}
-              <br /><br/>
-              <strong> Our mission </strong> is to accelerate your digital journey,
-              helping <strong> you to create a remarkable impact today, tomorrow, and in the future.</strong>
+            <div className="title2">We are an Applied AI company.<br/><br/></div>
+            We help businesses <strong>integrate AI </strong>into their core workflows, capabilities & systems.<br/>
+            <br/><strong>Our expertise </strong>is to deliver client value with AI & Engineering<br/>
+            <pre>Boost Efficiency • Drive Revenue • Enable Smarter Decisions</pre>
             </div>
-            <pre></pre>
-            <a href="/Login">Login</a>
+            <a href="mailto:jc@rayze.xyz">Start Your AI Transformation</a>
           </div>
         </div>
       </section>
@@ -42,24 +40,23 @@ export default function LandingPage() {
             </div>
             <div className="right">
               <p>
-                We help our clients to leverage the potential of Data, Artificial intelligence,
-                and engineering to seize new opportunities, and drive digital growth.
+              Rayze blends Product Strategy, Production-grade Engineering, and Agentic AI Tools to deliver 30%+ faster development, lower costs, and rapid solutions.
               </p>
-              <div className="title">Supercharge your digital growth.</div>
+              <div className="title">From Boardroom strategy to Production systems.</div>
             </div>
           </div>
           <div className="bottom">
             <div>
-              <h4>Strategy</h4>
-              <p>Evolve your organization with pragmatic strategies & technology levers that increase your agility, resilience and ability to compete.</p>
+              <h4>AI Product Strategy Crew</h4>
+              <p>A dynamic team of AI experts, product managers, and technical architects tackle challenges, prioritize value, deliver rapid prototypes, and craft strategic roadmaps—proving value fast and cutting risks by 40%.</p>
             </div>
             <div>
-              <h4>Engineering</h4>
-              <p>Modernize your technology platforms, development and delivery practices to deliver business value faster.</p>
+              <h4>AI Engineering Crew</h4>
+              <p>Execution-focused engineers who architect, build, and scale AI solutions, integrating seamlessly with your existing technology stack while ensuring safety, security, and self-sufficiency post-engagement.</p>
             </div>
             <div>
-              <h4>Data & AI</h4>
-              <p>Drive business growth and enable better decision making with pragmatic data foundations and unrivalled skill sets in AI and ML.</p>
+              <h4>Agentic AI Toolkit</h4>
+              <p>Modular components including intelligent agents, MCP tools, APIs, and SDKs that slash development time-to-market by 30%+ and unlock exponential value for enterprise deployments.</p>
             </div>
           </div>
         </div>
@@ -69,37 +66,41 @@ export default function LandingPage() {
       <section className="features-section">
         <div className="container">
           <div className="title">
-            How Rayze will <br />
-            accelerate your <br/>
-            digital growth <br />
+            Clients trust us for our <br />
+            Expertise in these<br />
+            Core Services <br/>
           </div>
 
           <div className="steps">
             <div className="step">
-              <h4>Technology Strategy</h4>
+              <h4>AI Strategy</h4>
               <p>
-                Provide C-level expertise with practical operating experience in accelerating business growth with technology
+              <strong>We empower </strong> leadership with robust AI governance, strategic insights to align AI with corporate priorities, and practical execution plans.
               </p>
             </div>
             <div className="line"></div>
 
             <div className="step">
-              <h4>Engineering Expertise</h4>
-              <p>Provide practical technology architectures, solve complex technology problems, advise on technology selection
+              <h4>AI Instrastructure</h4>
+              <p>
+              <strong> We build </strong> a strong foundation with the right talent, tools, and processes to unlock AI value. Data is key—develop a Data Strategy to ensure it’s accessible, clean, and well-understood.
               </p>
             </div>
             <div className="line"></div>
 
             <div className="step">
-              <h4>Accelerators</h4>
-              <p>Leverage our pre-built Rayze modules that accelerate boostrapping of projects.
+              <h4>AI Development</h4>
+              <p>
+              <strong>We focus</strong> on the right challenges, build user trust with rapid prototyping, and measure impact effectively. Develop adaptable, explainable AI aligned with evolving business priorities.
               </p>
             </div>
             <div className="line"></div>
 
             <div className="step">
-              <h4>Global Talent</h4>
-              <p>Leverage our global talent pool. We have built out a high end talent pool in India.</p>
+              <h4>AI Operations</h4>
+              <p>
+              <strong>We ensure</strong> the stability and security of AI applications with top-tier observability, monitoring, and alerting. Enhance performance through automated AI retraining and continuous model evaluations.
+              </p>
             </div>
           </div>
 
@@ -108,14 +109,80 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="talent-section">
+        <img src="/images/infinite.svg" alt="infinite" className="infinite" />
+        <img src="/images/rect.svg" alt="rect" className="rect" />
+        <div className="container">
+          <div className="left">
+            <div className="title">Our relentless focus on AI Talent</div>
+            <div className="blurb">
+              <p>We've assembled the world's most talented AI engineers, product strategists, and technical architects from leading technology companies and consulting firms.</p>
+              <p>Our global team combines deep technical expertise with proven business acumen to deliver transformational AI solutions at enterprise scale.</p>
+            </div>
+            <div className="talent-sources">
+              <div className="sources-title"><br/><br/>Trusted by industry leaders:</div>
+              <div className="logos-grid">
+                <div className="logo-item">
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/google.svg" alt="Google" />
+                </div>
+                <div className="logo-item">
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/openai.svg" alt="OpenAI" />
+                </div>
+                <div className="logo-item">
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/tesla.svg" alt="Tesla" />
+                </div>
+                <div className="logo-item">
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/microsoft.svg" alt="Microsoft" />
+                </div>
+                <div className="logo-item">
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/meta.svg" alt="Meta" />
+                </div>
+                <div className="logo-item">
+                  <img src="/var/folders/fq/thnsjn15253982kp79zx548r0000gn/T/TemporaryItems/NSIRD_screencaptureui_EUaXTg/Screenshot 2025-09-03 at 6.00.31 PM.png" alt="McKinsey" />
+                </div>
+                <div className="logo-item">
+                  <img src="/var/folders/fq/thnsjn15253982kp79zx548r0000gn/T/TemporaryItems/NSIRD_screencaptureui_Sp8nFK/Screenshot 2025-09-03 at 6.01.03 PM.png" alt="BCG" />
+                </div>
+                <div className="logo-item">
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/apple.svg" alt="Apple" />
+                </div>
+                <div className="logo-item">
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/amazon.svg" alt="Amazon" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="right">
+            <div className="metrics-grid">
+              <div className="metric-box">
+                <div className="big-number">125+</div>
+                <div className="metric-label">AI Talent</div>
+              </div>
+              <div className="metric-box">
+                <div className="big-number">50+</div>
+                <div className="metric-label">Clients</div>
+              </div>
+              <div className="metric-box">
+                <div className="big-number">200+</div>
+                <div className="metric-label">Projects</div>
+              </div>
+              <div className="metric-box">
+                <div className="big-number">US, India, Colombia</div>
+                <div className="metric-label">Global Locations</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="community-section">
         <img src="/images/circle.svg" alt="circle" className="circle" />
         <div className="container">
           <div className="title">
-            Join our community <br />
-            on Discord
+            Ready to Transform <br />
+            Your Enterprise with AI?
           </div>
-          <a href="https://discord.gg/aKR7Vg8qyS" target="_blank">Join Discord Channel</a>
+          <a href="mailto:jc@rayze.xyz">Start Your AI Transformation</a>
         </div>
       </section>
     </div>

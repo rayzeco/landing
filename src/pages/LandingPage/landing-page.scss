@@ -8,7 +8,10 @@
       font-size: 72px;
       font-weight: bold;
     }
-
+    .title2 {
+      font-size: 32px;
+      font-weight: bold;
+    }
     @media screen and (max-width: 1200px) {
       padding: 132px 0;
       .title {
@@ -81,6 +84,9 @@
       .left {
         width: 0;
         flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         @media screen and (max-width: 992px) {
           width: 100%;
@@ -524,6 +530,231 @@
         @media screen and (max-width: 576px) {
           width: 100%;
         }
+      }
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////
+  ///////////////////////// TALENT SECTION //////////////////////////
+  //////////////////////////////////////////////////////////////////
+
+  .talent-section {
+    background-color: black;
+    color: white;
+
+    img.infinite {
+      position: absolute;
+      width: 40%;
+      max-width: 520px;
+      right: 10%;
+      top: -40px;
+      z-index: -1;
+      @media screen and (max-width: 576px) {
+        display: none;
+      }
+    }
+
+    img.rect {
+      position: absolute;
+      width: 40%;
+      height: 200px;
+      max-width: 460px;
+      min-width: 400px;
+      right: 0;
+      bottom: 80px;
+      z-index: -1;
+      @media screen and (max-width: 576px) {
+        display: none;
+      }
+    }
+
+    .container {
+      display: flex;
+      align-items: flex-start;
+      gap: 54px;
+
+      @media screen and (max-width: 992px) {
+        flex-direction: column;
+      }
+
+      .left {
+        width: 0;
+        flex-grow: 1;
+
+        @media screen and (max-width: 992px) {
+          width: 100%;
+        }
+
+        .title {
+          font-size: 72px;
+          font-weight: bold;
+          margin-bottom: 32px;
+          color: var(--theme-color);
+          text-align: left;
+          
+          @media screen and (max-width: 1200px) {
+            font-size: 66px;
+          }
+          @media screen and (max-width: 992px) {
+            font-size: 60px;
+          }
+          @media screen and (max-width: 768px) {
+            font-size: 54px;
+          }
+          @media screen and (max-width: 576px) {
+            font-size: 48px;
+          }
+        }
+
+        .blurb {
+          margin-bottom: 40px;
+          
+          p {
+            font-size: 24px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+
+            @media screen and (max-width: 992px) {
+              font-size: 20px;
+            }
+            @media screen and (max-width: 768px) {
+              font-size: 18px;
+            }
+          }
+        }
+
+        .talent-sources {
+          .sources-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: left;
+
+            @media screen and (max-width: 768px) {
+              font-size: 20px;
+            }
+          }
+
+          .logos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+
+            @media screen and (max-width: 992px) {
+              grid-template-columns: repeat(2, 1fr);
+              gap: 20px;
+            }
+
+            @media screen and (max-width: 576px) {
+              grid-template-columns: 1fr;
+              gap: 16px;
+            }
+
+            .logo-item {
+              background-color: white;
+              padding: 12px;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 60px;
+              transition: all 0.3s ease;
+
+              @media screen and (max-width: 768px) {
+                height: 50px;
+                padding: 10px;
+              }
+
+              img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                filter: grayscale(100%);
+                transition: all 0.3s ease;
+              }
+
+              &:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+                
+                img {
+                  filter: grayscale(0%);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .right {
+        width: 0;
+        flex-grow: 1;
+
+        @media screen and (max-width: 992px) {
+          width: 100%;
+        }
+
+        .metrics-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+          margin-bottom: 48px;
+
+          @media screen and (max-width: 576px) {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          .metric-box {
+            background-color: var(--theme-color);
+            color: black;
+            padding: 24px 20px;
+            border-radius: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+
+            @media screen and (max-width: 768px) {
+              padding: 20px 16px;
+              min-height: 100px;
+            }
+
+            .big-number {
+              font-size: 48px;
+              font-weight: bold;
+              color: black;
+              flex-grow: 1;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              @media screen and (max-width: 768px) {
+                font-size: 36px;
+              }
+              @media screen and (max-width: 576px) {
+                font-size: 28px;
+              }
+            }
+
+            .metric-label {
+              font-size: 20px;
+              font-weight: 600;
+              color: black;
+              text-align: center;
+              margin-top: auto;
+
+              @media screen and (max-width: 768px) {
+                font-size: 18px;
+              }
+              @media screen and (max-width: 576px) {
+                font-size: 16px;
+              }
+            }
+          }
+        }
+
       }
     }
   }
