@@ -123,31 +123,31 @@ export default function LandingPage() {
               <div className="sources-title"><br/><br/>Trusted by industry leaders:</div>
               <div className="logos-grid">
                 <div className="logo-item">
-                  <img src="/images/Google-Logo-700x394.png" alt="Google" />
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/google.svg" alt="Google" />
                 </div>
                 <div className="logo-item">
-                  <img src="/images/OpenAI-Logo-700x394.png" alt="OpenAI" />
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/openai.svg" alt="OpenAI" />
                 </div>
                 <div className="logo-item">
-                  <img src="/images/Tesla-Logo-700x394.png" alt="Tesla" />
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/tesla.svg" alt="Tesla" />
                 </div>
                 <div className="logo-item">
-                  <img src="/images/Microsoft-Logo-700x394.png" alt="Microsoft" />
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/microsoft.svg" alt="Microsoft" />
                 </div>
                 <div className="logo-item">
-                  <img src="/images/Meta-Logo-300x169.png" alt="Meta" />
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/meta.svg" alt="Meta" />
                 </div>
                 <div className="logo-item">
-                  <img src="/images/mckinsey-company-seeklogo.png" alt="McKinsey" />
+                  <img src="/var/folders/fq/thnsjn15253982kp79zx548r0000gn/T/TemporaryItems/NSIRD_screencaptureui_EUaXTg/Screenshot 2025-09-03 at 6.00.31 PM.png" alt="McKinsey" />
                 </div>
                 <div className="logo-item">
-                  <img src="/images/boston-consulting-group-bcg-seeklogo.png" alt="BCG" />
+                  <img src="/var/folders/fq/thnsjn15253982kp79zx548r0000gn/T/TemporaryItems/NSIRD_screencaptureui_Sp8nFK/Screenshot 2025-09-03 at 6.01.03 PM.png" alt="BCG" />
                 </div>
                 <div className="logo-item">
-                  <img src="/images/Apple-Logo-300x169.png" alt="Apple" />
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/apple.svg" alt="Apple" />
                 </div>
                 <div className="logo-item">
-                  <img src="/images/Amazon-Logo-300x169.png" alt="Amazon" />
+                  <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/amazon.svg" alt="Amazon" />
                 </div>
               </div>
             </div>

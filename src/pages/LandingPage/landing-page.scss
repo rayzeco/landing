@@ -45,6 +45,7 @@
 
   .launch-section {
     background-color: var(--theme-color);
+    color: black;
 
     img.infinite {
       position: absolute;
@@ -121,8 +122,8 @@
         pre {
           font-size: 24px;
           font-weight: bold;
-          background-color: #85ffda;
-          
+          background-color:#85ffda;
+          color: black;
           overflow-x: auto;
           white-space: pre-wrap;
           word-wrap: break-word;
@@ -156,7 +157,7 @@
   //////////////////////////////////////////////////////////////////
 
   .with-rayze-section {
-    background-color: black;
+    background-color:#2a2a2a;
     color: white;
 
     .container {
@@ -448,7 +449,8 @@
   //////////////////////////////////////////////////////////////////
   
   .features-section {
-    background-color: #D0FF00;
+    background-color: #374151;
+    color: white;
     .container {
       display: flex;
       gap: 66px;
@@ -517,7 +519,7 @@
       a {
         padding: 14px 50px;
         border-radius: 100px;
-        background-color: white;
+        background-color: var(--theme-color);
         color: black;
         margin: auto;
         text-align: center;
@@ -539,7 +541,7 @@
   //////////////////////////////////////////////////////////////////
 
   .talent-section {
-    background-color: black;
+    background-color: #333;
     color: white;
 
     img.infinite {
@@ -652,34 +654,24 @@
 
             .logo-item {
               background-color: white;
-              padding: 12px;
+              padding: 16px;
               border-radius: 8px;
               display: flex;
               align-items: center;
               justify-content: center;
-              height: 60px;
-              transition: all 0.3s ease;
+              height: 80px;
+              pointer-events: none;
 
               @media screen and (max-width: 768px) {
-                height: 50px;
-                padding: 10px;
+                height: 70px;
+                padding: 12px;
               }
 
               img {
                 max-width: 100%;
                 max-height: 100%;
                 object-fit: contain;
-                filter: grayscale(100%);
-                transition: all 0.3s ease;
-              }
-
-              &:hover {
-                transform: scale(1.05);
-                box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-                
-                img {
-                  filter: grayscale(0%);
-                }
+                pointer-events: none;
               }
             }
           }
