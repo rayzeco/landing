@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound/NotFound";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Team from "./pages/Team/Team";
 import AILabPage from "./pages/Accel/AILab";
+import AILabTestPage from "./pages/Accel/AILab_test";
 import AITestPage from "./pages/Accel/AITest";
 import Clients from "./pages/Clients/Clients";
 import Story1 from "./pages/Clients/Story1";
@@ -45,6 +46,7 @@ function App() {
           <Route path="/rayze_og" element={<OGLandingPage />} />
           <Route path="/team" element={<Team />} />
           <Route path="/ailab" element={<AILabPage />} />
+          <Route path="/ailab_test" element={<AILabTestPage />} />
           <Route path="/aitest" element={<AITestPage />} />
           <Route path="/clients" element={<Clients />} />
           <Route path='/guidelines' element={<Guidelines />} />

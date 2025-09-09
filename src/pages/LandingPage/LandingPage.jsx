@@ -55,8 +55,8 @@ export default function LandingPage() {
               <p>Execution-focused engineers who architect, build, and scale AI solutions, integrating seamlessly with your existing technology stack while ensuring safety, security, and self-sufficiency post-engagement.</p>
             </div>
             <div>
-              <h4>AI Agentic Lab & Toolkits</h4>
-              <p>Modular components including intelligent agents, MCP tools, APIs, and SDKs that slash development time-to-market by 30%+ and unlock exponential value for enterprise deployments.</p>
+              <h4>AI Lab & Toolkits</h4>
+              <p>The AI Lab has 3 pillars: Experiment. Think. Build. The lab also delivers AI toolkits: Modular components including intelligent agents that slash development time-to-market by 30%+ and unlock exponential value.</p>
             </div>
           </div>
         </div>
