@@ -78,7 +78,7 @@ export default function Header() {
         <div className={"menu-list" + (showMenu === true ? " show" : "")}>
           <Link to={"/team"}>Who we are</Link>
           <Link to={"/clients"}>How we help clients</Link>
-          <Link to={"/accel"}>Accelerators</Link>
+          <Link to={"/ailab"}>AI Lab</Link>
           <Link to={"/console"}>Console</Link>
           <button
             className={"wallet-button " + (account ? 'connected' : '')}

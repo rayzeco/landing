@@ -21,6 +21,10 @@ const SelectInvoicePage = () => {
     const [paymentAmount, setPaymentAmount] = useState('');
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     
+    // Confirmation dialog states
+    const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+    const [pendingInvoicesUpdate, setPendingInvoicesUpdate] = useState(null);
+    
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,21 +42,28 @@ const SelectInvoicePage = () => {
                 setInvoices(response.data);
                 
                 // Get unique clients from invoices array after invoices are loaded
-                const uniqueClients = Array.from(new Set(response.data.map(invoice => 
-                    `${invoice.client_name}_${invoice.project_name}`)))
-                    .map(combinedKey => {
-                        const [clientName, projectName] = combinedKey.split('_');
-                        // Find first invoice for this client+project combination
-                        const invoice = response.data.find(inv => 
-                            inv.client_name === clientName && 
-                            inv.project_name === projectName
-                        );
-                        return {
-                            id: invoice.client_id || invoice.id, // fallback to invoice id if client_id doesn't exist
+                //console.log('response.data', response.data);
+                
+                // Create a Map to ensure uniqueness by client_id or fallback to client_name
+                const clientMap = new Map();
+                
+                response.data.forEach(invoice => {
+                    // Create a unique key that combines client_id (if exists) with client_name
+                    // This ensures we don't get duplicates even if client_id is missing
+                    const clientKey = invoice.client_id ? 
+                        `id_${invoice.client_id}` : 
+                        `name_${invoice.client_name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                    
+                    if (!clientMap.has(clientKey)) {
+                        clientMap.set(clientKey, {
+                            id: invoice.client_id || `name_${invoice.client_name}`,
                             name: invoice.client_name,
-                            project: invoice.project_name
-                        };
-                    });
+                            project: invoice.project_name || null
+                        });
+                    }
+                });
+                
+                const uniqueClients = Array.from(clientMap.values());
                 setClients(uniqueClients);
             })
             .catch(error => {
@@ -326,6 +337,7 @@ const SelectInvoicePage = () => {
             const selectedClient = clients.find(client => client.id == selectedClientId);
             if (!selectedClient) {
                 alert('Selected client not found');
+                setIsProcessingPayment(false);
                 return;
             }
             
@@ -362,11 +374,36 @@ const SelectInvoicePage = () => {
             
             // Use the first valid combination found
             const selectedCombination = combinations[0];
-            const invoiceIds = selectedCombination.map(item => item.id);
-            
-            // Update invoice statuses
-            const token = sessionStorage.getItem('token');
             const newStatus = action === 'received' ? 'PAID' : 'CLOSED';
+            
+            // Store the pending update data and show confirmation
+            setPendingInvoicesUpdate({
+                action,
+                selectedCombination,
+                newStatus,
+                targetAmount,
+                clientName: selectedClient.name
+            });
+            setShowConfirmationDialog(true);
+            setIsProcessingPayment(false);
+            
+        } catch (error) {
+            console.error(`Error preparing ${action}:`, error);
+            alert(`Failed to prepare ${action}. Please try again.`);
+            setIsProcessingPayment(false);
+        }
+    };
+
+    const executePaymentUpdate = async () => {
+        if (!pendingInvoicesUpdate) return;
+        
+        setIsProcessingPayment(true);
+        setShowConfirmationDialog(false);
+        
+        try {
+            const { selectedCombination, newStatus, action } = pendingInvoicesUpdate;
+            const invoiceIds = selectedCombination.map(item => item.id);
+            const token = sessionStorage.getItem('token');
             
             // Update each invoice in the combination
             for (const invoiceId of invoiceIds) {
@@ -394,13 +431,20 @@ const SelectInvoicePage = () => {
             // Reset form
             setSelectedClientId('');
             setPaymentAmount('');
+            setPendingInvoicesUpdate(null);
             
         } catch (error) {
-            console.error(`Error recording ${action}:`, error);
-            alert(`Failed to record ${action}. Please try again.`);
+            console.error(`Error recording ${pendingInvoicesUpdate.action}:`, error);
+            alert(`Failed to record ${pendingInvoicesUpdate.action}. Please try again.`);
         } finally {
             setIsProcessingPayment(false);
         }
+    };
+
+    const cancelPaymentUpdate = () => {
+        setShowConfirmationDialog(false);
+        setPendingInvoicesUpdate(null);
+        setIsProcessingPayment(false);
     };
 
     const renderBreakdownRow = (invoice) => {
@@ -695,6 +739,67 @@ const SelectInvoicePage = () => {
                                 disabled={isSendingEmail || !emailAddress.trim()}
                             >
                                 {isSendingEmail ? 'Sending...' : 'Send Email'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Payment Confirmation Dialog */}
+            {showConfirmationDialog && pendingInvoicesUpdate && (
+                <div className="modal-overlay">
+                    <div className="modal-content confirmation-modal">
+                        <div className="modal-header">
+                            <h2>Confirm Payment Update</h2>
+                            <button 
+                                className="close-button" 
+                                onClick={cancelPaymentUpdate}
+                                disabled={isProcessingPayment}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="confirmation-summary">
+                                <h3>Payment Details:</h3>
+                                <p><strong>Client:</strong> {pendingInvoicesUpdate.clientName}</p>
+                                <p><strong>Action:</strong> Mark as {pendingInvoicesUpdate.action === 'received' ? 'Payment Received' : 'Payment Sent'}</p>
+                                <p><strong>Amount:</strong> ${pendingInvoicesUpdate.targetAmount.toLocaleString()}</p>
+                                <p><strong>New Status:</strong> {pendingInvoicesUpdate.newStatus}</p>
+                            </div>
+                            
+                            <div className="invoices-to-update">
+                                <h3>Invoices to be updated ({pendingInvoicesUpdate.selectedCombination.length}):</h3>
+                                <div className="invoice-list">
+                                    {pendingInvoicesUpdate.selectedCombination.map((item, index) => (
+                                        <div key={item.id} className="invoice-item">
+                                            <span className="invoice-id">Invoice #{item.id}</span>
+                                            <span className="invoice-amount">${item.amount.toLocaleString()}</span>
+                                            <span className="invoice-period">
+                                                {item.invoice.period_start} to {item.invoice.period_end}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="total-amount">
+                                    <strong>Total: ${pendingInvoicesUpdate.selectedCombination.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button 
+                                className="modal-button cancel"
+                                onClick={cancelPaymentUpdate}
+                                disabled={isProcessingPayment}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="modal-button confirm"
+                                onClick={executePaymentUpdate}
+                                disabled={isProcessingPayment}
+                            >
+                                {isProcessingPayment ? 'Processing...' : 'Confirm Update'}
                             </button>
                         </div>
                     </div>

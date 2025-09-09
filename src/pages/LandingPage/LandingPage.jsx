@@ -39,9 +39,9 @@ export default function LandingPage() {
               <pre className="title">With Rayze:</pre>
             </div>
             <div className="right">
-              <p>
-              Rayze blends Product Strategy, Production-grade Engineering, and Agentic AI Tools to deliver 30%+ faster development, lower costs, and rapid solutions.
-              </p>
+              <div className="highlighted-description">
+                Rayze blends <span className="highlight">Product Strategy</span>, <span className="highlight">Production-grade Engineering</span>, and <span className="highlight">Agentic AI Tools</span> to deliver <span className="highlight-metric">30%+ faster development</span>, lower costs, and rapid solutions.
+              </div>
               <div className="title">From Boardroom strategy to Production systems.</div>
             </div>
           </div>
@@ -55,7 +55,7 @@ export default function LandingPage() {
               <p>Execution-focused engineers who architect, build, and scale AI solutions, integrating seamlessly with your existing technology stack while ensuring safety, security, and self-sufficiency post-engagement.</p>
             </div>
             <div>
-              <h4>Agentic AI Toolkit</h4>
+              <h4>AI Agentic Lab & Toolkits</h4>
               <p>Modular components including intelligent agents, MCP tools, APIs, and SDKs that slash development time-to-market by 30%+ and unlock exponential value for enterprise deployments.</p>
             </div>
           </div>
@@ -66,14 +66,14 @@ export default function LandingPage() {
       <section className="features-section">
         <div className="container">
           <div className="title">
-            Clients trust us for our <br />
-            Expertise in these<br />
-            Core Services <br/>
+            Clients trust us<br />
+            for <span className="theme-color">Expertise</span> in <span className="theme-color">Fullstack</span><br/>
+            <span className="theme-color">Core Services</span> <br/>
           </div>
 
           <div className="steps">
             <div className="step">
-              <h4>AI Strategy</h4>
+              <h4 style={{ color: 'var(--theme-color)' }}>AI Strategy</h4>
               <p>
               <strong>We empower </strong> leadership with robust AI governance, strategic insights to align AI with corporate priorities, and practical execution plans.
               </p>
@@ -81,7 +81,7 @@ export default function LandingPage() {
             <div className="line"></div>
 
             <div className="step">
-              <h4>AI Instrastructure</h4>
+              <h4 style={{ color: 'var(--theme-color)' }}>Instrastructure</h4>
               <p>
               <strong> We build </strong> a strong foundation with the right talent, tools, and processes to unlock AI value. Data is key—develop a Data Strategy to ensure it’s accessible, clean, and well-understood.
               </p>
@@ -89,7 +89,7 @@ export default function LandingPage() {
             <div className="line"></div>
 
             <div className="step">
-              <h4>AI Development</h4>
+              <h4 style={{ color: 'var(--theme-color)' }}>AI Engineering</h4>
               <p>
               <strong>We focus</strong> on the right challenges, build user trust with rapid prototyping, and measure impact effectively. Develop adaptable, explainable AI aligned with evolving business priorities.
               </p>
@@ -97,14 +97,17 @@ export default function LandingPage() {
             <div className="line"></div>
 
             <div className="step">
-              <h4>AI Operations</h4>
+              <h4 style={{ color: 'var(--theme-color)' }}>AI Operations</h4>
               <p>
               <strong>We ensure</strong> the stability and security of AI applications with top-tier observability, monitoring, and alerting. Enhance performance through automated AI retraining and continuous model evaluations.
               </p>
             </div>
           </div>
 
-          <a href="mailto:jc@rayze.xyz">Get In Touch</a>
+          <div className="cta-buttons" style={{display: "flex", justifyContent: "center", alignItems: "center", gap: "20px", flexWrap: "wrap"}}>
+            <a href="mailto:jc@rayze.xyz">Get In Touch</a>
+            {/* <a href="/aitest" style={{padding: "14px 30px", borderRadius: "100px", backgroundColor: "var(--theme-color)", color: "black", textDecoration: "none", fontWeight: "bold", fontSize: "16px"}}>Take AI Assessment →</a> */}
+          </div>
 
         </div>
       </section>
@@ -182,7 +185,10 @@ export default function LandingPage() {
             Ready to Transform <br />
             Your Enterprise with AI?
           </div>
-          <a href="mailto:jc@rayze.xyz">Start Your AI Transformation</a>
+          <div className="cta-buttons" style={{display: "flex", flexDirection: "column", alignItems: "center", gap: "20px"}}>
+            <a href="mailto:jc@rayze.xyz" style={{fontSize: "24px", fontWeight: "bold"}}>Start Your AI Transformation</a>
+            {/* <a href="/aitest" style={{fontSize: "24px", fontWeight: "bold"}}>Take AI Readiness Assessment →</a> */}
+          </div>
         </div>
       </section>
     </div>

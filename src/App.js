@@ -16,7 +16,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy'
 import NotFound from "./pages/NotFound/NotFound";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Team from "./pages/Team/Team";
-import Accel from "./pages/Accel/Accel";
+import AILabPage from "./pages/Accel/AILab";
+import AITestPage from "./pages/Accel/AITest";
 import Clients from "./pages/Clients/Clients";
 import Story1 from "./pages/Clients/Story1";
 import Story2 from "./pages/Clients/Story2";
@@ -43,7 +44,8 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/rayze_og" element={<OGLandingPage />} />
           <Route path="/team" element={<Team />} />
-          <Route path="/accel" element={<Accel />} />
+          <Route path="/ailab" element={<AILabPage />} />
+          <Route path="/aitest" element={<AITestPage />} />
           <Route path="/clients" element={<Clients />} />
           <Route path='/guidelines' element={<Guidelines />} />
           <Route path='/policy' element={<PrivacyPolicy />} />
