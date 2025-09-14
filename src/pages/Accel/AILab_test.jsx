@@ -30,7 +30,7 @@ export default function AILabTestPage() {
                 <div className="pillar-overview-card">
                   <div className="pillar-icon">🚀</div>
                   <h3>Experiment</h3>
-                  <p>Safe cloud environments for technology validation and proof-of-concept development.</p>
+                  <p>A Secure LLM platform in our lab to experiment with LLMs, AI Agents, workflows. Option to bring your own test data for pilot development.</p>
                 </div>
                 <div className="pillar-overview-card">
                   <div className="pillar-icon">🧠</div>
