@@ -87,21 +87,21 @@ export default function AILabPage() {
   const thinkCards = {
     agentic_ai: {
       id: 'agentic_ai',
-      title: 'Overcoming Hurdles for Safe Scaling of Agents',
+      title: 'Conquering GenAI Agent Testing Challenges',
       description: '',
       detailContent: {
-        subtitle: 'Overcoming Hurdles for Safe Scaling of Agents',
+        subtitle: 'Conquering GenAI Agent Testing Challenges',
         sections: [
           {
             title: 'Background',
-            content: 'Enterprises face "agent overload" as autonomous AI agents promise efficiency but falter on integration and security, leading to 40% cancellations by 2027 and echoing MIT NANDA\'s low production rates. With 80% adoption but 90% early failures, risks like unchecked actions plague workflows, per McKinsey\'s threefold challenges and Gartner\'s cost escalation predictions.'
+            content: 'Companies developing GenAI agents and chatbots face a critical hurdle: infinite user inputs and paths make exhaustive testing impossible, leaving uncertainty about which prompts or questions trigger hallucinations or incorrect results—potentially causing detrimental errors like misinformation or flawed decisions. This unpredictability erodes trust, with 60% of pilots failing post-deployment due to uncaught edge cases, per McKinsey 2025.'
           },
           {
             title: 'Solution', 
-            content: 'Rayze\'s guide simplifies agentic AI (multi-agent teams) with open-source setups like CrewAI, simulations (e.g., n8n vs. LangChain), and human oversight. Our Engineering Squad deploys in weeks via MCP-orchestrated protocols, using Agentic Building Blocks for seamless embedding. Our 175+ global engineers ensure governance, reducing brittleness for any use case.'
+            content: 'The Rayze AI Lab created an advanced testing framework, generating diverse personas based on customer segmentation (e.g., for retail) to simulate varied behaviors and automatically crafting comprehensive test cases for each. It checks for predictable, compliant answers and boundary rules, using reinforcement learning mechanisms to refine tests in real-time once live via feedback loops. Seamless CI/CD integration plugs into pipelines with tools like Selenium for UI testing or Postman for APIs, enabling automated validation and end-to-end certainty. Our 175+ global engineers built it to handle infinite possibilities through adaptive red teaming and custom metrics.'
           }
         ],
-        impact: 'Clients cut failures by 30% and deploy 30% faster, turning hype into scalable wins with 96% expansion potential (Gartner). This fosters self-sufficiency, measurable outcomes, and capability uplift across sectors.'
+        impact: 'Clients gain 40% fewer testing failures and 30% faster iterations, transforming unpredictable agents into dependable systems with high coverage of real-world scenarios. This fosters certainty, minimizes risks, and bridges the GenAI Divide for scalable, production-ready AI.'
       }
     },
     genai_divide: {
@@ -288,7 +288,7 @@ export default function AILabPage() {
                 <div className="pillar-overview-card" onClick={() => document.getElementById('experiment-section')?.scrollIntoView({ behavior: 'smooth' })} style={{cursor: 'pointer'}}>
                   <div className="pillar-icon">🚀</div>
                   <h3>Experiment</h3>
-                  <p>Rayze Lab Secure LLM platform to experiment with AI Agents & workflows. <br/>Bring your own mock data for pilot development.</p>
+                  <p>Rayze Lab provides a secure LLM platform to experiment with your AI Agents with your mock data</p>
                 </div>
                 <div className="pillar-overview-card" onClick={() => document.getElementById('think-section')?.scrollIntoView({ behavior: 'smooth' })} style={{cursor: 'pointer'}}>
                   <div className="pillar-icon">🧠</div>
@@ -422,12 +422,12 @@ export default function AILabPage() {
                 
                 <div className="metrics-row">
                   <div className="metric-large">
-                    <div className="metric-number">{selectedThinkCard === 'agentic_ai' ? '30%' : selectedThinkCard === 'genai_divide' ? '30%' : '30%'}</div>
-                    <div className="metric-description">{selectedThinkCard === 'agentic_ai' ? 'Reduction in project failures' : selectedThinkCard === 'genai_divide' ? 'Productivity gains' : 'Faster insights'}</div>
+                    <div className="metric-number">{selectedThinkCard === 'agentic_ai' ? '40%' : selectedThinkCard === 'genai_divide' ? '30%' : '30%'}</div>
+                    <div className="metric-description">{selectedThinkCard === 'agentic_ai' ? 'Reduction in testing failures' : selectedThinkCard === 'genai_divide' ? 'Productivity gains' : 'Faster insights'}</div>
                   </div>
                   <div className="metric-large">
                     <div className="metric-number">{selectedThinkCard === 'agentic_ai' ? '30%' : selectedThinkCard === 'genai_divide' ? '20%' : '40%'}</div>
-                    <div className="metric-description">{selectedThinkCard === 'agentic_ai' ? 'Faster deployments' : selectedThinkCard === 'genai_divide' ? 'Reduction in pilot failures' : 'Efficiency gains'}</div>
+                    <div className="metric-description">{selectedThinkCard === 'agentic_ai' ? 'Faster iteration cycles' : selectedThinkCard === 'genai_divide' ? 'Reduction in pilot failures' : 'Efficiency gains'}</div>
                   </div>
                 </div>
                 
@@ -445,7 +445,7 @@ export default function AILabPage() {
                 
                 <div className="case-study-quote">
                   <p>
-                    {selectedThinkCard === 'agentic_ai' && "From hype to hero—scale agents safely with Rayze's proven roadmap."}
+                    {selectedThinkCard === 'agentic_ai' && "Tame the infinite—our framework brings predictability to GenAI testing, turning risks into reliable results."}
                     {selectedThinkCard === 'genai_divide' && "Bridge the divide—turn pilots into profits with Rayze's strategies."}
                     {selectedThinkCard === 'data_estate' && "Tame data chaos—unlock GenAI with Rayze's revitalization blueprint."}
                   </p>

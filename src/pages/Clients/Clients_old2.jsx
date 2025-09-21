@@ -21,12 +21,12 @@ export default function ClientStoriesPage() {
       stories: {
         tech_modernization: {
           id: 'tech_modernization',
-          title: 'Transforming Supplier Engagement with AI-Powered Insights',
-          subtitle: 'Enterprise Supplier Engagement Platform',
-          challenge: 'A leading enterprise struggled with stagnant supplier engagement and a fragmented data landscape, hindering growth and profitability. Suppliers faced challenges accessing actionable insights from siloed datasets, resulting in a low Contract Utilization Rate (CUR) and missed opportunities. The need for a modern, AI-driven solution to empower suppliers with tailored strategies became critical to stay competitive.',
-          solution: 'The Rayze AI Lab partnered with the client to deliver the Supplier Central web application, a game-changer built by our 175+ global engineers. Leveraging existing datasets, we integrated AI-enhanced features to provide prescriptive, actionable insights and conversion measurements. The platform offers a seamless user experience with an intuitive interface, AI-generated swap suggestions, and product optimization algorithms. Our team\'s expertise in data integration, AI development, and UX design ensured a holistic view of supplier performance, driving tailored solutions that adapt to real-time needs.',
-          impact: 'When implemented, Supplier Central transformed the client\'s supplier ecosystem, boosting the CUR by 40% through data-driven decisions and increasing supplier productivity by 30%. Suppliers gained a competitive edge with personalized strategies, while the client saw enhanced engagement and revenue growth. This success story showcases Rayze\'s ability to modernize legacy systems with embedded AI, delivering measurable value and long-term scalability.',
-          metrics: [{ number: '40%', label: 'Increase in Contract Utilization' }, { number: '30%', label: 'Boost in supplier productivity' }],
+          title: 'Technology Modernization',
+          subtitle: 'Fortune 500 Financial Services Transformation',
+          challenge: 'A leading financial services company struggled with legacy systems that hindered their ability to deliver business value quickly. Manual processes and outdated development practices created bottlenecks, reducing time-to-market by 40% and limiting competitive advantage.',
+          solution: 'Rayze implemented a comprehensive modernization strategy including cloud migration, DevOps transformation, and microservices architecture. We established CI/CD pipelines, automated testing frameworks, and modern development practices across 12 engineering teams.',
+          impact: 'Delivered 60% faster time-to-market, reduced operational costs by 35%, and enabled the client to launch 3 new digital products within 6 months. Development velocity increased by 45% while maintaining 99.9% system reliability.',
+          metrics: [{ number: '60%', label: 'Faster time-to-market' }, { number: '35%', label: 'Cost reduction' }],
           link: '/story1'
         },
         erp_transformation: {
@@ -114,18 +114,18 @@ export default function ClientStoriesPage() {
               <div className="category-summary">
                 <div className="category-overview-card" onClick={() => document.getElementById('digital-transformation-section')?.scrollIntoView({ behavior: 'smooth' })} style={{cursor: 'pointer'}}>
                   <div className="category-icon">🚀</div>
-                  <h3>Client Impact</h3>
-                  <p>Harnessing AI to solve complex business challenges and drive measurable business growth.</p>
+                  <h3>Digital Transformation</h3>
+                  <p>Modernizing technology platforms and ERP solutions to accelerate business growth and operational efficiency.</p>
                 </div>
                 <div className="category-overview-card" onClick={() => document.getElementById('ai-data-section')?.scrollIntoView({ behavior: 'smooth' })} style={{cursor: 'pointer'}}>
                   <div className="category-icon">🧠</div>
-                  <h3>Machine Learning & Data Science</h3>
-                  <p>Harnessing Machine Learning to drive predictions and insights with measurable improvements to margins.</p>
+                  <h3>AI & Data Excellence</h3>
+                  <p>Harnessing artificial intelligence and advanced analytics to solve complex business challenges.</p>
                 </div>
                 <div className="category-overview-card" onClick={() => document.getElementById('strategic-growth-section')?.scrollIntoView({ behavior: 'smooth' })} style={{cursor: 'pointer'}}>
                   <div className="category-icon">⚡</div>
-                  <h3>Scale &  Sustain AI</h3>
-                  <p>Scaling AI systems with cost optimal solutions. <br/>Automated maintenance to reduce operational costs of AI systems.</p>
+                  <h3>Strategic Growth</h3>
+                  <p>Building offshore talent capabilities and scaling engineering teams for rapid business expansion.</p>
                 </div>
               </div>
             </div>
@@ -152,8 +152,8 @@ export default function ClientStoriesPage() {
       <section id="digital-transformation-section" className="digital-transformation-section">
         <div className="container">
           <div className="category-header">
-            <h2><span className="category-icon">🚀</span> Client Impact</h2>
-            <p>Harnessing AI to solve complex business challenges and drive measurable business growth.</p>
+            <h2><span className="category-icon">🚀</span> Digital Transformation Excellence</h2>
+            <p>Modernizing technology platforms and ERP solutions to accelerate business growth and operational efficiency</p>
           </div>
           
           <div className="story-section">
@@ -200,10 +200,10 @@ export default function ClientStoriesPage() {
                 </div>
                 
                 <div className="case-study-quote">
-                  <p>"From data chaos to growth powerhouse—our AI solution redefined supplier success for our client."</p>
+                  <p>"Rayze transformed our technology landscape, enabling us to deliver business value at unprecedented speed while maintaining enterprise-grade reliability."</p>
                   <div className="quote-attribution">
-                    <strong>Rayze AI Leadership</strong><br/>
-                    <span className="quote-title">AI TRANSFORMATION</span>
+                    <strong>Fortune 500 CTO</strong><br/>
+                    <span className="quote-title">DIGITAL TRANSFORMATION</span>
                   </div>
                 </div>
               </div>
@@ -216,8 +216,8 @@ export default function ClientStoriesPage() {
       <section id="ai-data-section" className="ai-data-section">
         <div className="container">
           <div className="category-header">
-            <h2><span className="category-icon">🧠</span> Machine Learning & Data Science</h2>
-            <p>Harnessing Machine Learning to drive predictions and insights with measurable improvements to margins.</p>
+            <h2><span className="category-icon">🧠</span> AI & Data Excellence</h2>
+            <p>Harnessing artificial intelligence and advanced analytics to solve complex business challenges</p>
           </div>
           
           <div className="story-section">
@@ -280,8 +280,8 @@ export default function ClientStoriesPage() {
       <section id="strategic-growth-section" className="strategic-growth-section">
         <div className="container">
           <div className="category-header">
-            <h2><span className="category-icon">⚡</span> Scale & Sustain AI</h2>
-            <p>Scaling AI systems with cost optimal solutions. Automated maintenance to reduce operational costs of AI systems.</p>
+            <h2><span className="category-icon">⚡</span> Strategic Growth & Scaling</h2>
+            <p>Building offshore talent capabilities and scaling engineering teams for rapid business expansion</p>
           </div>
           
           <div className="story-section">
