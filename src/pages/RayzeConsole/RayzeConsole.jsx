@@ -257,11 +257,6 @@ export default function RayzeConsole() {
         const client_id = user_data.client_id;
         const user_id = user_data.id;
 
-        // Load projects for the user's client if not already loaded
-        if (projects.length === 0 && client_id) {
-          await fetchProjectsForClient(client_id);
-        }
-
         // Get selected project names
         const selectedProjectNames = projects
           .filter(project => selectedProjectIds.includes(project.id))
@@ -299,7 +294,7 @@ export default function RayzeConsole() {
     };
 
     fetchHomeData();
-  }, [activeTab, selectedProjectIds, projects]); // Re-run when activeTab, selectedProjectIds, or projects change
+  }, [activeTab, selectedProjectIds]); // Re-run when activeTab or selectedProjectIds change
 
   // Fetch clients first - only for non-client users and client_console tab
   useEffect(() => {
@@ -408,7 +403,7 @@ export default function RayzeConsole() {
     };
 
     fetchClientConsoleData();
-  }, [activeTab, userRole, selectedClientId, selectedProjectIds, projects]);
+  }, [activeTab, userRole, selectedClientId, selectedProjectIds]);
 
   // Initialize project search if a client is already selected
   useEffect(() => {
@@ -475,7 +470,7 @@ export default function RayzeConsole() {
     
 
     setFilteredCandidates(filtered);
-  }, [filters, candidates, selectedProjectIds, projects]);
+  }, [filters, candidates, selectedProjectIds]);
 
   // Add input required filter effect
   useEffect(() => {
@@ -495,7 +490,7 @@ export default function RayzeConsole() {
     
 
     setFilteredInputRequiredCandidates(filtered);
-  }, [inputRequiredFilters, candidates, selectedProjectIds, projects]);
+  }, [inputRequiredFilters, candidates, selectedProjectIds]);
 
   // Add open roles filter effect
   useEffect(() => {
@@ -515,7 +510,7 @@ export default function RayzeConsole() {
     
 
     setFilteredOpenRoles(filtered);
-  }, [openRolesFilters, openRoles, selectedProjectIds, projects]);
+  }, [openRolesFilters, openRoles, selectedProjectIds]);
 
 
   // Client selection is now handled by handleClientChange

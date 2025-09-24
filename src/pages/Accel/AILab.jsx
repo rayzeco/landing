@@ -29,7 +29,7 @@ export default function AILabPage() {
           { icon: '🛠️', text: 'Pre-configured with Hugging Face, LangChain, and MLflow' },
           { icon: '🔍', text: 'Multimodal extensions for vision-language model testing' }
         ],
-        impact: 'Clients achieve 30% faster iteration cycles and cut setup delays by 50%, accelerating POC-to-production (per MIT NANDA\'s 5% success rate). Quick wins include streamlined testing across use cases, boosting team productivity and bypassing skills gaps. Rayze\'s self-sufficient design uplifts capabilities, driving innovation. Our 175+ global engineers ensure scalability, offering a no-config, plug-and-play experience.'
+        impact: 'Clients achieve 30% faster iteration cycles and cut setup delays by 50%, accelerating POC-to-production (per MIT NANDA\'s 5% success rate). Quick wins include streamlined testing across use cases, boosting team productivity and bypassing skills gaps. Rayze\'s self-sufficient design uplifts capabilities, driving innovation. Rayze engineers ensure scalability, offering a no-config, plug-and-play experience.'
       }
     },
     agentic_showdown: {
@@ -98,7 +98,7 @@ export default function AILabPage() {
           },
           {
             title: 'Solution', 
-            content: 'The Rayze AI Lab created an advanced testing framework, generating diverse personas based on customer segmentation (e.g., for retail) to simulate varied behaviors and automatically crafting comprehensive test cases for each. It checks for predictable, compliant answers and boundary rules, using reinforcement learning mechanisms to refine tests in real-time once live via feedback loops. Seamless CI/CD integration plugs into pipelines with tools like Selenium for UI testing or Postman for APIs, enabling automated validation and end-to-end certainty. Our 175+ global engineers built it to handle infinite possibilities through adaptive red teaming and custom metrics.'
+            content: 'The Rayze AI Lab created an advanced testing framework, generating diverse personas based on customer segmentation (e.g., for retail) to simulate varied behaviors and automatically crafting comprehensive test cases for each. It checks for predictable, compliant answers and boundary rules, using reinforcement learning mechanisms to refine tests in real-time once live via feedback loops. Seamless CI/CD integration plugs into pipelines with tools like Selenium for UI testing or Postman for APIs, enabling automated validation and end-to-end certainty. Rayze global engineers built it to handle infinite possibilities through adaptive red teaming and custom metrics.'
           }
         ],
         impact: 'Clients gain 40% fewer testing failures and 30% faster iterations, transforming unpredictable agents into dependable systems with high coverage of real-world scenarios. This fosters certainty, minimizes risks, and bridges the GenAI Divide for scalable, production-ready AI.'
@@ -117,7 +117,7 @@ export default function AILabPage() {
           },
           {
             title: 'Solution',
-            content: 'Rayze\'s roadmap prioritizes 3 high-ROI use cases (e.g., back-office automation), upskills via workshops, and measures KPIs. Our Strategy Squad validates prototypes, accelerating by 30% with end-to-end models. Our 175+ engineers reference MIT NANDA insights for bridging gaps without disruptions.'
+            content: 'Rayze\'s roadmap prioritizes 3 high-ROI use cases (e.g., back-office automation), upskills via workshops, and measures KPIs. Our Strategy Squad validates prototypes, accelerating by 30% with end-to-end models. We bridge gaps without disruptions.'
           }
         ],
         impact: 'Clients transform pilots into 30% productivity boosts and 20% fewer failures, overcoming resistance for scalable gains (BCG\'s comprehensive adopters). This ensures measurable outcomes and team uplift for all sectors.'
@@ -136,7 +136,7 @@ export default function AILabPage() {
           },
           {
             title: 'Solution',
-            content: 'Rayze\'s blueprint audits and unifies with data lakes (e.g., Databricks), automates cleaning via Great Expectations, and adds lineage tracking. Our Engineering Squad integrates Agentic Blocks for governance, requiring cross-functional teams and phased hybrid cloud modernization. Our 175+ engineers start with high-value datasets for accurate GenAI.'
+            content: 'Rayze\'s blueprint audits and unifies with data lakes (e.g., Databricks), automates cleaning via Great Expectations, and adds lineage tracking. Our Engineering Squad integrates Agentic Blocks for governance, requiring cross-functional teams and phased hybrid cloud modernization. Rayze engineers start with high-value datasets for accurate GenAI.'
           }
         ],
         impact: 'Clients gain 30% faster insights and 40% efficiency, taming chaos for reliable results (PwC\'s centralized platforms). This ensures self-sufficiency, 30% TCO cuts, and contextual data for robust workflows across sectors.'
@@ -158,7 +158,7 @@ export default function AILabPage() {
           },
           {
             title: 'Solution',
-            content: 'Rayze has built a GenAI Maintenance Agent in our AI Lab, designed to clean vector databases (e.g., removing duplicates, outdated embeddings), retrain models on fresh data, and retest for drift—deployable as a cron-job or SDK. Enhanced with observability by our 175+ global engineers, it ensures seamless performance across all sectors.'
+            content: 'Rayze has built a GenAI Maintenance Agent in our AI Lab, designed to clean vector databases (e.g., removing duplicates, outdated embeddings), retrain models on fresh data, and retest for drift—deployable as a cron-job or SDK. Enhanced with observability by Rayze global engineers, it ensures seamless performance across all sectors.'
           }
         ],
         impact: 'When implemented at clients, this agent delivers 30% faster retraining cycles and cuts maintenance effort by 50%, boosting reliability and productivity for universal GenAI adoption.'
@@ -196,7 +196,7 @@ export default function AILabPage() {
           },
           {
             title: 'Solution',
-            content: 'Rayze has created an Enterprise Connector SDK in our AI Lab, featuring pre-configured connectors for HRIS, ERP, and CRM with secure API wrappers and schema mapping. Our 175+ global team customizes it for rapid scaling across any tech stack.'
+            content: 'Rayze has created an Enterprise Connector SDK in our AI Lab, featuring pre-configured connectors for HRIS, ERP, and CRM with secure API wrappers and schema mapping. The Rayze global team customizes it for rapid scaling across any tech stack.'
           }
         ],
         impact: 'When implemented at clients, this SDK delivers 30% faster integration and cuts setup delays by 50%, enabling real-time GenAI apps without months-long efforts.'
@@ -253,7 +253,7 @@ export default function AILabPage() {
           },
           {
             title: 'Solution',
-            content: 'Rayze has built MCP-Enhanced Agents in our AI Lab, integrating ready-made MCP types—Multi-Model Context Orchestrator, Secure Data Context Gateway, and Real-Time Context Streamer—with agents including Data Quality Auditor, Compliance Checker, and Process Optimizer. Our 175+ engineers customize these for privacy, real-time data, and workflow optimization.'
+            content: 'Rayze has built MCP-Enhanced Agents in our AI Lab, integrating ready-made MCP types—Multi-Model Context Orchestrator, Secure Data Context Gateway, and Real-Time Context Streamer—with agents including Data Quality Auditor, Compliance Checker, and Process Optimizer. Rayze engineers customize these for privacy, real-time data, and workflow optimization.'
           }
         ],
         impact: 'When implemented at clients, these agents deliver 30% faster automation, cut compliance risks by 50%, and optimize processes, enhancing productivity across all sectors.'
