@@ -412,20 +412,28 @@ export default function ClientStoriesPage() {
             <h3>Our Client Success Framework</h3>
             <div className="method-grid">
               <div className="method-card">
-                <h4>Strategic Assessment</h4>
-                <p>Deep dive into business objectives, technical landscape, and growth goals to create tailored transformation roadmaps.</p>
+                <div className="method-content">
+                  <h4>Strategic Assessment</h4>
+                  <p>Deep dive into business objectives, technical landscape, and growth goals to create tailored transformation roadmaps.</p>
+                </div>
               </div>
               <div className="method-card">
-                <h4>Agile Execution</h4>
-                <p>Iterative development approach with continuous feedback loops ensuring alignment with business outcomes.</p>
+                <div className="method-content">
+                  <h4>Agile Execution</h4>
+                  <p>Iterative development approach with continuous feedback loops ensuring alignment with business outcomes.</p>
+                </div>
               </div>
               <div className="method-card">
-                <h4>Knowledge Transfer</h4>
-                <p>Comprehensive training and documentation ensuring client teams can maintain and extend solutions independently.</p>
+                <div className="method-content">
+                  <h4>Knowledge Transfer</h4>
+                  <p>Comprehensive training and documentation ensuring client teams can maintain and extend solutions independently.</p>
+                </div>
               </div>
               <div className="method-card">
-                <h4>Ongoing Partnership</h4>
-                <p>Long-term strategic support with performance monitoring and continuous optimization of delivered solutions.</p>
+                <div className="method-content">
+                  <h4>Ongoing Partnership</h4>
+                  <p>Long-term strategic support with performance monitoring and continuous optimization of delivered solutions.</p>
+                </div>
               </div>
             </div>
           </div>

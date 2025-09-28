@@ -44,8 +44,8 @@
   //////////////////////////////////////////////////////////////////
 
   .launch-section {
-    background-color: var(--theme-color);
-    color: black;
+    background-color: black;
+    color: white;
 
     img.infinite {
       position: absolute;
@@ -122,7 +122,7 @@
         pre {
           font-size: 24px;
           font-weight: bold;
-          background-color:#85ffda;
+          background-color:#9cd0c0;
           color: black;
           overflow-x: auto;
           white-space: pre-wrap;
@@ -135,9 +135,9 @@
         a {
           display: block;
           padding: 14px 40px;
-          background-color: black;
+          background-color: var(--theme-color);
 
-          color: white;
+          color: black;
           font-weight: bold;
           font-size: 22px;
           

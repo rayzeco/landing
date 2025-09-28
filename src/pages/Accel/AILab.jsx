@@ -593,20 +593,28 @@ export default function AILabPage() {
             <h3>Our 30% Acceleration Methodology</h3>
             <div className="method-grid">
               <div className="method-card">
-                <h4>Automated Workflows</h4>
-                <p>MCP-powered automation handles 70% of repetitive coding tasks, validated across 50+ industry datasets.</p>
+                <div className="method-content">
+                  <h4>Automated Workflows</h4>
+                  <p>MCP-powered automation handles 70% of repetitive coding tasks, validated across 50+ industry datasets.</p>
+                </div>
               </div>
               <div className="method-card">
-                <h4>Pre-built Components</h4>
-                <p>Production-ready templates and frameworks eliminate weeks of boilerplate development.</p>
+                <div className="method-content">
+                  <h4>Pre-built Components</h4>
+                  <p>Production-ready templates and frameworks eliminate weeks of boilerplate development.</p>
+                </div>
               </div>
               <div className="method-card">
-                <h4>Agile Sprint Enhancement</h4>
-                <p>AI-assisted development increases sprint velocity by 40% through predictive modeling.</p>
+                <div className="method-content">
+                  <h4>Agile Sprint Enhancement</h4>
+                  <p>AI-assisted development increases sprint velocity by 40% through predictive modeling.</p>
+                </div>
               </div>
               <div className="method-card">
-                <h4>A/B Testing Validation</h4>
-                <p>Continuous improvement through data-driven optimization of our acceleration tools.</p>
+                <div className="method-content">
+                  <h4>A/B Testing Validation</h4>
+                  <p>Continuous improvement through data-driven optimization of our acceleration tools.</p>
+                </div>
               </div>
             </div>
           </div>

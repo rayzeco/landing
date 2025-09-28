@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg fill="none" height="188" viewBox="0 0 470 188" width="470" xmlns="http://www.w3.org/2000/svg">
+<path d="M470 0H-7V188H470V0Z" fill="url(#silverFade)"/>
+<defs><defs>
+<linearGradient id="silverFade" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#C0C0C0" stop-opacity="1"/>
+<stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+</linearGradient>
+</defs></defs>
+</svg>

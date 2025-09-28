@@ -12,11 +12,11 @@ export default function LandingPage() {
   return (
     <div className="landing-page">
       <section className="launch-section">
-        <img src="/images/infinite.svg" alt="infinite" className="infinite" />
-        <img src="/images/rect.svg" alt="rect" className="rect" />
+        <img src="/images/infinite_silver_black.png" alt="infinite" className="infinite" />
+        <img src="/images/rect_silver_black.png" alt="rect" className="rect" />
         <div className="container">
           <div className="left">
-            <img src="/images/logo-text-black.svg" alt="logo" />
+            <img src="/images/logo-text-white.svg" alt="logo" />
           </div>
           <div className="right">
             <div className="title">AI.<br/>Data.<br/>Engineering.</div>
@@ -113,8 +113,8 @@ export default function LandingPage() {
       </section>
 
       <section className="talent-section">
-        <img src="/images/infinite.svg" alt="infinite" className="infinite" />
-        <img src="/images/rect.svg" alt="rect" className="rect" />
+        <img src="/images/infinite_silver_black.png" alt="infinite" className="infinite" />
+        <img src="/images/rect_silver_black.png" alt="rect" className="rect" />
         <div className="container">
           <div className="left">
             <div className="title">Our relentless focus on AI Talent</div>
