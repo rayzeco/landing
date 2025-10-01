@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEthers, shortenAddress } from "@usedapp/core";
 import WalletModal from "../../components/WalletModal/WalletModal";
+import UserAvatar from "../../components/UserAvatar/UserAvatar";
+import ProfileModal from "../../components/ProfileModal/ProfileModal";
 import Web3 from 'web3'
 
 import networks from '../../config/networks'
@@ -14,6 +16,18 @@ import config from '../../config/config.json'
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [user, setUser] = useState(() => {
+    const sessionUser = sessionStorage.getItem('user');
+    if (sessionUser) {
+      const userData = JSON.parse(sessionUser);
+      return {
+        name: userData.name || userData.email,
+        email: userData.email
+      };
+    }
+    return null;
+  });
   const navigate = useNavigate();
 
   const { account, chainId, library, deactivate } = useEthers();
@@ -57,6 +71,17 @@ export default function Header() {
     navigate('/login');
   };
 
+  const handleProfileSave = (profileData) => {
+    setUser({
+      name: profileData.name || profileData.email,
+      email: profileData.email
+    });
+  };
+
+  const handleAvatarClick = () => {
+    setProfileModalOpen(true);
+  };
+
   return (
     <header id="header">
       <Link to="/" className="logo">
@@ -87,11 +112,18 @@ export default function Header() {
             <img src="/images/wallet-account.svg" alt="wallet-account" />
             {account ? shortenAddress(account) : "Login"}
           </button>
+          {user && <UserAvatar user={user} onClick={handleAvatarClick} />}
         </div>
       </div>
       <WalletModal
         isOpen={walletModalOpen}
         onRequestClose={() => setWalletModalOpen(false)}
+      />
+      <ProfileModal
+        isOpen={profileModalOpen}
+        onRequestClose={() => setProfileModalOpen(false)}
+        user={user}
+        onSave={handleProfileSave}
       />
     </header>
   );

@@ -6,6 +6,8 @@ import AddCandidatePage from "../AddCandidatePage/AddCandidatePage";
 import AddOpenRolesPage from "../AddOpenRoles/AddOpenRolesPage";
 import InvoicePage from "../InvoicePage/InvoicePage";
 import SelectInvoicePage from "../SelectInvoicePage/SelectInvoicePage";
+import UserAvatar from "../../components/UserAvatar/UserAvatar";
+import ProfileModal from "../../components/ProfileModal/ProfileModal";
 
 
 
@@ -20,6 +22,18 @@ export default function RayzeConsole() {
   });
   const [activityData, setActivityData] = useState([]);
   const [userRole, setUserRole] = useState(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [user, setUser] = useState(() => {
+    const sessionUser = sessionStorage.getItem('user');
+    if (sessionUser) {
+      const userData = JSON.parse(sessionUser);
+      return {
+        name: userData.name || userData.email,
+        email: userData.email
+      };
+    }
+    return null;
+  });
   const [candidates, setCandidates] = useState([]);
   const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [filteredInputRequiredCandidates, setFilteredInputRequiredCandidates] = useState([]);
@@ -142,12 +156,18 @@ export default function RayzeConsole() {
     }
 
     setUserRole(role);
-    
+
     // Initialize interview contact fields with user data
     const user_data = JSON.parse(sessionStorage.getItem('user'));
     setInterviewEmails(user_data?.email || '');
     setInterviewPhone(user_data?.msg_id || '');
-    
+
+    // Update user state from session
+    setUser({
+      name: user.name || user.email,
+      email: user.email
+    });
+
     // If user is Client, force them to Client Console
     if (role === 'Client') {
       setSelectedClientId(user.client_id);
@@ -315,7 +335,9 @@ export default function RayzeConsole() {
             },
           }
         );
-        setClients(response.data);
+        // Filter clients to only show those with client_type = 'Client'
+        const filteredClients = response.data.filter(client => client.client_type === 'Client');
+        setClients(filteredClients);
       } catch (error) {
         console.error('Error fetching clients:', error);
       }
@@ -345,6 +367,64 @@ export default function RayzeConsole() {
           .filter(project => selectedProjectIds.includes(project.id))
           .map(project => project.name);
 
+        // If no client is selected and user is not a Client, show all clients data
+        if (!selectedClientId && user_role !== 'Client') {
+          // Fetch all candidates and roles from all clients
+          const [activityResponse, allCandidatesResponse, allRolesResponse] = await Promise.all([
+            axios.get(
+              `${process.env.REACT_APP_RYZ_SERVER}/get_console_activity`,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            ),
+            axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_candidates`, {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              params: {
+                inp_recruiter_id: user_role === 'ADMIN' ? 1 : user_id
+              }
+            }),
+            axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_open_roles`, {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              }
+            })
+          ]);
+
+          // Set empty console data for "all clients" view
+          setConsoleData({
+            total_active_eng: 0,
+            total_active_eng_last30: 0,
+            submit_client_cvs: 0,
+            submit_client_cvs_last30: 0,
+            active_client_roles: 0,
+            active_client_roles_last30: 0,
+            hired_client_cvs: 0,
+            hired_client_cvs_last30: 0
+          });
+          setActivityData(activityResponse.data);
+
+          // Filter candidates to only show active statuses
+          const activeCandidates = allCandidatesResponse.data.filter(candidate =>
+            ['Submitted', 'Interview Requested', 'Interview Confirmed', 'Ready to Hire', 'Hired'].includes(candidate.status)
+          );
+          setCandidates(activeCandidates);
+          setFilteredCandidates(activeCandidates);
+
+          // Filter roles to only show open roles
+          const openRoles = allRolesResponse.data.filter(role => role.status === 'Open');
+          setOpenRoles(openRoles);
+          setFilteredOpenRoles(openRoles);
+          return;
+        }
+
+        // Original code for when a client is selected
         const [consoleResponse, activityResponse, candidatesResponse, openRolesResponse] = await Promise.all([
           axios.get(
             `${process.env.REACT_APP_RYZ_SERVER}/get_console_data_by_client/${client_id}`,
@@ -619,6 +699,17 @@ export default function RayzeConsole() {
 
   const handleNavigation = (path) => {
     navigate(path);
+  };
+
+  const handleProfileSave = (profileData) => {
+    setUser({
+      name: profileData.name || profileData.email,
+      email: profileData.email
+    });
+  };
+
+  const handleAvatarClick = () => {
+    setProfileModalOpen(true);
   };
 
   const handleMatchScoreClick = (e, matchScore) => {
@@ -1325,24 +1416,28 @@ export default function RayzeConsole() {
                   +{consoleData.submit_client_cvs_last30 || 0} this month
                 </div>
               </div>
-              <div className="dashboard-card">
-                <h3>Rayze on Payroll</h3>
-                <div className="card-value">
-                  {consoleData.total_active_eng || 0}
-                </div>
-                <div className="card-trend positive">
-                  +{consoleData.total_active_eng_last30 || 0} this month
-                </div>
-              </div>
-              <div className="dashboard-card">
-                <h3>Hired last 30 days</h3>
-                <div className="card-value">
-                  {consoleData.total_active_eng_last30 || 0}
-                </div>
-                <div className="card-trend positive">
-                  +{consoleData.total_active_eng_last30 || 0} this month
-                </div>
-              </div>
+              {userRole === 'ADMIN' && (
+                <>
+                  <div className="dashboard-card">
+                    <h3>Rayze on Payroll</h3>
+                    <div className="card-value">
+                      {consoleData.total_active_eng || 0}
+                    </div>
+                    <div className="card-trend positive">
+                      +{consoleData.total_active_eng_last30 || 0} this month
+                    </div>
+                  </div>
+                  <div className="dashboard-card">
+                    <h3>Hired last 30 days</h3>
+                    <div className="card-value">
+                      {consoleData.total_active_eng_last30 || 0}
+                    </div>
+                    <div className="card-trend positive">
+                      +{consoleData.total_active_eng_last30 || 0} this month
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Open Candidates Section */}
@@ -1391,14 +1486,27 @@ export default function RayzeConsole() {
                   </thead>
                   <tbody>
                     {filteredInputRequiredCandidates
-                      .filter(candidate => candidate.status === 'Submitted' || 
-                        candidate.status === 'Interview Requested' || 
-                        candidate.status === 'Interview Confirmed' || 
-                        candidate.status === 'Ready to Hire')
+                      .filter(candidate => {
+                        // Only show candidates with these statuses
+                        const validStatus = candidate.status === 'Submitted' ||
+                          candidate.status === 'Interview Requested' ||
+                          candidate.status === 'Interview Confirmed' ||
+                          candidate.status === 'Ready to Hire';
+
+                        if (!validStatus) return false;
+
+                        // If user is Recruiter, only show candidates with matching recruiter_id
+                        if (userRole === 'Recruiter') {
+                          const userData = JSON.parse(sessionStorage.getItem('user'));
+                          return candidate.recruiter_id === userData.client_id;
+                        }
+
+                        return true;
+                      })
                       .map(candidate => (
                         <tr key={candidate.id}>
                           <td>
-                            <button 
+                            <button
                               className="interview-status-button"
                               style={{
                                 backgroundColor: candidate.status === 'Submitted' ? '#f59e0b' : 
@@ -1576,7 +1684,19 @@ export default function RayzeConsole() {
                   </thead>
                   <tbody>
                     {filteredCandidates
-                      .filter(candidate => candidate.status === 'Hired')
+                      .filter(candidate => {
+                        // Only show Hired candidates
+                        if (candidate.status !== 'Hired') return false;
+
+                        // If user is Recruiter, only show candidates with matching recruiter_id
+                        if (userRole === 'Recruiter') {
+                          const userData = JSON.parse(sessionStorage.getItem('user'));
+                          //console.log(candidate.recruiter_id, userData.client_id);
+                          return candidate.recruiter_id === userData.client_id;
+                        }
+
+                        return true;
+                      })
                       .map(candidate => (
                       <tr key={candidate.id}>
                         <td style={{ width: '60px', textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{candidate.name || '-'}</td>
@@ -1615,8 +1735,11 @@ export default function RayzeConsole() {
 
   return (
     <div className="rayze-console">
-      <div className="logo-container" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-        <img src="/images/logo-text-black.svg" alt="Rayze" className="logo" />
+      <div className="console-header">
+        <div className="logo-container" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <img src="/images/logo-text-black.svg" alt="Rayze" className="logo" />
+        </div>
+        {user && <UserAvatar user={user} onClick={handleAvatarClick} />}
       </div>
       <div className="console-content">
         <div className="sidebar">
@@ -1625,10 +1748,12 @@ export default function RayzeConsole() {
               <div className="nav-section">
                 <h3>Main</h3>
                 <ul>
-                  <li className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>
-                    <i className="fas fa-home"></i>
-                    Console Home
-                  </li>
+                  {userRole === 'ADMIN' && (
+                    <li className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>
+                      <i className="fas fa-home"></i>
+                      Console Home
+                    </li>
+                  )}
                   <li className={activeTab === "candidates" ? "active" : ""} onClick={() => setActiveTab("candidates")}>
                     <i className="fas fa-users"></i>
                     Candidates
@@ -1978,6 +2103,13 @@ export default function RayzeConsole() {
           </div>
         </div>
       )}
+
+      <ProfileModal
+        isOpen={profileModalOpen}
+        onRequestClose={() => setProfileModalOpen(false)}
+        user={user}
+        onSave={handleProfileSave}
+      />
     </div>
   )
 }

@@ -5,20 +5,32 @@
   display: flex;
   flex-direction: column;
 
-  .logo-container {
+  .console-header {
     position: fixed;
-    top: 32px;
+    top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
-    width: 240px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    padding: 32px 24px;
+    background-color: transparent;
 
-    .logo {
-      height: 42px;
-      filter: invert(1); // Make the logo white
+    .logo-container {
+      width: 240px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .logo {
+        height: 42px;
+        filter: invert(1);
+      }
+    }
+
+    .user-avatar {
+      margin-right: 0;
     }
   }
 

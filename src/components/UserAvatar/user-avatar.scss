@@ -1,0 +1,63 @@
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: visible;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  margin-right: 90px;
+  position: relative;
+
+  @media screen and (max-width: 1400px) {
+    margin-right: 60px;
+  }
+
+  @media screen and (max-width: 1200px) {
+    margin: 0;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+
+    &::after {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  &::after {
+    content: attr(data-name);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #1a1a1a;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+    z-index: 1001;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .user-initials {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+  }
+}

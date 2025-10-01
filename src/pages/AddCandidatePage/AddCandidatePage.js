@@ -73,6 +73,8 @@ const AddCandidatePage = () => {
     const [candidateSearch, setCandidateSearch] = useState('');
     const [showCandidateSuggestions, setShowCandidateSuggestions] = useState(false);
     const [filteredCandidatesForSearch, setFilteredCandidatesForSearch] = useState([]);
+    const [showJDModal, setShowJDModal] = useState(false);
+    const [currentJDContent, setCurrentJDContent] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -129,10 +131,18 @@ const AddCandidatePage = () => {
                 const allSubmitCVRoles = submitCVRolesResponse.data;
                 const allClients = clientsResponse.data.filter(client => client.client_type === 'Client');
 
+                // Filter candidates for Recruiter role
+                let filteredCandidatesList = allCandidates;
+                if (user.role === 'Recruiter') {
+                    filteredCandidatesList = allCandidates.filter(candidate =>
+                        candidate.recruiter_id === user.client_id
+                    );
+                }
+
                 // Store all data in state
-                setUnfilteredCandidates(allCandidates);
-                setCandidates(allCandidates);
-                setFilteredCandidates(allCandidates);
+                setUnfilteredCandidates(filteredCandidatesList);
+                setCandidates(filteredCandidatesList);
+                setFilteredCandidates(filteredCandidatesList);
                 setOpenRoles(allOpenRoles);
                 setFilteredOpenRoles(allOpenRoles);
                 setSubmitCVRoles(allSubmitCVRoles);
@@ -399,9 +409,150 @@ const AddCandidatePage = () => {
         window.open(cvLink, '_blank');
     };
 
-    const handleJDClick = (e, jdLink) => {
+    const handleJDClick = async (e, jdLink) => {
         e.stopPropagation();
-        window.open(jdLink, '_blank');
+
+        if (!jdLink) return;
+
+        // Check if it's a PDF link - use more comprehensive detection
+        const isPDF = jdLink.toLowerCase().includes('.pdf') ||
+                      jdLink.toLowerCase().includes('pdf') ||
+                      jdLink.toLowerCase().match(/\.pdf(\?|$|#)/);
+
+        if (isPDF) {
+            // For PDF files, open in new tab as before and exit immediately
+            window.open(jdLink, '_blank');
+            return;
+        }
+
+        // Only proceed with modal logic for non-PDF files
+        try {
+            // For other links, fetch the content
+            const response = await fetch(jdLink);
+
+            // Check content type header as additional safety
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/pdf')) {
+                // Content type indicates PDF, open in new tab
+                window.open(jdLink, '_blank');
+                return;
+            }
+
+            const content = await response.text();
+
+            // Check if the content is HTML with JSON
+            if (content.includes('<html>') && content.includes('<body>')) {
+                // Extract JSON from HTML body
+                const jsonMatch = content.match(/<body>(.*?)<\/body>/s);
+                if (jsonMatch) {
+                    try {
+                        const jsonString = jsonMatch[1].trim();
+                        const jsonData = JSON.parse(jsonString);
+
+                        // Format the JSON data into readable HTML
+                        const formattedHTML = formatJDJSON(jsonData);
+                        setCurrentJDContent(formattedHTML);
+                        setShowJDModal(true);
+
+                    } catch (jsonError) {
+                        console.error('Error parsing JSON from HTML:', jsonError);
+                        // Fallback: display raw content
+                        setCurrentJDContent(content);
+                        setShowJDModal(true);
+                    }
+                } else {
+                    // No JSON found, display HTML as is
+                    setCurrentJDContent(content);
+                    setShowJDModal(true);
+                }
+            } else {
+                // Regular HTML or other content
+                setCurrentJDContent(content);
+                setShowJDModal(true);
+            }
+        } catch (error) {
+            console.error('Error fetching JD content:', error);
+            // Fallback to opening in new tab
+            window.open(jdLink, '_blank');
+        }
+    };
+
+    const formatJDJSON = (jsonData) => {
+        return `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px;">
+                <h1 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
+                    ${jsonData.role_name || 'Job Description'}
+                </h1>
+
+                ${jsonData.background ? `
+                    <section style="margin-bottom: 25px;">
+                        <h2 style="color: #1f2937; margin-bottom: 10px;">Background</h2>
+                        <p style="color: #4b5563;">${jsonData.background}</p>
+                    </section>
+                ` : ''}
+
+                ${jsonData.role_desc ? `
+                    <section style="margin-bottom: 25px;">
+                        <h2 style="color: #1f2937; margin-bottom: 10px;">Role Description</h2>
+                        <p style="color: #4b5563;">${jsonData.role_desc}</p>
+                    </section>
+                ` : ''}
+
+                ${jsonData.responsibilities && jsonData.responsibilities.length > 0 ? `
+                    <section style="margin-bottom: 25px;">
+                        <h2 style="color: #1f2937; margin-bottom: 10px;">Key Responsibilities</h2>
+                        <ul style="color: #4b5563; padding-left: 20px;">
+                            ${jsonData.responsibilities.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
+                        </ul>
+                    </section>
+                ` : ''}
+
+                ${jsonData.candidate_requirements && jsonData.candidate_requirements.length > 0 ? `
+                    <section style="margin-bottom: 25px;">
+                        <h2 style="color: #1f2937; margin-bottom: 10px;">Requirements</h2>
+                        <ul style="color: #4b5563; padding-left: 20px;">
+                            ${jsonData.candidate_requirements.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
+                        </ul>
+                    </section>
+                ` : ''}
+
+                ${jsonData.must_have && jsonData.must_have.length > 0 ? `
+                    <section style="margin-bottom: 25px;">
+                        <h2 style="color: #dc2626; margin-bottom: 10px;">Must Have Skills</h2>
+                        <ul style="color: #4b5563; padding-left: 20px;">
+                            ${jsonData.must_have.map(item => `<li style="margin-bottom: 8px; font-weight: 500;">${item}</li>`).join('')}
+                        </ul>
+                    </section>
+                ` : ''}
+
+                ${jsonData.nice_to_have && jsonData.nice_to_have.length > 0 ? `
+                    <section style="margin-bottom: 25px;">
+                        <h2 style="color: #059669; margin-bottom: 10px;">Nice to Have</h2>
+                        <ul style="color: #4b5563; padding-left: 20px;">
+                            ${jsonData.nice_to_have.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
+                        </ul>
+                    </section>
+                ` : ''}
+
+                ${jsonData.technical_skills && jsonData.technical_skills.length > 0 ? `
+                    <section style="margin-bottom: 25px;">
+                        <h2 style="color: #1f2937; margin-bottom: 10px;">Technical Skills</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${jsonData.technical_skills.map(skill => `
+                                <span style="background-color: #e5e7eb; color: #374151; padding: 4px 8px; border-radius: 4px; font-size: 14px;">
+                                    ${skill}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </section>
+                ` : ''}
+            </div>
+        `;
+    };
+
+    const handleCloseJDModal = () => {
+        setShowJDModal(false);
+        setCurrentJDContent('');
     };
 
     const handleDownloadTest = (e, candidateId) => {
@@ -2203,6 +2354,24 @@ const AddCandidatePage = () => {
                             >
                                 {isSendingWorkOrderEmail ? 'Sending...' : 'Send Email'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* JD Modal */}
+            {showJDModal && (
+                <div className="modal-overlay" onClick={handleCloseJDModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Job Description</h2>
+                            <button className="close-button" onClick={handleCloseJDModal}>×</button>
+                        </div>
+                        <div className="modal-body" style={{ maxHeight: '70vh', overflow: 'auto' }}>
+                            <div dangerouslySetInnerHTML={{ __html: currentJDContent }} />
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-button" onClick={handleCloseJDModal}>Close</button>
                         </div>
                     </div>
                 </div>

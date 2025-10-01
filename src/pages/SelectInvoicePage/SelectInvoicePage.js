@@ -17,7 +17,7 @@ const SelectInvoicePage = () => {
     
     // New payment form states
     const [clients, setClients] = useState([]);
-    const [selectedClientId, setSelectedClientId] = useState('');
+    const [selectedClientName, setSelectedClientName] = useState('');
     const [paymentAmount, setPaymentAmount] = useState('');
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     
@@ -40,7 +40,7 @@ const SelectInvoicePage = () => {
           })
             .then(response => {
                 setInvoices(response.data);
-                
+
                 // Get unique clients from invoices array after invoices are loaded
                 //console.log('response.data', response.data);
                 
@@ -318,7 +318,7 @@ const SelectInvoicePage = () => {
     };
 
     const handlePaymentAction = async (action) => {
-        if (!selectedClientId) {
+        if (!selectedClientName) {
             alert('Please select a client');
             return;
         }
@@ -333,25 +333,17 @@ const SelectInvoicePage = () => {
         try {
             const targetAmount = parseFloat(paymentAmount);
             
-            // Find the selected client name
-            const selectedClient = clients.find(client => client.id == selectedClientId);
-            if (!selectedClient) {
-                alert('Selected client not found');
-                setIsProcessingPayment(false);
-                return;
-            }
-            
             // Filter invoices for the selected client
-            const clientInvoices = invoices.filter(invoice => 
-                invoice.client_name === selectedClient.name && 
-                (action === 'received' ? 
+            const clientInvoices = invoices.filter(invoice =>
+                invoice.client_name === selectedClientName &&
+                (action === 'received' ?
                     (invoice.inv_status === 'READY' || invoice.inv_status === 'SENT') :
                     invoice.inv_status === 'PAID'
                 )
             );
             
             if (clientInvoices.length === 0) {
-                alert(`No eligible invoices found for ${selectedClient.name} with status ${action === 'received' ? 'READY/SENT' : 'PAID'}`);
+                alert(`No eligible invoices found for ${selectedClientName} with status ${action === 'received' ? 'READY/SENT' : 'PAID'}`);
                 setIsProcessingPayment(false);
                 return;
             }
@@ -382,7 +374,7 @@ const SelectInvoicePage = () => {
                 selectedCombination,
                 newStatus,
                 targetAmount,
-                clientName: selectedClient.name
+                clientName: selectedClientName
             });
             setShowConfirmationDialog(true);
             setIsProcessingPayment(false);
@@ -429,7 +421,7 @@ const SelectInvoicePage = () => {
             alert(`Payment ${action} recorded successfully! Updated ${invoiceIds.length} invoice(s) to ${newStatus} status.\nInvoice IDs: ${invoiceIds.join(', ')}`);
             
             // Reset form
-            setSelectedClientId('');
+            setSelectedClientName('');
             setPaymentAmount('');
             setPendingInvoicesUpdate(null);
             
@@ -559,15 +551,15 @@ const SelectInvoicePage = () => {
                 <h1>Invoice Management</h1>
                 <div className="header-actions">
                     <div className="payment-form">
-                        <select 
-                            value={selectedClientId} 
-                            onChange={(e) => setSelectedClientId(e.target.value)}
+                        <select
+                            value={selectedClientName}
+                            onChange={(e) => setSelectedClientName(e.target.value)}
                             className="client-dropdown"
                             disabled={isProcessingPayment}
                         >
                             <option value="">Select Client</option>
                             {clients.map(client => (
-                                <option key={client.id} value={client.id}>
+                                <option key={client.id} value={client.name}>
                                     {client.name}
                                 </option>
                             ))}
@@ -584,18 +576,18 @@ const SelectInvoicePage = () => {
                             step="0.01"
                         />
                         
-                        <button 
+                        <button
                             className="btn-received"
                             onClick={() => handlePaymentAction('received')}
-                            disabled={isProcessingPayment || !selectedClientId || !paymentAmount}
+                            disabled={isProcessingPayment || !selectedClientName || !paymentAmount}
                         >
                             {isProcessingPayment ? 'Processing...' : 'Received'}
                         </button>
-                        
-                        <button 
+
+                        <button
                             className="btn-paid"
                             onClick={() => handlePaymentAction('paid')}
-                            disabled={isProcessingPayment || !selectedClientId || !paymentAmount}
+                            disabled={isProcessingPayment || !selectedClientName || !paymentAmount}
                         >
                             {isProcessingPayment ? 'Processing...' : 'Paid'}
                         </button>
@@ -632,59 +624,67 @@ const SelectInvoicePage = () => {
                                 if (invoice.inv_status === 'SUBMITTED' || invoice.inv_status === 'TEST') {
                                     return false;
                                 }
-                                
+
                                 // For PAID invoices, check if they are older than 3 months
                                 if (invoice.inv_status === 'CLOSED') {
                                     const invoiceDate = new Date(invoice.inv_date);
                                     const threeMonthsAgo = new Date();
                                     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-                                    
+
                                     // Don't display PAID invoices older than 3 months
                                     if (invoiceDate < threeMonthsAgo) {
                                         return false;
                                     }
                                 }
-                                
+
+                                // Filter by selected client if one is selected
+                                if (selectedClientName) {
+                                    if (invoice.client_name !== selectedClientName) {
+                                        return false;
+                                    }
+                                }
+
                                 return true;
-                            }).map(invoice => [
-                                <tr 
-                                    key={invoice.inv_hash} 
-                                    onClick={() => handleRowClick(invoice)}
-                                    className={`invoice-row ${expandedInvoiceId === invoice.id ? 'expanded' : ''}`}
-                                >
-                                    <td>{invoice.client_name}</td>
-                                    <td>{invoice.project_name || ''}</td>
-                                    <td>{invoice.id}</td>
-                                    <td>{invoice.inv_date}</td>
-                                    <td>{invoice.period_start}</td>
-                                    <td>{invoice.period_end}</td>
-                                    <td>USD ${invoice.inv_value.toLocaleString()}</td>
-                                    <td>USD ${invoice.pay_recruiter ? invoice.pay_recruiter.toLocaleString() : '0'}</td>
-                                    <td>
-                                        <div onClick={(e) => e.stopPropagation()}>
-                                            <button
-                                                onClick={() => handleSendEmail(invoice)}
-                                                className="send-button"
-                                                disabled={isLoadingInvoice}
-                                            >
-                                                {isLoadingInvoice && selectedInvoice?.inv_hash === invoice.inv_hash ? 'Loading...' : 'Send'}
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td style={{ fontFamily: 'monospace', fontSize: '11px' }}>
-                                        {invoice.inv_hash.substring(0, 10)}...
-                                    </td>
-                                    <td>
-                                        <span className={`status-badge ${invoice.inv_status.toLowerCase()}`}>
-                                            {invoice.inv_status}
-                                        </span>
-                                        <span className="expand-indicator">
-                                            {expandedInvoiceId === invoice.id ? '▲' : '▼'}
-                                        </span>
-                                    </td>
-                                </tr>,
-                                renderBreakdownRow(invoice)
-                            ]).flat()}
+                            }).map(invoice => (
+                                <React.Fragment key={invoice.inv_hash}>
+                                    <tr
+                                        onClick={() => handleRowClick(invoice)}
+                                        className={`invoice-row ${expandedInvoiceId === invoice.id ? 'expanded' : ''}`}
+                                    >
+                                        <td>{invoice.client_name}</td>
+                                        <td>{invoice.project_name || ''}</td>
+                                        <td>{invoice.id}</td>
+                                        <td>{invoice.inv_date}</td>
+                                        <td>{invoice.period_start}</td>
+                                        <td>{invoice.period_end}</td>
+                                        <td>USD ${invoice.inv_value.toLocaleString()}</td>
+                                        <td>USD ${invoice.pay_recruiter ? invoice.pay_recruiter.toLocaleString() : '0'}</td>
+                                        <td>
+                                            <div onClick={(e) => e.stopPropagation()}>
+                                                <button
+                                                    onClick={() => handleSendEmail(invoice)}
+                                                    className="send-button"
+                                                    disabled={isLoadingInvoice}
+                                                >
+                                                    {isLoadingInvoice && selectedInvoice?.inv_hash === invoice.inv_hash ? 'Loading...' : 'Send'}
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td style={{ fontFamily: 'monospace', fontSize: '11px' }}>
+                                            {invoice.inv_hash.substring(0, 10)}...
+                                        </td>
+                                        <td>
+                                            <span className={`status-badge ${invoice.inv_status.toLowerCase()}`}>
+                                                {invoice.inv_status}
+                                            </span>
+                                            <span className="expand-indicator">
+                                                {expandedInvoiceId === invoice.id ? '▲' : '▼'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {renderBreakdownRow(invoice)}
+                                </React.Fragment>
+                            ))}
                         </tbody>
                     </table>
                     </div>
@@ -771,7 +771,7 @@ const SelectInvoicePage = () => {
                             <div className="invoices-to-update">
                                 <h3>Invoices to be updated ({pendingInvoicesUpdate.selectedCombination.length}):</h3>
                                 <div className="invoice-list">
-                                    {pendingInvoicesUpdate.selectedCombination.map((item, index) => (
+                                    {pendingInvoicesUpdate.selectedCombination.map((item) => (
                                         <div key={item.id} className="invoice-item">
                                             <span className="invoice-id">Invoice #{item.id}</span>
                                             <span className="invoice-amount">${item.amount.toLocaleString()}</span>

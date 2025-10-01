@@ -1,0 +1,99 @@
+.profile-modal {
+  color: white;
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+    font-weight: bold;
+  }
+
+  .loading-message {
+    color: var(--theme-color);
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .error-message {
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid #ff4444;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #aaa;
+      }
+
+      input {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: white;
+        padding: 12px 16px;
+        font-size: 16px;
+        border-radius: 4px;
+        transition: border-color 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--theme-color);
+        }
+
+        &::placeholder {
+          color: #666;
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+
+      button {
+        flex: 1;
+        padding: 14px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+
+      .save-button {
+        background: var(--theme-color);
+        color: black;
+        border: none;
+      }
+
+      .cancel-button {
+        background: transparent;
+        color: white;
+        border: 1px solid #333;
+
+        &:hover {
+          border-color: #666;
+        }
+      }
+    }
+  }
+}
