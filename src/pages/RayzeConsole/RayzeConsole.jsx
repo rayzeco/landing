@@ -830,6 +830,7 @@ export default function RayzeConsole() {
           </section>
         ` : ''}
         
+        
         ${jsonData.must_have && jsonData.must_have.length > 0 ? `
           <section style="margin-bottom: 25px;">
             <h2 style="color: #dc2626; margin-bottom: 10px;">Must Have Skills</h2>
@@ -1171,7 +1172,8 @@ export default function RayzeConsole() {
         cc_email: process.env.REACT_APP_SENDMAIL_CC,
         subject: "Interview Schedule - Please Confirm",
         content: response.data.html,
-        from_email: process.env.REACT_APP_SENDMAIL_FROM
+        from_email: process.env.REACT_APP_SENDMAIL_FROM,
+        attach_pdf: true
       };
       //console.log('emailPayload', emailPayload);
       if (process.env.REACT_APP_SENDMAIL_TEST) {
@@ -1933,7 +1935,7 @@ export default function RayzeConsole() {
                   return;
                 }}
               >
-                Skip Interviews....Fast Track to Hire
+                Fast Track to Hire
               </button>
               </div>
               <p>Please select 3 interview timeslots for the candidate {selectedCandidate?.name}</p>

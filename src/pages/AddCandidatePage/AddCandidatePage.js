@@ -251,7 +251,7 @@ const AddCandidatePage = () => {
             cv_link: 'CV Link',
             client_id: 'Client',
             // recruiter_id: 'Recruiter', // Removed from required fields since it's not in the form
-            // open_role_id: 'Open Role'
+            // open_role_id: 'Open Role' as an example
         };
 
         const missingFields = Object.entries(requiredFields)
@@ -445,18 +445,24 @@ const AddCandidatePage = () => {
                 // Extract JSON from HTML body
                 const jsonMatch = content.match(/<body>(.*?)<\/body>/s);
                 if (jsonMatch) {
-                    try {
-                        const jsonString = jsonMatch[1].trim();
-                        const jsonData = JSON.parse(jsonString);
+                    const jsonString = jsonMatch[1].trim();
+                    // Check if body content looks like JSON before parsing
+                    if (jsonString.startsWith('{') || jsonString.startsWith('[')) {
+                        try {
+                            const jsonData = JSON.parse(jsonString);
 
-                        // Format the JSON data into readable HTML
-                        const formattedHTML = formatJDJSON(jsonData);
-                        setCurrentJDContent(formattedHTML);
-                        setShowJDModal(true);
+                            // Format the JSON data into readable HTML
+                            const formattedHTML = formatJDJSON(jsonData);
+                            setCurrentJDContent(formattedHTML);
+                            setShowJDModal(true);
 
-                    } catch (jsonError) {
-                        console.error('Error parsing JSON from HTML:', jsonError);
-                        // Fallback: display raw content
+                        } catch (jsonError) {
+                            // Not valid JSON, display HTML as is
+                            setCurrentJDContent(content);
+                            setShowJDModal(true);
+                        }
+                    } else {
+                        // Body doesn't contain JSON, display HTML as is
                         setCurrentJDContent(content);
                         setShowJDModal(true);
                     }
