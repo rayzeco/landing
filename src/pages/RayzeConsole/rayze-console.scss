@@ -1004,4 +1004,77 @@
       }
     }
   }
-} 
+}
+
+// Timeout and loading states
+.loading-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  color: #60a5fa;
+  margin: 16px 0;
+
+  .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  color: #fca5a5;
+  margin: 16px 0;
+
+  .error-icon {
+    font-size: 18px;
+  }
+
+  .retry-button,
+  .login-redirect-button {
+    margin-left: auto;
+    padding: 6px 12px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+
+    &:hover {
+      background: #dc2626;
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  .login-redirect-button {
+    background: #3b82f6;
+
+    &:hover {
+      background: #2563eb;
+    }
+  }
+}

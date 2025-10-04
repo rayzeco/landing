@@ -24,36 +24,75 @@ const SelectInvoicePage = () => {
     // Confirmation dialog states
     const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
     const [pendingInvoicesUpdate, setPendingInvoicesUpdate] = useState(null);
-    
+
+    // Timeout handling states
+    const [isLoading, setIsLoading] = useState(false);
+    const [timeoutError, setTimeoutError] = useState(null);
+
+    // Business metrics states
+    const [businessMetrics, setBusinessMetrics] = useState({
+        ytdRevenue: 0,
+        lastMonthRevenue: 0,
+        ytdProfit: 0,
+        lastMonthProfit: 0,
+        ytdMargin: 0,
+        totalPaymentOutstanding: 0,
+        totalRevenueOutstanding: 0
+    });
+
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = sessionStorage.getItem('token'); // Retrieve the token from sessionStorage
-        
-        // Fetch main invoices
-        axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_client_invoices`,
-        {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`, // Include the token in the request header
-            },
-          })
-            .then(response => {
+        const fetchInvoices = async () => {
+            setIsLoading(true);
+            setTimeoutError(null);
+
+            try {
+                const token = sessionStorage.getItem('token');
+
+                // Fetch main invoices and business metrics in parallel
+                const [response, metricsResponse] = await Promise.all([
+                    axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_client_invoices`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }),
+                    axios.get(`${process.env.REACT_APP_RYZ_SERVER}/get_business_metrics`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }).catch(err => {
+                        console.warn('Business metrics endpoint not available:', err);
+                        return { data: {
+                            ytdRevenue: 0,
+                            lastMonthRevenue: 0,
+                            ytdProfit: 0,
+                            lastMonthProfit: 0,
+                            ytdMargin: 0,
+                            totalPaymentOutstanding: 0,
+                            totalRevenueOutstanding: 0
+                        }};
+                    })
+                ]);
+
                 setInvoices(response.data);
+                setBusinessMetrics(metricsResponse.data);
 
                 // Get unique clients from invoices array after invoices are loaded
                 //console.log('response.data', response.data);
-                
+
                 // Create a Map to ensure uniqueness by client_id or fallback to client_name
                 const clientMap = new Map();
-                
+
                 response.data.forEach(invoice => {
                     // Create a unique key that combines client_id (if exists) with client_name
                     // This ensures we don't get duplicates even if client_id is missing
-                    const clientKey = invoice.client_id ? 
-                        `id_${invoice.client_id}` : 
+                    const clientKey = invoice.client_id ?
+                        `id_${invoice.client_id}` :
                         `name_${invoice.client_name.replace(/[^a-zA-Z0-9]/g, '_')}`;
-                    
+
                     if (!clientMap.has(clientKey)) {
                         clientMap.set(clientKey, {
                             id: invoice.client_id || `name_${invoice.client_name}`,
@@ -62,13 +101,21 @@ const SelectInvoicePage = () => {
                         });
                     }
                 });
-                
+
                 const uniqueClients = Array.from(clientMap.values());
                 setClients(uniqueClients);
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('There was an error fetching the invoices!', error);
-            });
+                setTimeoutError({
+                    type: 'session_expired',
+                    message: 'Your session has expired. Please log in again.'
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchInvoices();
 
         // Prevent swipe navigation
         const preventSwipeNavigation = (e) => {
@@ -547,6 +594,30 @@ const SelectInvoicePage = () => {
 
     return (
         <div className="select-invoice-container">
+            {/* Loading State */}
+            {isLoading && (
+                <div className="loading-message">
+                    <span className="loading-spinner"></span>
+                    Loading invoice data...
+                </div>
+            )}
+
+            {/* Error State */}
+            {timeoutError && (
+                <div className="error-message">
+                    <span className="error-icon">⚠️</span>
+                    {timeoutError.message}
+                    <button
+                        className="login-redirect-button"
+                        onClick={() => navigate('/login')}
+                    >
+                        Go to Login
+                    </button>
+                </div>
+            )}
+
+            {!isLoading && !timeoutError && (
+                <>
             <div className="content-header">
                 <h1>Invoice Management</h1>
                 <div className="header-actions">
@@ -564,7 +635,7 @@ const SelectInvoicePage = () => {
                                 </option>
                             ))}
                         </select>
-                        
+
                         <input
                             type="number"
                             placeholder="Amount"
@@ -575,7 +646,7 @@ const SelectInvoicePage = () => {
                             min="0"
                             step="0.01"
                         />
-                        
+
                         <button
                             className="btn-received"
                             onClick={() => handlePaymentAction('received')}
@@ -591,6 +662,55 @@ const SelectInvoicePage = () => {
                         >
                             {isProcessingPayment ? 'Processing...' : 'Paid'}
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Business Highlights */}
+            <div className="dashboard-grid">
+                <div className="dashboard-card">
+                    <h3>YTD Revenue</h3>
+                    <div className="card-value">
+                        ${businessMetrics.ytdRevenue?.toLocaleString() || '0'}
+                    </div>
+                    <div className="card-trend positive">
+                        ${businessMetrics.lastMonthRevenue?.toLocaleString() || '0'} last month
+                    </div>
+                </div>
+                <div className="dashboard-card">
+                    <h3>YTD Profit</h3>
+                    <div className="card-value">
+                        ${businessMetrics.ytdProfit?.toLocaleString() || '0'}
+                    </div>
+                    <div className="card-trend positive">
+                        ${businessMetrics.lastMonthProfit?.toLocaleString() || '0'} last month
+                    </div>
+                </div>
+                <div className="dashboard-card">
+                    <h3>YTD Margin</h3>
+                    <div className="card-value">
+                        {businessMetrics.ytdMargin?.toFixed(1) || '0'}%
+                    </div>
+                    <div className="card-trend neutral">
+                        Profit / Revenue
+                    </div>
+                </div>
+                <div className="dashboard-card">
+                    <h3>Total Payment Outstanding</h3>
+                    <div className="card-value">
+                        ${businessMetrics.totalPaymentOutstanding?.toLocaleString() || '0'}
+                    </div>
+                    <div className="card-trend neutral">
+                        To recruiters
+                    </div>
+                </div>
+                <div className="dashboard-card">
+                    <h3>Total Revenue Outstanding</h3>
+                    <div className="card-value">
+                        ${businessMetrics.totalRevenueOutstanding?.toLocaleString() || '0'}
+                    </div>
+                    <div className="card-trend neutral">
+                        From clients
                     </div>
                 </div>
             </div>
@@ -804,6 +924,8 @@ const SelectInvoicePage = () => {
                         </div>
                     </div>
                 </div>
+            )}
+            </>
             )}
         </div>
     );

@@ -9,6 +9,7 @@ const AdminPage = () => {
   const [userRole, setUserRole] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [timeoutError, setTimeoutError] = useState(null);
   const [searchFilters, setSearchFilters] = useState({});
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -196,6 +197,7 @@ const AdminPage = () => {
 
   const fetchData = async () => {
     setLoading(true);
+    setTimeoutError(null);
     try {
       const token = sessionStorage.getItem('token');
       const response = await axios.get(
@@ -210,6 +212,10 @@ const AdminPage = () => {
       setData(response.data);
     } catch (error) {
       console.error(`Error fetching ${currentEntity.name}:`, error);
+      setTimeoutError({
+        type: 'session_expired',
+        message: 'Your session has expired. Please log in again.'
+      });
     } finally {
       setLoading(false);
     }
@@ -415,6 +421,20 @@ const AdminPage = () => {
     <div className="admin-crud">
       <div className="content-header">
         <h1>Admin CRUD Operations</h1>
+
+        {/* Error State */}
+        {timeoutError && (
+          <div className="error-message">
+            <span className="error-icon">⚠️</span>
+            {timeoutError.message}
+            <button
+              className="login-redirect-button"
+              onClick={() => navigate('/login')}
+            >
+              Go to Login
+            </button>
+          </div>
+        )}
         <div className="header-actions">
           <button 
             className="btn-primary" 

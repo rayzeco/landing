@@ -43,6 +43,9 @@ const AddOpenRolesPage = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [isGeneratingJD, setIsGeneratingJD] = useState(false);
+
+    // Timeout handling states
+    const [timeoutError, setTimeoutError] = useState(null);
     const [showJDGeneratorModal, setShowJDGeneratorModal] = useState(false);
     const [jdInput, setJDInput] = useState({
         responsibilities: `• Design and develop high-performance Java-based trading platform
@@ -85,6 +88,9 @@ const AddOpenRolesPage = () => {
 
     useEffect(() => {
         const fetchClients = async () => {
+            setIsLoading(true);
+            setTimeoutError(null);
+
             const token = sessionStorage.getItem('token');
             try {
                 const response = await axios.get(
@@ -112,6 +118,12 @@ const AddOpenRolesPage = () => {
                 await fetchOpenRoles(clientMapping);
             } catch (error) {
                 console.error('Error fetching clients:', error);
+                setTimeoutError({
+                    type: 'session_expired',
+                    message: 'Your session has expired. Please log in again.'
+                });
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -161,6 +173,8 @@ const AddOpenRolesPage = () => {
             setProjectsByClient(finalProjectsByClient);
         } catch (error) {
             console.error('Error fetching open roles:', error);
+            // Let main fetchClients handle the error
+            throw error;
         }
     };
 
@@ -772,6 +786,30 @@ const AddOpenRolesPage = () => {
             <div className="panel">
                 <h1>Open Roles</h1>
 
+                {/* Loading State */}
+                {isLoading && (
+                    <div className="loading-message">
+                        <span className="loading-spinner"></span>
+                        Loading open roles data...
+                    </div>
+                )}
+
+                {/* Error State */}
+                {timeoutError && (
+                    <div className="error-message">
+                        <span className="error-icon">⚠️</span>
+                        {timeoutError.message}
+                        <button
+                            className="login-redirect-button"
+                            onClick={() => navigate('/login')}
+                        >
+                            Go to Login
+                        </button>
+                    </div>
+                )}
+
+                {!isLoading && !timeoutError && (
+                <>
                 {/* Add Open Roles Accordion */}
                 <div className="accordion">
                     <div 
@@ -1077,7 +1115,8 @@ const AddOpenRolesPage = () => {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </>
+            )}
 
             {/* Test Document Modal */}
             {showTestModal && (
@@ -1323,6 +1362,7 @@ const AddOpenRolesPage = () => {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };

@@ -19,6 +19,10 @@ const InvoicePage = () => {
   const [isSaving, setIsSaving] = useState(false); // Loading state for Save button
   const [isSubmitting, setIsSubmitting] = useState(false); // Loading state for Submit button
 
+  // Timeout handling states
+  const [isLoading, setIsLoading] = useState(false);
+  const [timeoutError, setTimeoutError] = useState(null);
+
 
 
   // Function to get the first business day of the month
@@ -63,6 +67,9 @@ const InvoicePage = () => {
   // Function to fetch data from the REST API endpoint and return formatted data
   useEffect(() => {
     async function fetchData() {
+      setIsLoading(true);
+      setTimeoutError(null);
+
       try {
         // Get user info from session storage
         const token = sessionStorage.getItem('token'); 
@@ -125,6 +132,12 @@ const InvoicePage = () => {
 
       } catch (error) {
         console.error('Error fetching data:', error);
+        setTimeoutError({
+          type: 'session_expired',
+          message: 'Your session has expired. Please log in again.'
+        });
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -323,6 +336,30 @@ const InvoicePage = () => {
 
   return (
     <div className="invoice-container">
+      {/* Loading State */}
+      {isLoading && (
+        <div className="loading-message">
+          <span className="loading-spinner"></span>
+          Loading invoice data...
+        </div>
+      )}
+
+      {/* Error State */}
+      {timeoutError && (
+        <div className="error-message">
+          <span className="error-icon">⚠️</span>
+          {timeoutError.message}
+          <button
+            className="login-redirect-button"
+            onClick={() => window.location.href = '/login'}
+          >
+            Go to Login
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !timeoutError && (
+      <>
       <div className="panel panel-1">
         <h2>Enter Invoice Details</h2>
         <div>
@@ -426,6 +463,8 @@ const InvoicePage = () => {
           
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

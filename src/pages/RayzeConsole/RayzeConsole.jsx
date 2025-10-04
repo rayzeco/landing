@@ -6,6 +6,7 @@ import AddCandidatePage from "../AddCandidatePage/AddCandidatePage";
 import AddOpenRolesPage from "../AddOpenRoles/AddOpenRolesPage";
 import InvoicePage from "../InvoicePage/InvoicePage";
 import SelectInvoicePage from "../SelectInvoicePage/SelectInvoicePage";
+import AdminPage from "../AdminPage/AdminCRUD";
 import UserAvatar from "../../components/UserAvatar/UserAvatar";
 import ProfileModal from "../../components/ProfileModal/ProfileModal";
 
@@ -80,6 +81,10 @@ export default function RayzeConsole() {
   });
   const [showMatchScoreModal, setShowMatchScoreModal] = useState(false);
   const [matchScoreResult, setMatchScoreResult] = useState(null);
+  const [showInterviewEvalModal, setShowInterviewEvalModal] = useState(false);
+  const [interviewEvalResult, setInterviewEvalResult] = useState(null);
+  const [isLoadingEvaluation, setIsLoadingEvaluation] = useState(false);
+  const [evaluationStatus, setEvaluationStatus] = useState('');
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [declineFeedback, setDeclineFeedback] = useState('');
@@ -141,6 +146,14 @@ export default function RayzeConsole() {
   const [interviewPhone, setInterviewPhone] = useState('');
   const navigate = useNavigate();
 
+  // Loading states for timeout handling
+  const [isLoadingHomeData, setIsLoadingHomeData] = useState(false);
+  const [isLoadingClientConsole, setIsLoadingClientConsole] = useState(false);
+
+  // Error states for timeout handling
+  const [homeDataError, setHomeDataError] = useState(null);
+  const [clientConsoleError, setClientConsoleError] = useState(null);
+
   // Check user role and redirect if unauthorized
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem('user'));
@@ -186,7 +199,7 @@ export default function RayzeConsole() {
   const fetchProjectsForClient = async (clientId) => {
     try {
       const token = sessionStorage.getItem('token');
-      
+
       // Use the dedicated find_project_names endpoint
       const response = await axios.get(
         `${process.env.REACT_APP_RYZ_SERVER}/find_project_names/${clientId}`,
@@ -203,7 +216,7 @@ export default function RayzeConsole() {
         id: index + 1,
         name: name
       }));
-      
+
       setProjects(projectsArray);
       
       // If user is Client, auto-select projects from user.projects field
@@ -256,6 +269,7 @@ export default function RayzeConsole() {
       }
     } catch (error) {
       console.error('Error fetching projects for client:', error);
+      // Let axios interceptor handle the error and redirect to login
       setProjects([]);
     }
   };
@@ -269,6 +283,9 @@ export default function RayzeConsole() {
   useEffect(() => {
     const fetchHomeData = async () => {
       if (activeTab !== "home") return;
+
+      setIsLoadingHomeData(true);
+      setHomeDataError(null);
 
       try {
         const token = sessionStorage.getItem('token');
@@ -306,10 +323,18 @@ export default function RayzeConsole() {
           )
         ]);
         setConsoleData(consoleResponse.data);
-        //console.log('consoleResponse.data', consoleResponse.data);
         setActivityData(activityResponse.data);
+        setHomeDataError(null);
       } catch (error) {
         console.error('Error fetching home data:', error);
+
+        // Handle timeout errors and other errors by redirecting to login
+        setHomeDataError({
+          type: 'session_expired',
+          message: 'Your session has expired. Please log in again.'
+        });
+      } finally {
+        setIsLoadingHomeData(false);
       }
     };
 
@@ -340,6 +365,7 @@ export default function RayzeConsole() {
         setClients(filteredClients);
       } catch (error) {
         console.error('Error fetching clients:', error);
+        // Let axios interceptor handle the error and redirect to login
       }
     };
 
@@ -352,6 +378,9 @@ export default function RayzeConsole() {
       // Don't fetch if:
       // 1. Not in client_console tab
       if (activeTab !== "client_console") return;
+
+      setIsLoadingClientConsole(true);
+      setClientConsoleError(null);
 
       try {
         const token = sessionStorage.getItem('token');
@@ -473,12 +502,22 @@ export default function RayzeConsole() {
         setConsoleData(consoleResponse.data);
         setActivityData(activityResponse.data);
         // Data loaded successfully
+        console.log('candidatesResponse.data', candidatesResponse.data);
         setCandidates(candidatesResponse.data);
         setFilteredCandidates(candidatesResponse.data);
         setOpenRoles(openRolesResponse.data);
         setFilteredOpenRoles(openRolesResponse.data);
+        setClientConsoleError(null);
       } catch (error) {
         console.error('Error fetching client console data:', error);
+
+        // Handle timeout errors and other errors
+        setClientConsoleError({
+          type: 'session_expired',
+          message: 'Your session has expired. Please log in again.'
+        });
+      } finally {
+        setIsLoadingClientConsole(false);
       }
     };
 
@@ -721,6 +760,104 @@ export default function RayzeConsole() {
   const handleCloseMatchScoreModal = () => {
     setShowMatchScoreModal(false);
     setMatchScoreResult(null);
+  };
+
+  const handleInterviewEvaluate = async (e, candidate) => {
+    e.stopPropagation();
+
+    // Check if test_score exists (already evaluated)
+    if (candidate.test_score) {
+      setInterviewEvalResult(candidate.test_score);
+      setShowInterviewEvalModal(true);
+      return;
+    }
+
+    // Check if event_id exists
+    if (!candidate.event_id) {
+      setShowInterviewEvalModal(true);
+      setIsLoadingEvaluation(false);
+      setEvaluationStatus('No interview scheduled yet. Please schedule an interview first.');
+      return;
+    }
+
+    // Show modal with loading state
+    setShowInterviewEvalModal(true);
+    setIsLoadingEvaluation(true);
+    setEvaluationStatus('Fetching interview transcript...');
+
+    try {
+      const token = sessionStorage.getItem('token');
+
+      // Step 1: Fetch transcript from SENDMAIL API
+      const transcriptResponse = await axios.get(
+        `${process.env.REACT_APP_RYZ_SENDMAIL}/transcript_notes/${candidate.event_id}`
+      );
+
+      // Check if transcript has content
+      if (!transcriptResponse.data.notes || transcriptResponse.data.notes.trim().length === 0) {
+        setEvaluationStatus('No transcript available yet. The interview may not have been recorded or notes have not been generated.');
+        setIsLoadingEvaluation(false);
+        return;
+      }
+
+      setEvaluationStatus('Evaluating interview transcript...');
+
+      // Step 2: Call eval_interview endpoint
+      const evalResponse = await axios.post(
+        `${process.env.REACT_APP_RYZ_SERVER}/eval_interview`,
+        { transcript: transcriptResponse.data.notes },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setInterviewEvalResult(evalResponse.data.evaluation);
+      setIsLoadingEvaluation(false);
+      setEvaluationStatus('');
+
+    } catch (error) {
+      console.error('Error evaluating interview:', error);
+
+      // Parse error message for better user feedback
+      let errorMessage = 'An unexpected error occurred.';
+
+      if (error.response?.status === 404) {
+        if (error.response?.data?.detail?.includes('attachments')) {
+          errorMessage = 'Interview transcript not found. The Google Meet recording may not have generated notes yet. Please try again later or check Google Drive manually.';
+        } else if (error.response?.data?.detail?.includes('Not Found')) {
+          errorMessage = 'Interview event not found. The meeting may have been deleted or the event ID is invalid.';
+        } else {
+          errorMessage = 'Interview transcript not available. Please ensure the interview has been completed and recorded.';
+        }
+      } else if (error.response?.status === 401 || error.response?.status === 403) {
+        errorMessage = 'Authentication error. Please log in again.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error occurred. Please try again later or contact support.';
+      } else if (error.message?.includes('Network Error')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.response?.data?.detail) {
+        // Clean up technical error details
+        const detail = error.response.data.detail;
+        if (detail.includes('HttpError')) {
+          errorMessage = 'Google Calendar/Drive error. The interview may not have recording notes yet.';
+        } else {
+          errorMessage = detail;
+        }
+      }
+
+      setEvaluationStatus(errorMessage);
+      setIsLoadingEvaluation(false);
+    }
+  };
+
+  const handleCloseInterviewEvalModal = () => {
+    setShowInterviewEvalModal(false);
+    setInterviewEvalResult(null);
+    setIsLoadingEvaluation(false);
+    setEvaluationStatus('');
   };
 
   const handleJDClick = async (e, jdLink) => {
@@ -1134,6 +1271,13 @@ export default function RayzeConsole() {
     }
     //console.log('invite_emails', invite_emails, userEmail, userData);
 
+    // Validate that submit_cvrole_id exists
+    if (!selectedCandidate.submit_cvrole_id) {
+      console.error('Error: selectedCandidate.submit_cvrole_id is missing', selectedCandidate);
+      alert('Error: Cannot schedule interview - missing submission ID. Please refresh and try again.');
+      return;
+    }
+
     const scheduleData = {
       timeslot1: `${interviewSlots.prio1.date}T${interviewSlots.prio1.time} ${interviewSlots.prio1.timezone}`,
       timeslot2: `${interviewSlots.prio2.date}T${interviewSlots.prio2.time} ${interviewSlots.prio2.timezone}`,
@@ -1147,7 +1291,7 @@ export default function RayzeConsole() {
       client_phone: interviewPhone,
       client_id: selectedClientId
     };
-    // console.log('Interview schedule data:', JSON.stringify(scheduleData));
+    console.log('Interview schedule data:', JSON.stringify(scheduleData));
     const response =  await axios.post(
       `${process.env.REACT_APP_RYZ_SERVER}/submit_interview_timeslot`,
       scheduleData,
@@ -1276,30 +1420,53 @@ export default function RayzeConsole() {
               </div>
             </div>
 
-            <div className="dashboard-grid">
-              <div className="dashboard-card">
-                <h3>Candidates on Payroll</h3>
-                <div className="card-value">{consoleData.payroll_candidates}</div>
-                <div className="card-trend positive">+{consoleData.hired_last_month} this month</div>
+            {/* Loading or Error State for Home Data */}
+            {isLoadingHomeData && (
+              <div className="loading-message">
+                <span className="loading-spinner"></span>
+                Loading dashboard data...
               </div>
-              <div className="dashboard-card">
-                <h3>Submitted for Open Roles</h3>
-                <div className="card-value">{consoleData.submit_cvs}</div>
-                <div className="card-trend positive">+{consoleData.submit_last_month} this month</div>
+            )}
+
+            {homeDataError && (
+              <div className="error-message">
+                <span className="error-icon">⚠️</span>
+                {homeDataError.message}
+                <button
+                  className="login-redirect-button"
+                  onClick={() => navigate('/login')}
+                >
+                  Go to Login
+                </button>
               </div>
-              <div className="dashboard-card">
-                <h3>Active Open Roles</h3>
-                <div className="card-value">{consoleData.active_roles}</div>
-                <div className="card-trend positive">+{consoleData.roles_last_month} this month</div>
-              </div>
-              <div className="dashboard-card">
-                <h3>Total Hours last month</h3>
-                <div className="card-value">{consoleData.invoice_hours}</div>
-                <div className="card-trend neutral">
-                  {consoleData.max_invoice_date ? new Date(consoleData.max_invoice_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'No data'}
+            )}
+
+            {!isLoadingHomeData && !homeDataError && (
+              <div className="dashboard-grid">
+                <div className="dashboard-card">
+                  <h3>Candidates on Payroll</h3>
+                  <div className="card-value">{consoleData.payroll_candidates}</div>
+                  <div className="card-trend positive">+{consoleData.hired_last_month} this month</div>
+                </div>
+                <div className="dashboard-card">
+                  <h3>Submitted for Open Roles</h3>
+                  <div className="card-value">{consoleData.submit_cvs}</div>
+                  <div className="card-trend positive">+{consoleData.submit_last_month} this month</div>
+                </div>
+                <div className="dashboard-card">
+                  <h3>Active Open Roles</h3>
+                  <div className="card-value">{consoleData.active_roles || 0}</div>
+                  <div className="card-trend positive">+{consoleData.roles_last_month || 0} this month</div>
+                </div>
+                <div className="dashboard-card">
+                  <h3>Total Hours last month</h3>
+                  <div className="card-value">{consoleData.invoice_hours}</div>
+                  <div className="card-trend neutral">
+                    {consoleData.max_invoice_date ? new Date(consoleData.max_invoice_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'No data'}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
  
             <div className="recent-activity">
               <h2>Recent Activity</h2>
@@ -1327,6 +1494,8 @@ export default function RayzeConsole() {
         return <InvoicePage />;
       case "invoice":
         return <SelectInvoicePage />;
+      case "admin":
+        return <AdminPage />;
       case "client_console":
         return (
           <>
@@ -1399,6 +1568,30 @@ export default function RayzeConsole() {
               </div>
             </div>
 
+            {/* Loading State */}
+            {isLoadingClientConsole && (
+              <div className="loading-message">
+                <span className="loading-spinner"></span>
+                Loading client console data...
+              </div>
+            )}
+
+            {/* Error State */}
+            {clientConsoleError && (
+              <div className="error-message">
+                <span className="error-icon">⚠️</span>
+                {clientConsoleError.message}
+                <button
+                  className="login-redirect-button"
+                  onClick={() => navigate('/login')}
+                >
+                  Go to Login
+                </button>
+              </div>
+            )}
+
+            {!isLoadingClientConsole && !clientConsoleError && (
+            <>
             <div className="dashboard-grid">
               <div className="dashboard-card">
                 <h3>Active Open Roles</h3>
@@ -1483,7 +1676,7 @@ export default function RayzeConsole() {
                       <th>Confirmed Interview</th>
                       <th>Days Old</th>
                       <th>CV</th>
-                      <th>Match Score</th>
+                      <th>Interview Evaluation</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1565,13 +1758,13 @@ export default function RayzeConsole() {
                             )}
                           </td>
                           <td>
-                            {candidate.match_score ? (
-                              <button 
+                            {(candidate.match_score || candidate.test_score || candidate.event_id) ? (
+                              <button
                                 type="button"
                                 className="view-match-score"
-                                onClick={(e) => handleMatchScoreClick(e, candidate.match_score)}
+                                onClick={(e) => handleInterviewEvaluate(e, candidate)}
                               >
-                                AI Match
+                                AI Evaluation
                               </button>
                             ) : '-'}
                           </td>
@@ -1611,7 +1804,7 @@ export default function RayzeConsole() {
                   </thead>
                   <tbody>
                     {filteredOpenRoles.map(role => (
-                      <tr key={role.role_desc}>
+                      <tr key={`${role.id}-${role.role_desc}`}>
                         <td style={{ textAlign: 'left', width: '60ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{role.role_desc || '-'}</td>
                         <td style={{ width: '40ch', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{role.location || '-'}</td>
                         <td style={{ width: '40ch' }}>{role.num_applicants || 0}</td>
@@ -1725,6 +1918,8 @@ export default function RayzeConsole() {
                 </table>
               </div>
             </div>
+            </>
+            )}
           </>
         );
       }
@@ -1796,7 +1991,7 @@ export default function RayzeConsole() {
                     <i className="fas fa-project-diagram"></i>
                     Invoice
                   </li>
-                  <li onClick={() => navigate('/admin')}>
+                  <li className={activeTab === "admin" ? "active" : ""} onClick={() => setActiveTab("admin")}>
                     <i className="fas fa-book"></i>
                     Admin
                   </li>
@@ -1856,6 +2051,45 @@ export default function RayzeConsole() {
             </div>
             <div className="modal-footer">
               <button className="modal-button" onClick={handleCloseMatchScoreModal}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Interview Evaluation Modal */}
+      {showInterviewEvalModal && (
+        <div className="modal-overlay" onClick={handleCloseInterviewEvalModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Interview Evaluation</h2>
+              <button className="close-button" onClick={handleCloseInterviewEvalModal}>×</button>
+            </div>
+            <div className="modal-body">
+              {isLoadingEvaluation ? (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <div className="spinner" style={{
+                    border: '4px solid #f3f3f3',
+                    borderTop: '4px solid var(--theme-color)',
+                    borderRadius: '50%',
+                    width: '50px',
+                    height: '50px',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 20px'
+                  }}></div>
+                  <p style={{ color: 'var(--theme-color)', fontWeight: 'bold' }}>
+                    {evaluationStatus}
+                  </p>
+                </div>
+              ) : evaluationStatus ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#ef4444' }}>
+                  {evaluationStatus}
+                </div>
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: interviewEvalResult }} />
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="modal-button" onClick={handleCloseInterviewEvalModal}>Close</button>
             </div>
           </div>
         </div>

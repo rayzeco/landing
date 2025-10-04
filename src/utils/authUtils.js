@@ -1,6 +1,9 @@
 // Token expiration event dispatcher
 let tokenExpirationCallbacks = [];
 
+// Timeout handling event dispatcher
+let timeoutCallbacks = [];
+
 /**
  * Register a callback to be called when token expires
  * @param {Function} callback - Function to call when token expires
@@ -114,4 +117,91 @@ export const getRedirectPath = () => {
     return redirectPath;
   }
   return '/';
+};
+
+/**
+ * Register a callback to be called when timeout occurs
+ * @param {Function} callback - Function to call when timeout occurs
+ */
+export const onTimeout = (callback) => {
+  timeoutCallbacks.push(callback);
+};
+
+/**
+ * Remove a timeout callback
+ * @param {Function} callback - Function to remove
+ */
+export const offTimeout = (callback) => {
+  timeoutCallbacks = timeoutCallbacks.filter(cb => cb !== callback);
+};
+
+/**
+ * Handle timeout - trigger callbacks to show timeout modal
+ * @param {Object} error - The timeout error object
+ */
+export const handleTimeout = (error) => {
+  try {
+    const errorDetails = {
+      url: error.config?.url,
+      method: error.config?.method,
+      timeout: error.config?.timeout,
+      message: error.message,
+      timestamp: new Date().toISOString()
+    };
+
+    console.warn('Timeout occurred:', errorDetails);
+
+    // Trigger all registered callbacks (will show timeout modal)
+    timeoutCallbacks.forEach(callback => {
+      try {
+        callback(errorDetails);
+      } catch (callbackError) {
+        console.error('Error in timeout callback:', callbackError);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error handling timeout:', error);
+  }
+};
+
+/**
+ * Create a retry function for failed requests
+ * @param {Function} requestFunction - The original request function
+ * @param {number} maxRetries - Maximum number of retries (default: 3)
+ * @param {number} baseDelay - Base delay in ms (default: 1000)
+ * @returns {Function} - Retry-enabled request function
+ */
+export const createRetryableRequest = (requestFunction, maxRetries = 3, baseDelay = 1000) => {
+  return async (...args) => {
+    let lastError;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await requestFunction(...args);
+      } catch (error) {
+        lastError = error;
+
+        // Don't retry on authentication errors or client errors (4xx)
+        if (error.response?.status >= 400 && error.response?.status < 500 && error.response?.status !== 408) {
+          throw error;
+        }
+
+        // Don't retry if this is the last attempt
+        if (attempt === maxRetries) {
+          break;
+        }
+
+        // Calculate exponential backoff delay
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.log(`Request failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`);
+
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    // All retries failed
+    throw lastError;
+  };
 };

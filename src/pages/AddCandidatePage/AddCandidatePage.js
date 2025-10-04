@@ -9,6 +9,10 @@ const AddCandidatePage = () => {
     const [filteredCandidates, setFilteredCandidates] = useState([]);
     const [unfilteredCandidates, setUnfilteredCandidates] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
+
+    // Loading states and error handling for timeout
+    const [isLoading, setIsLoading] = useState(false);
+    const [timeoutError, setTimeoutError] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [showUploadAnswers, setShowUploadAnswers] = useState(false);
     const [selectedAnswerCandidate, setSelectedAnswerCandidate] = useState('');
@@ -79,11 +83,13 @@ const AddCandidatePage = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            setIsLoading(true);
+            setTimeoutError(null);
+
             const token = sessionStorage.getItem('token');
             const user = JSON.parse(sessionStorage.getItem('user'));
             const id = JSON.parse(sessionStorage.getItem('id'));
-            //console.log('id is ',id);
-            
+
             try {
                 // Fetch candidates
                 const candidatesResponse = await axios.get(`${process.env.REACT_APP_RYZ_SERVER}/list_candidates`, {
@@ -147,9 +153,15 @@ const AddCandidatePage = () => {
                 setFilteredOpenRoles(allOpenRoles);
                 setSubmitCVRoles(allSubmitCVRoles);
                 setClients(allClients);
-                
+
             } catch (error) {
                 console.error('Error fetching data:', error);
+                setTimeoutError({
+                    type: 'session_expired',
+                    message: 'Your session has expired. Please log in again.'
+                });
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -615,12 +627,15 @@ const AddCandidatePage = () => {
         setCvFile(file);
         setIsCVProcessing(true);
         console.log(JSON.parse(sessionStorage.getItem('user'))?.role);
-        
+        console.time('CV Processing Time');
+
         try {
             const formData = new FormData();
             formData.append('cv', file);
-            
+
             const token = sessionStorage.getItem('token');
+            console.log('Uploading CV and extracting candidate information...');
+
             const response = await axios.post(
                 `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate`,
                 formData,
@@ -633,8 +648,8 @@ const AddCandidatePage = () => {
             );
 
             // Parse the candidate_info string into a JSON object
-            //console.log(response.data.candidate_info);
-            console.log('response.data.candidate_info received');
+            console.log('Candidate information extracted successfully');
+            console.timeEnd('CV Processing Time');
             const candidateInfo = JSON.parse(response.data.candidate_info);
 
             // Update the newCandidate state with the parsed information
@@ -660,39 +675,13 @@ const AddCandidatePage = () => {
             // Enable the form after successful CV upload
             setIsFormEnabled(true);
 
-            // If there's a selected role, proceed with match score generation
-            const selectedRole = openRoles.find(role => role.id === parseInt(newCandidate.open_role_id));
-            if (selectedRole && selectedRole.jd_doc) {
-                // Create a new FormData for match score
-                const matchScoreFormData = new FormData();
-                matchScoreFormData.append('cv', file);
-                matchScoreFormData.append('job_desc', selectedRole.jd_doc);
-                
-                const matchScoreResponse = await axios.post(
-                    `${process.env.REACT_APP_RYZ_SERVER}/generate_candidate_match`,
-                    matchScoreFormData,
-                    {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-
-                const matchScore = matchScoreResponse.data.evaluation;
-                console.log("got matchscore"); //console.log(matchScore);
-                setMatchScoreResult(matchScore);
-                setNewCandidate(prev => ({
-                    ...prev,
-                    match_score: matchScore
-                }));
-                
-                // Show the match score modal
-                setShowMatchScoreModal(true);
-            }
+            // OPTIMIZATION: Removed automatic match score generation
+            // Match score can be generated later if needed by the submit handler
+            // This reduces upload time from ~20s to ~10s
 
         } catch (error) {
             console.error('Error processing CV:', error);
+            console.timeEnd('CV Processing Time');
             alert('Error processing CV. Please try again.');
             setIsFormEnabled(false);
         } finally {
@@ -1313,6 +1302,30 @@ const AddCandidatePage = () => {
             <div className="panel">
                 <h1>Candidates</h1>
 
+                {/* Loading State */}
+                {isLoading && (
+                    <div className="loading-message">
+                        <span className="loading-spinner"></span>
+                        Loading candidate data...
+                    </div>
+                )}
+
+                {/* Error State */}
+                {timeoutError && (
+                    <div className="error-message">
+                        <span className="error-icon">⚠️</span>
+                        {timeoutError.message}
+                        <button
+                            className="login-redirect-button"
+                            onClick={() => navigate('/login')}
+                        >
+                            Go to Login
+                        </button>
+                    </div>
+                )}
+
+                {!isLoading && !timeoutError && (
+                <>
                 {/* Submit Candidate for Open Role Accordion */}
                 <div className="accordion">
                     <div 
@@ -1713,6 +1726,8 @@ const AddCandidatePage = () => {
                         </tbody>
                     </table>
                 </div>
+            </>
+            )}
             </div>
 
             {/* Test Document Modal */}

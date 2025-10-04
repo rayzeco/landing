@@ -45,6 +45,24 @@ export default function TeamPage() {
                   <p>We have partnered with Fortune 500 organizations worldwide, <span className="theme-color">Our team's deep commitment to impactful innovation </span>fuels every project, ensuring your business thrives with AI at its core.</p>
                 </div>
               </div><br/><br/><br/>
+
+              <div className="hero-expertise-introduction">
+                <div className="hero-expertise-title">
+                  <h3><span className="theme-color">Our Values</span></h3>
+                </div>
+                <div className="hero-expertise-description">
+                  <p>
+                    <span className="theme-color">FOCUS</span> on client outcomes<br/>
+                    <span style={{fontSize: "0.8em"}}>We prioritize delivering measurable business value.</span><br/><br/>
+                    <span className="theme-color">EMPATHY</span> for client needs<br/>
+                    <span style={{fontSize: "0.8em"}}>We listen deeply to align solutions with your goals.</span><br/><br/>
+                    <span className="theme-color">INTENSITY</span> in execution<br/>
+                    <span style={{fontSize: "0.8em"}}>We pursue excellence with unwavering determination.</span><br/><br/>
+                    <span className="theme-color">DISCIPLINE</span> in delivery<br/>
+                    <span style={{fontSize: "0.8em"}}>We build solutions that stand the test of time.</span>
+                  </p>
+                </div>
+              </div>
             </div>
             <br/><br/>
           </div>
