@@ -18,10 +18,17 @@ export default function Layout({children}) {
   const [timeoutErrorDetails, setTimeoutErrorDetails] = useState(null);
   const [timeoutRetryFunction, setTimeoutRetryFunction] = useState(null);
 
+  // Define public pages where token expiration modal should NOT be shown
+  const publicPages = ['/', '/login', '/register', '/rayze_og', '/team', '/clients', '/guidelines', '/policy'];
+  const isPublicPage = publicPages.includes(location.pathname);
+
   useEffect(() => {
     // Register callback for token expiration
     const handleTokenExpiration = () => {
-      setShowTokenExpiredModal(true);
+      // Only show modal if NOT on a public page
+      if (!isPublicPage) {
+        setShowTokenExpiredModal(true);
+      }
     };
 
     // Register callback for timeout
@@ -38,7 +45,7 @@ export default function Layout({children}) {
       offTokenExpiration(handleTokenExpiration);
       offTimeout(handleTimeoutOccurred);
     };
-  }, []);
+  }, [isPublicPage]);
 
   const handleCloseTokenModal = () => {
     setShowTokenExpiredModal(false);
